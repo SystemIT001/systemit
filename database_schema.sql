@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS projects (
+  id VARCHAR(50) PRIMARY KEY,
+  clientName VARCHAR(255),
+  projectName VARCHAR(255),
+  date VARCHAR(50),
+  status VARCHAR(50),
+  exchangeRate DECIMAL(10,2),
+  materials LONGTEXT,
+  equipments LONGTEXT,
+  labor LONGTEXT,
+  invoices LONGTEXT
+);
+
+CREATE TABLE IF NOT EXISTS inventory (
+  id VARCHAR(50) PRIMARY KEY,
+  name VARCHAR(255),
+  unitCost DECIMAL(10,2),
+  stockQuantity INT,
+  category VARCHAR(50),
+  lastUpdated VARCHAR(50)
+);

@@ -1,0 +1,290 @@
+import React, { useEffect, useState } from 'react';
+
+import { ArrowLeft, Printer, Building2, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { useProjects } from '../hooks/useProjects';
+import type { Project } from '../types';
+import { formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual } from '../utils';
+
+const InvoiceView: React.FC = () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const { projects, loading, getProject } = useProjects();
+  const [project, setProject] = useState<Project | null>(null);
+
+  const companyName = localStorage.getItem('inv_companyName') || 'Mi Empresa IT';
+  const subtitle = localStorage.getItem('inv_subtitle') || 'Reporte de Servicios y Equipos';
+  const docType = localStorage.getItem('inv_docType') || 'COTIZACIÓN';
+  const footerText = localStorage.getItem('inv_footerText') || 'Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.';
+
+  useEffect(() => {
+    if (id && !loading) {
+      const p = getProject(id);
+      if (p) setProject(p);
+    }
+  }, [id, projects, loading]);
+
+  if (loading) return <div style={{ padding: '2rem' }}>Cargando factura...</div>;
+  if (!project) return <div style={{ padding: '2rem' }}>Proyecto no encontrado.</div>;
+
+  const handleDownloadPDF = async () => {
+    const input = document.getElementById('invoice-paper');
+    if (!input) return;
+
+    // Removemos temporalmente las sombras o estilos que puedan afectar a html2canvas si fuera necesario
+    const originalBoxShadow = input.style.boxShadow;
+    input.style.boxShadow = 'none';
+
+    try {
+      const canvas = await html2canvas(input, {
+        scale: 2, // Mayor calidad
+        useCORS: true,
+        logging: false
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${docType}_PRJ-${String(project.projectCode || 0).padStart(3, '0')}_${project.clientName || 'Cliente'}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Hubo un error al generar el PDF.');
+    } finally {
+      input.style.boxShadow = originalBoxShadow;
+    }
+  };
+
+  const renderInvoiceTable = (items: any[], title: string) => {
+    if (items.length === 0) return null;
+
+    const totals = calculateItemsTotalsDual(items, project.exchangeRate);
+
+    return (
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
+          {title}
+        </h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+          <thead>
+            <tr style={{ color: 'var(--text-muted)', textAlign: 'left' }}>
+              <th style={{ padding: '0.5rem 0', width: '50%' }}>Descripción</th>
+              <th style={{ padding: '0.5rem 0', textAlign: 'center' }}>Cant.</th>
+              <th style={{ padding: '0.5rem 0', textAlign: 'right' }}>P. Unitario</th>
+              <th style={{ padding: '0.5rem 0', textAlign: 'right' }}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, index) => {
+              // Si es un equipo, el precio unitario de venta incluye la ganancia.
+              const sellPrice = item.profitMargin ? item.unitCost * (1 + item.profitMargin / 100) : item.unitCost;
+              return (
+                <tr key={index} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <td style={{ padding: '0.75rem 0' }}>{item.name}</td>
+                  <td style={{ padding: '0.75rem 0', textAlign: 'center' }}>{item.quantity}</td>
+                  <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(sellPrice, item.currency)}</td>
+                  <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(calculateItemTotal(item), item.currency)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={3} style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600, color: 'var(--text-muted)' }}>Subtotal {title}</td>
+              <td style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600 }}>
+                <span style={{ display: 'block' }}>{formatCurrency(totals.totalNIO, 'NIO')}</span>
+                <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatCurrency(totals.totalUSD, 'USD')}</span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    );
+  };
+
+  const renderPaymentsTable = (payments: any[]) => {
+    if (!payments || payments.length === 0) return null;
+
+    const simulatedItems = payments.map(p => ({ quantity: 1, unitCost: p.amount, currency: p.currency }));
+    const totals = calculateItemsTotalsDual(simulatedItems, project.exchangeRate);
+
+    return (
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
+          Pagos y Adelantos
+        </h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+          <thead>
+            <tr style={{ color: 'var(--text-muted)', textAlign: 'left' }}>
+              <th style={{ padding: '0.5rem 0', width: '20%' }}>Fecha</th>
+              <th style={{ padding: '0.5rem 0', width: '60%' }}>Descripción</th>
+              <th style={{ padding: '0.5rem 0', textAlign: 'right' }}>Monto</th>
+            </tr>
+          </thead>
+          <tbody>
+            {payments.map((p, index) => (
+              <tr key={index} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <td style={{ padding: '0.75rem 0' }}>{p.date}</td>
+                <td style={{ padding: '0.75rem 0' }}>{p.description}</td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right', color: 'var(--success-color)' }}>{formatCurrency(p.amount, p.currency)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={2} style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600, color: 'var(--text-muted)' }}>Total Pagado</td>
+              <td style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600, color: 'var(--success-color)' }}>
+                <span style={{ display: 'block' }}>{formatCurrency(totals.totalNIO, 'NIO')}</span>
+                <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatCurrency(totals.totalUSD, 'USD')}</span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '4rem' }}>
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+        <a href={`/views/proyecto-detalle.html?id=${project.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
+          <ArrowLeft size={20} />
+          Volver al Proyecto
+        </a>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn-secondary" onClick={() => window.print()}>
+            <Printer size={20} />
+            Imprimir
+          </button>
+          <button className="btn-primary" onClick={handleDownloadPDF}>
+            <Download size={20} />
+            Descargar PDF
+          </button>
+        </div>
+      </div>
+
+      <div id="invoice-paper" className="card invoice-paper" style={{ backgroundColor: 'white', color: 'black', padding: '3rem 4rem' }}>
+        {/* Header de Factura */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f1117', marginBottom: '0.5rem' }}>
+              <Building2 size={32} />
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{companyName}</h1>
+            </div>
+            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>{subtitle}</p>
+          </div>
+          <div style={{ textAlign: 'right', width: '300px' }}>
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f1117', textTransform: 'uppercase' }}>{docType}</h2>
+            <p style={{ color: '#64748b', marginTop: '0.5rem' }}><strong>Ref:</strong> PRJ-{String(project.projectCode || 0).padStart(3, '0')}</p>
+            <p style={{ color: '#64748b' }}><strong>Fecha:</strong> {new Date(project.date).toLocaleDateString()}</p>
+          </div>
+        </div>
+
+        {/* Info del Cliente */}
+        <div style={{ marginBottom: '3rem' }}>
+          <h3 style={{ color: '#64748b', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Facturar A:</h3>
+          <p style={{ fontSize: '1.125rem', fontWeight: 600, color: '#0f1117' }}>{project.clientName || 'Cliente no especificado'}</p>
+          <p style={{ color: '#475569', marginTop: '0.25rem' }}>Proyecto: {project.projectName}</p>
+        </div>
+
+        {/* Tablas de Items */}
+        <div style={{ minHeight: '300px' }}>
+          {renderInvoiceTable(project.materials, 'Materiales')}
+          {renderInvoiceTable(project.equipments, 'Equipos')}
+          {renderInvoiceTable(project.labor, 'Mano de Obra')}
+          {renderPaymentsTable(project.payments || [])}
+        </div>
+
+        {/* Total Final */}
+        <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '2px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ width: '400px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#64748b' }}>
+              <span>Tasa de Cambio</span>
+              <span>C$ {project.exchangeRate || 36.62} / USD</span>
+            </div>
+            
+            {(() => {
+              const totalCost = calculateProjectTotalsDual(project);
+              const simulatedItems = (project.payments || []).map(p => ({ quantity: 1, unitCost: p.amount, currency: p.currency }));
+              const totalPaid = calculateItemsTotalsDual(simulatedItems, project.exchangeRate);
+              const balanceUSD = totalCost.totalUSD - totalPaid.totalUSD;
+              const balanceNIO = totalCost.totalNIO - totalPaid.totalNIO;
+
+              if (project.payments && project.payments.length > 0) {
+                return (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #cbd5e1' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 600, color: '#64748b' }}>Costo Total (NIO)</span>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f1117' }}>{formatCurrency(totalCost.totalNIO, 'NIO')}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 600, color: '#64748b' }}>Costo Total (USD)</span>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f1117' }}>{formatCurrency(totalCost.totalUSD, 'USD')}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', color: '#16a34a' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 600 }}>Total Pagado (USD)</span>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>{formatCurrency(totalPaid.totalUSD, 'USD')}</span>
+                    </div>
+
+                    {balanceUSD < 0 ? (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #0f1117' }}>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2563eb' }}>A FAVOR (NIO)</span>
+                          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2563eb' }}>{formatCurrency(Math.abs(balanceNIO), 'NIO')}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2563eb' }}>A FAVOR (USD)</span>
+                          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2563eb' }}>{formatCurrency(Math.abs(balanceUSD), 'USD')}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #0f1117' }}>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#dc2626' }}>SALDO (NIO)</span>
+                          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#dc2626' }}>{formatCurrency(balanceNIO, 'NIO')}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#dc2626' }}>SALDO (USD)</span>
+                          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#dc2626' }}>{formatCurrency(balanceUSD, 'USD')}</span>
+                        </div>
+                      </>
+                    )}
+                  </>
+                );
+              }
+
+              return (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #cbd5e1' }}>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f1117' }}>TOTAL (NIO)</span>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f1117' }}>{formatCurrency(totalCost.totalNIO, 'NIO')}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f1117' }}>TOTAL (USD)</span>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f1117' }}>{formatCurrency(totalCost.totalUSD, 'USD')}</span>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div style={{ marginTop: '4rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
+          <p>{footerText}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InvoiceView;

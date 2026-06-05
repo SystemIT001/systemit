@@ -1,0 +1,109 @@
+export const generateId = () => {
+  return Math.random().toString(36).substring(2, 9);
+};
+
+export const formatCurrency = (value: number, currency: 'NIO' | 'USD' | 'MXN' = 'USD') => {
+  if (currency === 'NIO') {
+    return `C$ ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(value);
+};
+
+export const calculateItemTotal = (item: any) => {
+  if (item.profitMargin === 'manual' && item.manualPrice !== undefined) {
+    return item.quantity * item.manualPrice;
+  }
+  let total = item.quantity * item.unitCost;
+  if (item.profitMargin && item.profitMargin !== 'manual') {
+    total = total * (1 + item.profitMargin / 100);
+  }
+  return total;
+};
+
+export const calculateItemCost = (item: any) => {
+  return item.quantity * item.unitCost;
+};
+
+export const calculateProjectTotal = (project: any) => {
+  if (!project) return 0;
+  const materialsTotal = project.materials.reduce((acc: number, curr: any) => acc + calculateItemTotal(curr), 0);
+  const equipmentsTotal = project.equipments.reduce((acc: number, curr: any) => acc + calculateItemTotal(curr), 0);
+  const laborTotal = project.labor.reduce((acc: number, curr: any) => acc + calculateItemTotal(curr), 0);
+  return materialsTotal + equipmentsTotal + laborTotal;
+};
+
+export const calculateItemsTotalsDual = (items: any[], exchangeRate: number = 36.62) => {
+  let totalUSD = 0;
+  let totalNIO = 0;
+
+  items.forEach(item => {
+    const itemTotal = calculateItemTotal(item);
+    if (item.currency === 'NIO') {
+      totalNIO += itemTotal;
+      totalUSD += itemTotal / exchangeRate;
+    } else {
+      totalUSD += itemTotal;
+      totalNIO += itemTotal * exchangeRate;
+    }
+  });
+
+  return { totalUSD, totalNIO };
+};
+
+export const calculateProjectTotalsDual = (project: any) => {
+  if (!project) return { totalUSD: 0, totalNIO: 0 };
+  const exchangeRate = project.exchangeRate || 36.62;
+
+  const items = [
+    ...(project.materials || []),
+    ...(project.equipments || []),
+    ...(project.labor || [])
+  ];
+
+  return calculateItemsTotalsDual(items, exchangeRate);
+};
+
+export const calculateProjectCostsDual = (project: any) => {
+  if (!project) return { totalUSD: 0, totalNIO: 0 };
+  const exchangeRate = project.exchangeRate || 36.62;
+
+  const items = [
+    ...(project.materials || []),
+    ...(project.equipments || []),
+    ...(project.labor || [])
+  ];
+
+  let totalUSD = 0;
+  let totalNIO = 0;
+
+  items.forEach(item => {
+    const itemCost = calculateItemCost(item);
+    if (item.currency === 'NIO') {
+      totalNIO += itemCost;
+      totalUSD += itemCost / exchangeRate;
+    } else {
+      totalUSD += itemCost;
+      totalNIO += itemCost * exchangeRate;
+    }
+  });
+
+  return { totalUSD, totalNIO };
+};
+
+export const calculateExpensesDual = (expenses: any[] = [], exchangeRate: number = 36.62) => {
+  let totalUSD = 0;
+  let totalNIO = 0;
+  expenses.forEach(exp => {
+    if (exp.currency === 'NIO') {
+      totalNIO += Number(exp.amount);
+      totalUSD += Number(exp.amount) / exchangeRate;
+    } else {
+      totalUSD += Number(exp.amount);
+      totalNIO += Number(exp.amount) * exchangeRate;
+    }
+  });
+  return { totalUSD, totalNIO };
+};
