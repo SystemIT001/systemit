@@ -17,15 +17,15 @@ const Login: React.FC = () => {
     setError('');
     setLoading(true);
     
-    const success = await login(username, password);
-    if (success) {
+    const result = await login(username, password);
+    if (result.success) {
       const urlParams = new URLSearchParams(window.location.search);
       const returnUrl = urlParams.get('returnUrl') || '/views/proyectos.html';
       if (!window.location.pathname.includes(returnUrl)) {
         window.location.href = returnUrl;
       }
     } else {
-      setError('Usuario o contraseña incorrectos');
+      setError(result.error || 'Usuario o contraseña incorrectos');
       setLoading(false);
     }
   };

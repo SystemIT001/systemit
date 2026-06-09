@@ -27,13 +27,23 @@ export function useAuth() {
     setLoading(false);
   };
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (username: string, password: string): Promise<{success: boolean, error?: string}> => {
     try {
       const response = await fetch('/api/users.php');
-      if (!response.ok) return false;
-      const users: any[] = await response.json();
+      if (!response.ok) {
+        const text = await response.text();
+        return { success: false, error: `Error del servidor: ${response.status} - ${text.substring(0, 50)}` };
+      }
       
-      const foundUser = users.find(u => u.username === username && (u.password === password || u.clave === password));
+      const text = await response.text();
+      let users: any[];
+      try {
+        users = JSON.parse(text);
+      } catch (e) {
+        return { success: false, error: `Respuesta no es JSON: ${text.substring(0, 100)}` };
+      }
+      
+      const foundUser = users.find(u => String(u.username).trim().toLowerCase() === String(username).trim().toLowerCase() && (u.password === password || u.clave === password));
       if (foundUser) {
         const userData: User = {
           id: foundUser.id,
@@ -50,12 +60,12 @@ export function useAuth() {
         if (!window.location.pathname.includes(returnUrl)) {
           window.location.href = returnUrl;
         }
-        return true;
+        return { success: true };
       }
-      return false;
-    } catch (error) {
+      return { success: false, error: 'Usuario o contraseña incorrectos' };
+    } catch (error: any) {
       console.error("Error en login:", error);
-      return false;
+      return { success: false, error: `Error de red: ${error.message}` };
     }
   };
 
