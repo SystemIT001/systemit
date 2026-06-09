@@ -125,7 +125,7 @@ const Settings: React.FC = () => {
         <h2>Configuraciones del Sistema</h2>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="desktop-only" style={{ gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <button 
           onClick={() => setActiveTab('empresa')}
           style={{ 
@@ -186,6 +186,28 @@ const Settings: React.FC = () => {
           <Users size={18} />
           Usuarios y Accesos
         </button>
+      </div>
+
+      <div className="mobile-only" style={{ marginBottom: '2rem' }}>
+        <select 
+          value={activeTab}
+          onChange={e => setActiveTab(e.target.value as any)}
+          style={{ 
+            width: '100%', 
+            padding: '0.875rem', 
+            borderRadius: '8px', 
+            border: '1px solid var(--border-color)', 
+            backgroundColor: 'var(--surface-color)', 
+            color: 'var(--text-main)', 
+            fontSize: '1rem', 
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
+        >
+          <option value="empresa">Datos de la Empresa</option>
+          <option value="basedatos">Respaldo de Base de Datos</option>
+          <option value="usuarios">Usuarios y Accesos</option>
+        </select>
       </div>
 
       {activeTab === 'empresa' ? (

@@ -132,6 +132,24 @@ input, select, textarea {
   border-color: var(--text-muted);
 }
 
+/* Responsive Utilities */
+.mobile-only {
+  display: none !important;
+}
+
+.desktop-only {
+  display: flex !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+}
+
 /* Print Styles */
 @media print {
   body {

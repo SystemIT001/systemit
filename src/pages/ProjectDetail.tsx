@@ -671,7 +671,8 @@ const ProjectDetail: React.FC = () => {
       </div>
       
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        {/* Desktop Tabs */}
+        <div className="desktop-only" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {tabs.map(t => (
             <button
               key={t.id}
@@ -686,6 +687,29 @@ const ProjectDetail: React.FC = () => {
               {t.label}
             </button>
           ))}
+        </div>
+
+        {/* Mobile Tabs Dropdown */}
+        <div className="mobile-only" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)' }}>
+          <select 
+            value={activeTab}
+            onChange={e => setActiveTab(e.target.value as any)}
+            style={{ 
+              width: '100%', 
+              padding: '0.875rem', 
+              borderRadius: '8px', 
+              border: '1px solid var(--border-color)', 
+              backgroundColor: 'var(--bg-color)', 
+              color: 'var(--text-main)', 
+              fontSize: '1rem', 
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            {tabs.map(t => (
+              <option key={t.id} value={t.id}>{t.label}</option>
+            ))}
+          </select>
         </div>
 
         <div style={{ padding: '2rem' }}>
