@@ -125,7 +125,7 @@ const Settings: React.FC = () => {
         <h2>Configuraciones del Sistema</h2>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)' }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <button 
           onClick={() => setActiveTab('empresa')}
           style={{ 
@@ -138,7 +138,9 @@ const Settings: React.FC = () => {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            flex: '0 0 auto',
+            whiteSpace: 'nowrap'
           }}
         >
           <Building2 size={18} />
@@ -156,7 +158,9 @@ const Settings: React.FC = () => {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            flex: '0 0 auto',
+            whiteSpace: 'nowrap'
           }}
         >
           <Database size={18} />
@@ -174,7 +178,9 @@ const Settings: React.FC = () => {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            flex: '0 0 auto',
+            whiteSpace: 'nowrap'
           }}
         >
           <Users size={18} />

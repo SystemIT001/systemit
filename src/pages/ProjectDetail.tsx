@@ -671,13 +671,13 @@ const ProjectDetail: React.FC = () => {
       </div>
       
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {tabs.map(t => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
               style={{
-                flex: 1, padding: '1rem', fontWeight: 600,
+                flex: '0 0 auto', padding: '1rem', fontWeight: 600, whiteSpace: 'nowrap',
                 color: activeTab === t.id ? 'var(--primary-color)' : 'var(--text-muted)',
                 borderBottom: activeTab === t.id ? '2px solid var(--primary-color)' : '2px solid transparent',
                 transition: 'all 0.2s'
