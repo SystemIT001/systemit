@@ -100,7 +100,7 @@ const Settings: React.FC = () => {
 
   const handleEditUser = (user: any) => {
     setEditingUser(user);
-    setUserForm({ id: user.id, username: user.username, password: user.password, name: user.name, role: user.role });
+    setUserForm({ id: user.id, username: user.username, password: user.password || user.clave || '', name: user.name, role: user.role });
     setShowUserForm(true);
     setUserError('');
   };

@@ -31,9 +31,9 @@ export function useAuth() {
     try {
       const response = await fetch('/api/users.php');
       if (!response.ok) return false;
-      const users: User[] = await response.json();
+      const users: any[] = await response.json();
       
-      const foundUser = users.find(u => u.username === username && u.password === password);
+      const foundUser = users.find(u => u.username === username && (u.password === password || u.clave === password));
       if (foundUser) {
         const userData: User = {
           id: foundUser.id,

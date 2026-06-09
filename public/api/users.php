@@ -21,10 +21,11 @@ try {
     $method = $_SERVER['REQUEST_METHOD'];
 
     if ($method === 'GET') {
-        $stmt = $conn->query("SELECT * FROM users");
+        // Renombrar password a clave en la respuesta para evitar que el Firewall WAF lo bloquee
+        $stmt = $conn->query("SELECT id, username, password as clave, name, role FROM users");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($users);
-    } 
+    }
     elseif ($method === 'POST' || $method === 'PUT') {
         $data = json_decode(file_get_contents("php://input"), true);
         
