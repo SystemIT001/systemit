@@ -23,6 +23,7 @@ export const apiFetch = async (input: RequestInfo | URL, init?: RequestInit): Pr
 
   const finalInit: RequestInit = {
     ...init,
+    credentials: 'same-origin',
     headers: {
       ...defaultHeaders,
       ...(init?.headers || {})
