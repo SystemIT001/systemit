@@ -244,8 +244,8 @@ const Purchases: React.FC = () => {
             <div style={{ padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ marginBottom: '1.5rem' }}>Ingresar Artículos Manualmente</h3>
               
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem' }}>
-                <div style={{ flex: 2 }}>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 200px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>Descripción</label>
                   <input 
                     type="text" 
@@ -254,7 +254,7 @@ const Purchases: React.FC = () => {
                     style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
                   />
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: '1 1 150px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>Categoría</label>
                   <select 
                     value={newItem.category} 
@@ -266,7 +266,7 @@ const Purchases: React.FC = () => {
                     <option value="Mano de Obra">Mano de Obra</option>
                   </select>
                 </div>
-                <div style={{ width: '120px' }}>
+                <div style={{ flex: '1 1 120px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>Costo Unit. ($)</label>
                   <input 
                     type="number" 
@@ -276,7 +276,7 @@ const Purchases: React.FC = () => {
                     style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
                   />
                 </div>
-                <div style={{ width: '100px' }}>
+                <div style={{ flex: '1 1 100px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>Cant.</label>
                   <input 
                     type="number" 
@@ -347,7 +347,7 @@ const Purchases: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2>Historial de Compras (Proveedores)</h2>
         <button className="btn-primary" onClick={() => setIsCreating(true)}>
           <Plus size={20} /> Nueva Compra

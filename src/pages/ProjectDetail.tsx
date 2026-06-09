@@ -498,7 +498,7 @@ const ProjectDetail: React.FC = () => {
                       <input type="number" value={editingItem.data.quantity} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, quantity: Number(e.target.value)}})} style={{ width: '80px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
                     </td>
                     <td style={{ padding: '0.75rem' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <input type="number" step="0.01" value={editingItem.data.unitCost} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, unitCost: Number(e.target.value)}})} style={{ width: '100px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
                         <select value={editingItem.data.currency} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, currency: e.target.value}})} style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }}>
                           <option value="NIO">NIO</option>
@@ -948,7 +948,7 @@ const ProjectDetail: React.FC = () => {
 
           {activeTab === 'purchasing_control' && (
             <div style={{ padding: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
                   <h3 style={{ marginBottom: '0.5rem' }}>Control de Compras</h3>
                   <p style={{ color: 'var(--text-muted)' }}>Ingresa la cantidad que has ido comprando para descontarla del total requerido en el proyecto.</p>
@@ -968,7 +968,7 @@ const ProjectDetail: React.FC = () => {
 
           {activeTab === 'payments' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3>Registro de Pagos y Adelantos</h3>
               </div>
               
@@ -1016,7 +1016,7 @@ const ProjectDetail: React.FC = () => {
                         <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 600, color: 'var(--success-color)' }}>
                           {formatCurrency(payment.amount, payment.currency)}
                         </td>
-                        <td style={{ padding: '0.75rem', textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <td style={{ padding: '0.75rem', textAlign: 'right', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
                           {payment.receiptImage && (
                             <button 
                               style={{ color: 'var(--primary-color)' }} 
@@ -1099,7 +1099,7 @@ const ProjectDetail: React.FC = () => {
 
           {activeTab === 'expenses' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3>Registro de Gastos Operativos</h3>
               </div>
               
@@ -1214,7 +1214,7 @@ const ProjectDetail: React.FC = () => {
           )}
           {activeTab === 'planificacion' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3>Planificación de Tareas (Cronograma)</h3>
               </div>
               
@@ -1274,7 +1274,7 @@ const ProjectDetail: React.FC = () => {
           )}
           {activeTab === 'invoices' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3>Facturas y Documentos Adjuntos</h3>
                 <input 
                   type="file" 
@@ -1302,7 +1302,7 @@ const ProjectDetail: React.FC = () => {
                         <h4 style={{ marginBottom: '0.25rem' }}>{inv.fileName}</h4>
                         <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Subido: {new Date(inv.dateAdded).toLocaleString()}</p>
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <button 
                           className="btn-secondary" 
                           onClick={() => handleViewFile(inv.dataUrl)}
@@ -1331,7 +1331,7 @@ const ProjectDetail: React.FC = () => {
 
           {activeTab === 'gallery' && (
             <div style={{ padding: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
                   <h3 style={{ marginBottom: '0.5rem' }}>Galería del Proyecto</h3>
                   <p style={{ color: 'var(--text-muted)' }}>Sube fotos del proyecto, avances o del trabajo finalizado.</p>
