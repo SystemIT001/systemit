@@ -24,10 +24,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (!user && !path.includes('login.html')) {
+    if (!loading && !user && !path.includes('login.html')) {
       window.location.href = '/views/login.html';
     }
-  }, [user, path]);
+  }, [user, path, loading]);
 
   if (loading) {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Cargando sistema...</div>;
