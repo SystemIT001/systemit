@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import './Layout.css';
@@ -12,6 +12,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const path = window.location.pathname;
   const { user, loading, logout, checkAuth } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close sidebar when path changes on mobile
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [path]);
 
   useEffect(() => {
     checkAuth();
@@ -43,11 +49,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="layout-container">
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''} no-print`} 
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+
       {/* Sidebar */}
-      <aside className="sidebar no-print">
-        <div className="brand">
-          <ReceiptText className="brand-icon" size={28} />
-          <span>SystemIT</span>
+      <aside className={`sidebar no-print ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div className="brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <ReceiptText className="brand-icon" size={28} />
+            <span>SystemIT</span>
+          </div>
+          {/* Close button inside sidebar for mobile */}
+          <button 
+            className="mobile-menu-btn" 
+            onClick={() => setIsMobileMenuOpen(false)}
+            style={{ marginLeft: 'auto' }}
+          >
+            <X size={24} />
+          </button>
         </div>
 
         <nav className="nav-links">
@@ -108,7 +130,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main Content */}
       <main className="main-content">
         <header className="topbar no-print">
-          <h1>{getPageTitle()}</h1>
+          <button 
+            className="mobile-menu-btn" 
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
+          <h1 style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getPageTitle()}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
             <button 
               onClick={toggleTheme} 

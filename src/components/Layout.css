@@ -10,6 +10,29 @@
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
+  transition: transform 0.3s ease;
+  z-index: 50;
+}
+
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
 }
 
 .brand {
@@ -96,4 +119,36 @@
 .content-wrapper {
   padding: 2rem;
   flex: 1;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .mobile-overlay.open {
+    display: block;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .topbar {
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
+  .content-wrapper {
+    padding: 1rem;
+  }
 }
