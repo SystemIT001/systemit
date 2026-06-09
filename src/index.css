@@ -177,3 +177,14 @@ input, select, textarea {
     display: none !important;
   }
 }
+
+/* Responsive Form Grid */
+.responsive-form-grid {
+  /* Used to override inline grids on mobile */
+}
+
+@media (max-width: 768px) {
+  .responsive-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -810,7 +810,7 @@ const ProjectDetail: React.FC = () => {
 
           {(activeTab === 'materials' || activeTab === 'equipments' || activeTab === 'labor' || activeTab === 'additionals') && (
             <div>
-              <form onSubmit={handleAddItem} style={{ display: 'grid', gridTemplateColumns: activeTab !== 'labor' ? (profitMargin === 'manual' ? '2fr 1fr 1fr 1fr 1fr auto' : '2fr 1fr 1fr 1fr auto') : '2fr 1fr 1fr auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <form onSubmit={handleAddItem} className="responsive-form-grid" style={{ display: 'grid', gridTemplateColumns: activeTab !== 'labor' ? (profitMargin === 'manual' ? '2fr 1fr 1fr 1fr 1fr auto' : '2fr 1fr 1fr 1fr auto') : '2fr 1fr 1fr auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 {activeTab === 'additionals' && (
                   <div style={{ gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Tipo de Adicional</label>
