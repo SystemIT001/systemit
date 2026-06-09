@@ -45,7 +45,7 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $sql = "INSERT INTO users (id, username, password, name, role) 
             VALUES (:id, :username, :password, :name, :role)
             ON DUPLICATE KEY UPDATE 
-            username=:username, password=:password, name=:name, role=:role";
+            username=VALUES(username), password=VALUES(password), name=VALUES(name), role=VALUES(role)";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([

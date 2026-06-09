@@ -30,7 +30,7 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $sql = "INSERT INTO clients (id, name, contactPerson, email, phone, address) 
             VALUES (:id, :name, :contactPerson, :email, :phone, :address)
             ON DUPLICATE KEY UPDATE 
-            name=:name, contactPerson=:contactPerson, email=:email, phone=:phone, address=:address";
+            name=VALUES(name), contactPerson=VALUES(contactPerson), email=VALUES(email), phone=VALUES(phone), address=VALUES(address)";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([

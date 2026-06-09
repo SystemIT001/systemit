@@ -396,6 +396,7 @@ app.post('/api/users.php', (req, res) => {
   const data = req.body;
   // Verificar duplicados
   db.get('SELECT id FROM users WHERE username = ? AND id != ?', [data.username, data.id], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
     if (row) return res.status(409).json({ error: "El nombre de usuario ya está en uso" });
     
     const sql = `INSERT OR REPLACE INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)`;
@@ -412,6 +413,7 @@ app.put('/api/users.php', (req, res) => {
   const data = req.body;
   // Verificar duplicados
   db.get('SELECT id FROM users WHERE username = ? AND id != ?', [data.username, data.id], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
     if (row) return res.status(409).json({ error: "El nombre de usuario ya está en uso" });
     
     const sql = `INSERT OR REPLACE INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)`;
