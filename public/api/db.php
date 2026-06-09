@@ -34,8 +34,20 @@ try {
 // Función para verificar el token de autenticación
 function verifyAuth() {
     global $conn;
-    $headers = apache_request_headers();
-    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    
+    // Get authorization header safely across different server environments
+    $authHeader = '';
+    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $authHeader = trim($_SERVER['HTTP_AUTHORIZATION']);
+    } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        $authHeader = trim($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
+    } elseif (function_exists('apache_request_headers')) {
+        $requestHeaders = apache_request_headers();
+        $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
+        if (isset($requestHeaders['Authorization'])) {
+            $authHeader = trim($requestHeaders['Authorization']);
+        }
+    }
     
     if (!$authHeader || !preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
         http_response_code(401);
