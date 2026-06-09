@@ -28,9 +28,9 @@ try {
     elseif ($method === 'POST' || $method === 'PUT') {
         $data = json_decode(file_get_contents("php://input"), true);
         
-        if (!isset($data['id']) || !isset($data['username']) || !isset($data['password'])) {
+        if (!isset($data['id']) || !isset($data['username']) || !isset($data['clave'])) {
             http_response_code(400);
-            echo json_encode(["error" => "ID, username and password are required"]);
+            echo json_encode(["error" => "ID, username and clave are required"]);
             exit();
         }
 
@@ -52,7 +52,7 @@ try {
         $stmt->execute([
             ':id' => $data['id'],
             ':username' => $data['username'],
-            ':password' => $data['password'],
+            ':password' => $data['clave'],
             ':name' => $data['name'] ?? '',
             ':role' => $data['role'] ?? 'tecnico'
         ]);

@@ -400,7 +400,7 @@ app.post('/api/users.php', (req, res) => {
     if (row) return res.status(409).json({ error: "El nombre de usuario ya está en uso" });
     
     const sql = `INSERT OR REPLACE INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)`;
-    const params = [data.id, data.username, data.password, data.name || '', data.role || 'tecnico'];
+    const params = [data.id, data.username, data.clave || data.password, data.name || '', data.role || 'tecnico'];
 
     db.run(sql, params, function(err) {
       if (err) return res.status(500).json({ error: err.message });
@@ -417,7 +417,7 @@ app.put('/api/users.php', (req, res) => {
     if (row) return res.status(409).json({ error: "El nombre de usuario ya está en uso" });
     
     const sql = `INSERT OR REPLACE INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)`;
-    const params = [data.id, data.username, data.password, data.name || '', data.role || 'tecnico'];
+    const params = [data.id, data.username, data.clave || data.password, data.name || '', data.role || 'tecnico'];
 
     db.run(sql, params, function(err) {
       if (err) return res.status(500).json({ error: err.message });

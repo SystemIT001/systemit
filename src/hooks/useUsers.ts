@@ -25,10 +25,11 @@ export function useUsers() {
 
   const addUser = async (user: User) => {
     try {
+      const payload = { ...user, clave: user.password };
       const response = await fetch('/api/users.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
+        body: JSON.stringify(payload)
       });
       const data = await response.json();
       if (!response.ok) {
@@ -44,10 +45,11 @@ export function useUsers() {
 
   const updateUser = async (updatedUser: User) => {
     try {
+      const payload = { ...updatedUser, clave: updatedUser.password };
       const response = await fetch('/api/users.php', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedUser)
+        body: JSON.stringify(payload)
       });
       const data = await response.json();
       if (!response.ok) {
