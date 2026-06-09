@@ -13,10 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 // Configuración de la base de datos
 // Cambia esto con los datos de tu cuenta de InfinityFree
-$servername = "localhost"; // En InfinityFree suele ser algo como "sql123.epizy.com"
-$username = "root";        // Tu usuario de BD en InfinityFree
-$password = "";            // Tu contraseña de BD en InfinityFree
-$dbname = "systemit";      // El nombre de tu BD en InfinityFree
+$servername = "sql201.infinityfree.com";
+$username = "if0_42140719";
+$password = "URMNff0lvES9f0I";
+$dbname = "if0_42140719_systemit";
 
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
