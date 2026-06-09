@@ -189,7 +189,7 @@ const Settings: React.FC = () => {
                 <Download size={18} /> Descargar Respaldo (Backup)
               </h4>
               <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-                Genera un archivo .sqlite con toda la información actual del sistema. Es recomendable hacer esto de manera periódica.
+                Genera un archivo .json con toda la información actual del sistema. Es recomendable hacer esto de manera periódica.
               </p>
               <button onClick={handleBackup} className="btn-primary" style={{ backgroundColor: 'var(--success-color)' }}>
                 <Download size={18} />
@@ -213,7 +213,7 @@ const Settings: React.FC = () => {
 
               <input 
                 type="file" 
-                accept=".sqlite" 
+                accept=".json" 
                 ref={fileInputRef} 
                 onChange={handleRestore} 
                 style={{ display: 'none' }} 
