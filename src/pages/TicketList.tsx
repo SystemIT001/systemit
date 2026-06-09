@@ -3,7 +3,7 @@ import { Plus, Trash2, Save, Edit, Search } from 'lucide-react';
 import { useTickets } from '../hooks/useTickets';
 import { useClients } from '../hooks/useClients';
 import { generateId, formatCurrency } from '../utils';
-import { Ticket } from '../types';
+import type { Ticket } from '../types';
 
 const TicketList: React.FC = () => {
   const { tickets, addTicket, deleteTicket, loading } = useTickets();

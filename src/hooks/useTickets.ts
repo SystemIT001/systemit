@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Ticket } from '../types';
+import type { Ticket } from '../types';
 import { apiFetch } from '../utils/api';
 
 export const useTickets = () => {
@@ -9,7 +9,8 @@ export const useTickets = () => {
 
   const fetchTickets = async () => {
     try {
-      const data = await apiFetch('/api/tickets');
+      const response = await apiFetch('/api/tickets');
+      const data = await response.json();
       setTickets(data);
     } catch (err: any) {
       setError(err.message);
@@ -28,8 +29,9 @@ export const useTickets = () => {
         method: 'POST',
         body: JSON.stringify(ticket)
       });
-      if (response.lastUpdated) {
-        ticket.lastUpdated = response.lastUpdated;
+      const data = await response.json();
+      if (data.lastUpdated) {
+        ticket.lastUpdated = data.lastUpdated;
       }
       setTickets(prev => {
         const index = prev.findIndex(t => t.id === ticket.id);
