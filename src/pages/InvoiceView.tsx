@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { useProjects } from '../hooks/useProjects';
 import type { Project } from '../types';
+import { useSettings } from '../hooks/useSettings';
 import { formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual } from '../utils';
 
 const InvoiceView: React.FC = () => {
@@ -15,10 +16,8 @@ const InvoiceView: React.FC = () => {
   const { projects, loading, getProject } = useProjects();
   const [project, setProject] = useState<Project | null>(null);
 
-  const companyName = localStorage.getItem('inv_companyName') || 'Mi Empresa IT';
-  const subtitle = localStorage.getItem('inv_subtitle') || 'Reporte de Servicios y Equipos';
-  const docType = localStorage.getItem('inv_docType') || 'COTIZACIÓN';
-  const footerText = localStorage.getItem('inv_footerText') || 'Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.';
+  const { settings, loading: settingsLoading } = useSettings();
+  const { companyName, subtitle, docType, footerText } = settings;
 
   useEffect(() => {
     if (id && !loading) {
@@ -27,7 +26,7 @@ const InvoiceView: React.FC = () => {
     }
   }, [id, projects, loading]);
 
-  if (loading) return <div style={{ padding: '2rem' }}>Cargando factura...</div>;
+  if (loading || settingsLoading) return <div style={{ padding: '2rem' }}>Cargando factura...</div>;
   if (!project) return <div style={{ padding: '2rem' }}>Proyecto no encontrado.</div>;
 
   const handleDownloadPDF = async () => {

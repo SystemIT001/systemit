@@ -5,10 +5,6 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
   const checkAuth = () => {
     const storedAuth = localStorage.getItem('systemit_auth');
     const isLoginPage = window.location.pathname.includes('login.html');
@@ -29,39 +25,25 @@ export function useAuth() {
 
   const login = async (username: string, password: string): Promise<{success: boolean, error?: string}> => {
     try {
-      const response = await fetch('/api/users.php');
+      const response = await fetch('/api/users.php?action=login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, clave: password })
+      });
+      
+      const data = await response.json();
+
       if (!response.ok) {
-        const text = await response.text();
-        return { success: false, error: `Error del servidor: ${response.status} - ${text.substring(0, 50)}` };
+        return { success: false, error: data.error || `Error del servidor: ${response.status}` };
       }
       
-      const text = await response.text();
-      let users: any[];
-      try {
-        users = JSON.parse(text);
-      } catch (e) {
-        return { success: false, error: `Respuesta no es JSON: ${text.substring(0, 100)}` };
-      }
-      
-      const foundUser = users.find(u => u.username === username && (u.password === password || u.clave === password));
-      if (foundUser) {
-        const userData: User = {
-          id: foundUser.id,
-          username: foundUser.username,
-          role: foundUser.role as 'admin' | 'tecnico',
-          name: foundUser.name
-        };
+      if (data.success && data.token) {
+        const userData = { ...data.user, token: data.token };
         localStorage.setItem('systemit_auth', JSON.stringify(userData));
         setUser(userData);
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const returnUrl = urlParams.get('returnUrl') || '/views/proyectos.html';
-        
-        if (!window.location.pathname.includes(returnUrl)) {
-          window.location.href = returnUrl;
-        }
         return { success: true };
       }
+      
       return { success: false, error: 'Usuario o contraseña incorrectos' };
     } catch (error: any) {
       console.error("Error en login:", error);

@@ -1,18 +1,15 @@
 import { useState, useEffect } from 'react';
 import type { User } from '../types';
+import { apiFetch } from '../utils/api';
 
 export function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/users.php');
+      const response = await apiFetch('/api/users.php');
       if (!response.ok) throw new Error('Failed to load users');
       const data = await response.json();
       setUsers(Array.isArray(data) ? data : []);
@@ -23,10 +20,14 @@ export function useUsers() {
     }
   };
 
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
   const addUser = async (user: User) => {
     try {
       const payload = { ...user, clave: user.password };
-      const response = await fetch('/api/users.php', {
+      const response = await apiFetch('/api/users.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -46,7 +47,7 @@ export function useUsers() {
   const updateUser = async (updatedUser: User) => {
     try {
       const payload = { ...updatedUser, clave: updatedUser.password };
-      const response = await fetch('/api/users.php', {
+      const response = await apiFetch('/api/users.php', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -69,7 +70,7 @@ export function useUsers() {
 
   const deleteUser = async (id: string) => {
     try {
-      const response = await fetch(`/api/users.php?id=${id}`, {
+      const response = await apiFetch(`/api/users.php?id=${id}`, {
         method: 'DELETE'
       });
       const data = await response.json();

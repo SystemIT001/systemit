@@ -27,4 +27,32 @@ try {
     echo json_encode(["error" => "Connection failed: " . $e->getMessage()]);
     exit();
 }
+
+// Función para verificar el token de autenticación
+function verifyAuth() {
+    global $conn;
+    $headers = apache_request_headers();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    
+    if (!$authHeader || !preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
+        http_response_code(401);
+        echo json_encode(["error" => "Unauthorized"]);
+        exit();
+    }
+    
+    $token = $matches[1];
+    
+    // Verificar que el token existe en la base de datos
+    $stmt = $conn->prepare("SELECT id, username, role, name FROM users WHERE token = :token");
+    $stmt->execute([':token' => $token]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(["error" => "Invalid token"]);
+        exit();
+    }
+    
+    return $user;
+}
 ?>

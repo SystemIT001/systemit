@@ -1,7 +1,15 @@
 <?php
 require_once 'db.php';
+verifyAuth();
 
 $method = $_SERVER['REQUEST_METHOD'];
+
+// Ensure lastUpdated column exists (MySQL)
+try {
+    $conn->exec("ALTER TABLE projects ADD COLUMN lastUpdated BIGINT");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
 
 if ($method === 'GET') {
     // Obtener todos los proyectos
@@ -51,12 +59,30 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $tasks = json_encode($data['tasks'] ?? []);
     $images = json_encode($data['images'] ?? []);
 
+    $currentLastUpdated = round(microtime(true) * 1000);
+    
+    // Check concurrency for PUT
+    if ($method === 'PUT') {
+        $stmt = $conn->prepare("SELECT lastUpdated FROM projects WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $clientLastUpdated = isset($data['lastUpdated']) ? intval($data['lastUpdated']) : 0;
+        $dbLastUpdated = ($row && isset($row['lastUpdated'])) ? intval($row['lastUpdated']) : 0;
+        
+        if ($dbLastUpdated > 0 && $clientLastUpdated > 0 && $dbLastUpdated > $clientLastUpdated) {
+            http_response_code(409);
+            echo json_encode(["error" => "Conflicto de guardado: El proyecto fue modificado por otro usuario mientras lo estabas editando. Refresca la página para ver los cambios."]);
+            exit();
+        }
+    }
+
     // Intentar insertar o actualizar si el ID ya existe (UPSERT)
-    $sql = "INSERT INTO projects (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, invoices, payments, expenses, tasks, images) 
-            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :invoices, :payments, :expenses, :tasks, :images)
+    $sql = "INSERT INTO projects (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, invoices, payments, expenses, tasks, images, lastUpdated) 
+            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :invoices, :payments, :expenses, :tasks, :images, :lastUpdated)
             ON DUPLICATE KEY UPDATE 
             clientId=:clientId, clientName=:clientName, projectName=:projectName, projectCode=:projectCode, date=:date, status=:status, 
-            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, invoices=:invoices, payments=:payments, expenses=:expenses, tasks=:tasks, images=:images";
+            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, invoices=:invoices, payments=:payments, expenses=:expenses, tasks=:tasks, images=:images, lastUpdated=:lastUpdated";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([
@@ -75,10 +101,11 @@ elseif ($method === 'POST' || $method === 'PUT') {
         ':payments' => $payments,
         ':expenses' => $expenses,
         ':tasks' => $tasks,
-        ':images' => $images
+        ':images' => $images,
+        ':lastUpdated' => $currentLastUpdated
     ]);
 
-    echo json_encode(["success" => true, "message" => "Project saved successfully"]);
+    echo json_encode(["success" => true, "message" => "Project saved successfully", "lastUpdated" => $currentLastUpdated]);
 }
 elseif ($method === 'DELETE') {
     // Eliminar un proyecto

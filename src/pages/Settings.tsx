@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Save, Settings as SettingsIcon, Building2, Database, Download, Upload, AlertTriangle, Users, Plus, Trash2, Edit2 } from 'lucide-react';
 import { useUsers } from '../hooks/useUsers';
 import { useAuth } from '../hooks/useAuth';
+import { useSettings } from '../hooks/useSettings';
 
 const Settings: React.FC = () => {
   const [companyName, setCompanyName] = useState('');
@@ -22,19 +23,20 @@ const Settings: React.FC = () => {
   const [userForm, setUserForm] = useState({ id: '', username: '', password: '', name: '', role: 'tecnico' });
   const [userError, setUserError] = useState('');
 
-  useEffect(() => {
-    setCompanyName(localStorage.getItem('inv_companyName') || 'Mi Empresa IT');
-    setSubtitle(localStorage.getItem('inv_subtitle') || 'Reporte de Servicios y Equipos');
-    setDocType(localStorage.getItem('inv_docType') || 'COTIZACIÓN');
-    setFooterText(localStorage.getItem('inv_footerText') || 'Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.');
-  }, []);
+  const { settings, loading: settingsLoading, saveSettings } = useSettings();
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!settingsLoading) {
+      setCompanyName(settings.companyName);
+      setSubtitle(settings.subtitle);
+      setDocType(settings.docType);
+      setFooterText(settings.footerText);
+    }
+  }, [settings, settingsLoading]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('inv_companyName', companyName);
-    localStorage.setItem('inv_subtitle', subtitle);
-    localStorage.setItem('inv_docType', docType);
-    localStorage.setItem('inv_footerText', footerText);
+    await saveSettings({ companyName, subtitle, docType, footerText });
     
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);

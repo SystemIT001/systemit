@@ -87,6 +87,25 @@ function initDB() {
       db.run(`ALTER TABLE projects ADD COLUMN tasks TEXT`, () => {});
       db.run(`ALTER TABLE projects ADD COLUMN clientId TEXT`, () => {});
       db.run(`ALTER TABLE projects ADD COLUMN images TEXT`, () => {});
+      db.run(`ALTER TABLE projects ADD COLUMN lastUpdated TEXT`, () => {});
+
+      db.run(`CREATE TABLE IF NOT EXISTS purchases (
+        id TEXT PRIMARY KEY,
+        supplierName TEXT,
+        date TEXT,
+        amount REAL,
+        description TEXT,
+        status TEXT,
+        paymentMethod TEXT
+      )`);
+
+      db.run(`CREATE TABLE IF NOT EXISTS settings (
+        id TEXT PRIMARY KEY,
+        companyName TEXT,
+        subtitle TEXT,
+        docType TEXT,
+        footerText TEXT
+      )`);
 
       db.run(`CREATE TABLE IF NOT EXISTS inventory (
         id TEXT PRIMARY KEY,
@@ -111,9 +130,11 @@ function initDB() {
         username TEXT UNIQUE,
         password TEXT,
         name TEXT,
-        role TEXT
+        role TEXT,
+        token TEXT
       )`, (err) => {
         if (!err) {
+          db.run(`ALTER TABLE users ADD COLUMN token TEXT`, () => {});
           // Si es la primera vez (tabla recién creada/vacía), insertar admin
           db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
             if (row && row.count === 0) {
@@ -247,18 +268,20 @@ app.post('/api/projects.php', (req, res) => {
   const tasks = JSON.stringify(data.tasks || []);
   const images = JSON.stringify(data.images || []);
 
+  const currentLastUpdated = Date.now();
+
   const sql = `INSERT OR REPLACE INTO projects 
-    (id, clientId, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, images) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    (id, clientId, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, images, lastUpdated) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const params = [
     data.id, data.clientId || null, data.clientName, data.projectName, data.date, data.status, 
-    data.exchangeRate || 36.62, materials, equipments, labor, invoices, payments, data.projectCode || null, expenses, tasks, images
+    data.exchangeRate || 36.62, materials, equipments, labor, invoices, payments, data.projectCode || null, expenses, tasks, images, currentLastUpdated.toString()
   ];
 
   db.run(sql, params, function(err) {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
+    res.json({ success: true, lastUpdated: currentLastUpdated });
   });
 });
 
@@ -273,18 +296,30 @@ app.put('/api/projects.php', (req, res) => {
   const tasks = JSON.stringify(data.tasks || []);
   const images = JSON.stringify(data.images || []);
 
-  const sql = `INSERT OR REPLACE INTO projects 
-    (id, clientId, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, images) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const currentLastUpdated = Date.now();
 
-  const params = [
-    data.id, data.clientId || null, data.clientName, data.projectName, data.date, data.status, 
-    data.exchangeRate || 36.62, materials, equipments, labor, invoices, payments, data.projectCode || null, expenses, tasks, images
-  ];
-
-  db.run(sql, params, function(err) {
+  db.get('SELECT lastUpdated FROM projects WHERE id = ?', [data.id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
+    
+    if (row && row.lastUpdated && data.lastUpdated && parseInt(row.lastUpdated) > data.lastUpdated) {
+      return res.status(409).json({ 
+        error: "Conflicto de guardado: El proyecto fue modificado por otro usuario mientras lo estabas editando. Refresca la página para ver los cambios." 
+      });
+    }
+
+    const sql = `INSERT OR REPLACE INTO projects 
+      (id, clientId, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, images, lastUpdated) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    const params = [
+      data.id, data.clientId || null, data.clientName, data.projectName, data.date, data.status, 
+      data.exchangeRate || 36.62, materials, equipments, labor, invoices, payments, data.projectCode || null, expenses, tasks, images, currentLastUpdated.toString()
+    ];
+
+    db.run(sql, params, function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, lastUpdated: currentLastUpdated });
+    });
   });
 });
 
@@ -394,6 +429,27 @@ app.get('/api/users.php', (req, res) => {
 
 app.post('/api/users.php', (req, res) => {
   const data = req.body;
+  const action = req.query.action;
+
+  if (action === 'login') {
+    db.get('SELECT * FROM users WHERE username = ?', [data.username], (err, user) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!user || user.username !== data.username) return res.status(401).json({ error: 'Usuario no encontrado' });
+      
+      // Simple hash check or plain text fallback for dev
+      if (user.password === data.password || user.password === data.clave) {
+        const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        db.run('UPDATE users SET token = ? WHERE id = ?', [token, user.id], (err) => {
+          if (err) return res.status(500).json({ error: err.message });
+          res.json({ success: true, token, user: { id: user.id, username: user.username, role: user.role, name: user.name } });
+        });
+      } else {
+        res.status(401).json({ error: 'Contraseña incorrecta' });
+      }
+    });
+    return;
+  }
+
   // Verificar duplicados
   db.get('SELECT id FROM users WHERE username = ? AND id != ?', [data.username, data.id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -448,6 +504,70 @@ app.delete('/api/users.php', (req, res) => {
       res.json({ success: true });
     });
   }
+});
+
+// --- Rutas para Compras ---
+app.get('/api/purchases.php', (req, res) => {
+  db.all('SELECT * FROM purchases', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.post('/api/purchases.php', (req, res) => {
+  const data = req.body;
+  const sql = `INSERT OR REPLACE INTO purchases (id, supplierName, date, amount, description, status, paymentMethod) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const params = [data.id, data.supplierName, data.date, data.amount, data.description, data.status, data.paymentMethod];
+  db.run(sql, params, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+app.put('/api/purchases.php', (req, res) => {
+  const data = req.body;
+  const sql = `INSERT OR REPLACE INTO purchases (id, supplierName, date, amount, description, status, paymentMethod) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const params = [data.id, data.supplierName, data.date, data.amount, data.description, data.status, data.paymentMethod];
+  db.run(sql, params, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+app.delete('/api/purchases.php', (req, res) => {
+  const { id } = req.query;
+  db.run('DELETE FROM purchases WHERE id = ?', id, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+// --- Rutas para Configuraciones ---
+app.get('/api/settings.php', (req, res) => {
+  db.get('SELECT * FROM settings WHERE id = ?', ['global'], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (row) {
+      res.json(row);
+    } else {
+      res.json({
+        id: 'global',
+        companyName: 'Mi Empresa IT',
+        subtitle: 'Reporte de Servicios y Equipos',
+        docType: 'COTIZACIÓN',
+        footerText: 'Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.'
+      });
+    }
+  });
+});
+
+app.post('/api/settings.php', (req, res) => {
+  const data = req.body;
+  const sql = `INSERT OR REPLACE INTO settings (id, companyName, subtitle, docType, footerText) VALUES ('global', ?, ?, ?, ?)`;
+  const params = [data.companyName, data.subtitle, data.docType, data.footerText];
+  db.run(sql, params, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
 });
 
 app.listen(port, () => {

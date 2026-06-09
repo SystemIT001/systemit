@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { InventoryItem } from '../types';
+import { apiFetch } from '../utils/api';
 
 const API_URL = '/api/inventory.php';
 
@@ -8,7 +9,7 @@ export const useInventory = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then(res => res.json())
       .then(data => {
         setInventory(data);
@@ -22,7 +23,7 @@ export const useInventory = () => {
 
   const addInventoryItem = async (item: InventoryItem) => {
     setInventory(prev => [...prev, item]);
-    await fetch(API_URL, {
+    await apiFetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item)
@@ -31,7 +32,7 @@ export const useInventory = () => {
 
   const updateInventoryItem = async (item: InventoryItem) => {
     setInventory(prev => prev.map(i => i.id === item.id ? item : i));
-    await fetch(API_URL, {
+    await apiFetch(API_URL, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item)
@@ -40,7 +41,7 @@ export const useInventory = () => {
 
   const deleteInventoryItem = async (id: string) => {
     setInventory(prev => prev.filter(i => i.id !== id));
-    await fetch(`${API_URL}?id=${id}`, {
+    await apiFetch(`${API_URL}?id=${id}`, {
       method: 'DELETE'
     });
   };

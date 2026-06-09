@@ -1,18 +1,15 @@
 import { useState, useEffect } from 'react';
 import type { Client } from '../types';
+import { apiFetch } from '../utils/api';
 
 export function useClients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadClients();
-  }, []);
-
   const loadClients = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/clients.php');
+      const response = await apiFetch('/api/clients.php');
       if (!response.ok) throw new Error('Failed to load clients');
       const data = await response.json();
       setClients(Array.isArray(data) ? data : []);
@@ -30,7 +27,7 @@ export function useClients() {
 
   const addClient = async (client: Client) => {
     try {
-      const response = await fetch('/api/clients.php', {
+      const response = await apiFetch('/api/clients.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(client)
@@ -45,7 +42,7 @@ export function useClients() {
 
   const updateClient = async (updatedClient: Client) => {
     try {
-      const response = await fetch('/api/clients.php', {
+      const response = await apiFetch('/api/clients.php', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedClient)
@@ -64,7 +61,7 @@ export function useClients() {
 
   const deleteClient = async (id: string) => {
     try {
-      const response = await fetch(`/api/clients.php?id=${id}`, {
+      const response = await apiFetch(`/api/clients.php?id=${id}`, {
         method: 'DELETE'
       });
       if (!response.ok) throw new Error('Failed to delete client');

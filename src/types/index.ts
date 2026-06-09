@@ -97,6 +97,7 @@ export interface Project {
   expenses?: ExpenseItem[];
   tasks?: ProjectTask[];
   images?: ProjectImage[];
+  lastUpdated?: number;
 }
 
 export interface PurchaseItem {

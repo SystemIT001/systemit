@@ -1,5 +1,6 @@
 <?php
 require_once 'db.php';
+verifyAuth();
 
 $method = $_SERVER['REQUEST_METHOD'];
 

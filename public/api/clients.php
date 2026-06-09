@@ -1,5 +1,6 @@
 <?php
 require_once 'db.php';
+verifyAuth();
 
 // Auto-create clients table if not exists (This runs only once when needed)
 $conn->exec("CREATE TABLE IF NOT EXISTS clients (

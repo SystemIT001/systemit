@@ -107,7 +107,7 @@ const ProjectDetail: React.FC = () => {
       currency: itemCurrency
     };
 
-    let updatedProject = { ...project };
+    const updatedProject = { ...project };
 
     let targetTab = activeTab as string;
     if (activeTab === 'additionals') {
@@ -142,7 +142,7 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleImportedItems = (items: any[], invoiceData: InvoiceFile) => {
-    let updatedProject = { ...project };
+    const updatedProject = { ...project };
     
     items.forEach(item => {
       // Calculate how much goes to the project vs inventory
@@ -200,7 +200,7 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleDeleteItem = (tab: 'materials'|'equipments'|'labor', itemId: string) => {
-    let updatedProject = { ...project };
+    const updatedProject = { ...project };
     updatedProject[tab] = updatedProject[tab].filter((item: any) => item.id !== itemId) as any;
     setProject(updatedProject);
     updateProject(updatedProject);
@@ -208,7 +208,7 @@ const ProjectDetail: React.FC = () => {
 
   const handleSaveEdit = () => {
     if (!editingItem || !project) return;
-    let updatedProject = { ...project };
+    const updatedProject = { ...project };
     const items = updatedProject[editingItem.type] as any[];
     const idx = items.findIndex(i => i.id === editingItem.id);
     if (idx !== -1) {
@@ -222,7 +222,7 @@ const ProjectDetail: React.FC = () => {
 
   const handleDeleteInvoice = (index: number) => {
     if (window.confirm('¿Estás seguro de eliminar este documento adjunto?')) {
-      let updatedProject = { ...project };
+      const updatedProject = { ...project };
       updatedProject.invoices = updatedProject.invoices?.filter((_, i) => i !== index);
       setProject(updatedProject);
       updateProject(updatedProject);
@@ -241,7 +241,7 @@ const ProjectDetail: React.FC = () => {
       currency: paymentCurrency
     };
 
-    let updatedProject = { ...project! };
+    const updatedProject = { ...project! };
     updatedProject.payments = [...(updatedProject.payments || []), newPayment];
     setProject(updatedProject);
     
@@ -250,7 +250,7 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleDeletePayment = (id: string) => {
-    let updatedProject = { ...project! };
+    const updatedProject = { ...project! };
     updatedProject.payments = updatedProject.payments?.filter(p => p.id !== id);
     setProject(updatedProject);
   };
@@ -268,7 +268,7 @@ const ProjectDetail: React.FC = () => {
       currency: expenseCurrency
     };
 
-    let updatedProject = { ...project! };
+    const updatedProject = { ...project! };
     updatedProject.expenses = [...(updatedProject.expenses || []), newExpense as any];
     setProject(updatedProject);
     
@@ -277,7 +277,7 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleDeleteExpense = (id: string) => {
-    let updatedProject = { ...project! };
+    const updatedProject = { ...project! };
     updatedProject.expenses = updatedProject.expenses?.filter(e => e.id !== id);
     setProject(updatedProject);
   };
@@ -307,7 +307,7 @@ const ProjectDetail: React.FC = () => {
       });
       const data = await response.json();
       
-      let updatedProject = { ...project! };
+      const updatedProject = { ...project! };
       const payment = updatedProject.payments?.find(p => p.id === paymentId);
       if (payment) {
         // Guardamos la URL estática del backend
@@ -330,7 +330,7 @@ const ProjectDetail: React.FC = () => {
       status: 'pending' as const
     };
 
-    let updatedProject = { ...project! };
+    const updatedProject = { ...project! };
     updatedProject.tasks = [...(updatedProject.tasks || []), newTask];
     setProject(updatedProject);
     updateProject(updatedProject);
@@ -339,7 +339,7 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleUpdateTaskStatus = (id: string, status: 'pending' | 'in_progress' | 'completed') => {
-    let updatedProject = { ...project! };
+    const updatedProject = { ...project! };
     const task = updatedProject.tasks?.find(t => t.id === id);
     if (task) {
       task.status = status;
@@ -349,7 +349,7 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleDeleteTask = (id: string) => {
-    let updatedProject = { ...project! };
+    const updatedProject = { ...project! };
     updatedProject.tasks = updatedProject.tasks?.filter(t => t.id !== id);
     setProject(updatedProject);
     updateProject(updatedProject);
@@ -389,7 +389,7 @@ const ProjectDetail: React.FC = () => {
         dateAdded: new Date().toISOString()
       };
       
-      let updatedProject = { ...project! };
+      const updatedProject = { ...project! };
       const currentInvoices = updatedProject.invoices || [];
       updatedProject.invoices = [...currentInvoices, invoiceData];
       
@@ -405,8 +405,8 @@ const ProjectDetail: React.FC = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    let updatedProject = { ...project! };
-    let currentImages = updatedProject.images || [];
+    const updatedProject = { ...project! };
+    const currentImages = updatedProject.images || [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -441,8 +441,8 @@ const ProjectDetail: React.FC = () => {
 
   const handleDeleteImage = (index: number) => {
     if (!window.confirm("¿Seguro que deseas eliminar esta imagen?")) return;
-    let updatedProject = { ...project! };
-    let currentImages = updatedProject.images || [];
+    const updatedProject = { ...project! };
+    const currentImages = updatedProject.images || [];
     currentImages.splice(index, 1);
     updatedProject.images = currentImages;
     updateProject(updatedProject);
@@ -568,7 +568,7 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleUpdatePurchasedQuantity = (tab: 'materials'|'equipments', itemId: string, quantity: number) => {
-    let updatedProject = { ...project };
+    const updatedProject = { ...project };
     const items = updatedProject[tab] as any[];
     const item = items.find((i: any) => i.id === itemId);
     if (item) {

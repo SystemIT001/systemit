@@ -8,7 +8,8 @@ try {
       username VARCHAR(255) UNIQUE,
       password VARCHAR(255),
       name VARCHAR(255),
-      role VARCHAR(50)
+      role VARCHAR(50),
+      token VARCHAR(255)
     )");
 
     // Insert default admin if table is empty
@@ -21,13 +22,57 @@ try {
     $method = $_SERVER['REQUEST_METHOD'];
 
     if ($method === 'GET') {
+        verifyAuth();
         // Renombrar password a clave en la respuesta para evitar que el Firewall WAF lo bloquee
         $stmt = $conn->query("SELECT id, username, password as clave, name, role FROM users");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($users);
     }
     elseif ($method === 'POST' || $method === 'PUT') {
+        $action = $_GET['action'] ?? '';
         $data = json_decode(file_get_contents("php://input"), true);
+        
+        if ($action === 'login') {
+            if (!isset($data['username']) || !isset($data['clave'])) {
+                http_response_code(400);
+                echo json_encode(["error" => "Username and clave are required"]);
+                exit();
+            }
+            
+            $stmt = $conn->prepare("SELECT * FROM users WHERE BINARY username = :username");
+            $stmt->execute([':username' => $data['username']]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$user) {
+                http_response_code(401);
+                echo json_encode(["error" => "Usuario no encontrado"]);
+                exit();
+            }
+            
+            // Allow password_verify or fallback to plain text for dev
+            if (password_verify($data['clave'], $user['password']) || $user['password'] === $data['clave']) {
+                $token = bin2hex(random_bytes(32));
+                $updateToken = $conn->prepare("UPDATE users SET token = :token WHERE id = :id");
+                $updateToken->execute([':token' => $token, ':id' => $user['id']]);
+                
+                echo json_encode([
+                    "success" => true,
+                    "token" => $token,
+                    "user" => [
+                        "id" => $user['id'],
+                        "username" => $user['username'],
+                        "role" => $user['role'],
+                        "name" => $user['name']
+                    ]
+                ]);
+            } else {
+                http_response_code(401);
+                echo json_encode(["error" => "Contraseña incorrecta"]);
+            }
+            exit();
+        }
+        
+        verifyAuth();
         
         if (!isset($data['id']) || !isset($data['username']) || !isset($data['clave'])) {
             http_response_code(400);
@@ -49,11 +94,13 @@ try {
                 ON DUPLICATE KEY UPDATE 
                 username=VALUES(username), password=VALUES(password), name=VALUES(name), role=VALUES(role)";
                 
+        $hashed_password = password_hash($data['clave'], PASSWORD_DEFAULT);
+                
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':id' => $data['id'],
             ':username' => $data['username'],
-            ':password' => $data['clave'],
+            ':password' => $hashed_password,
             ':name' => $data['name'] ?? '',
             ':role' => $data['role'] ?? 'tecnico'
         ]);
@@ -61,6 +108,7 @@ try {
         echo json_encode(["success" => true, "message" => "User saved successfully"]);
     }
     elseif ($method === 'DELETE') {
+        verifyAuth();
         $id = $_GET['id'] ?? null;
         if (!$id) {
             http_response_code(400);
