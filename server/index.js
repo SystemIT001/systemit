@@ -96,6 +96,32 @@ function initDB() {
         category TEXT,
         lastUpdated TEXT
       )`);
+
+      db.run(`CREATE TABLE IF NOT EXISTS clients (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        contactPerson TEXT,
+        email TEXT,
+        phone TEXT,
+        address TEXT
+      )`);
+
+      db.run(`CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT UNIQUE,
+        password TEXT,
+        name TEXT,
+        role TEXT
+      )`, (err) => {
+        if (!err) {
+          // Si es la primera vez (tabla recién creada/vacía), insertar admin
+          db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
+            if (row && row.count === 0) {
+              db.run("INSERT INTO users (id, username, password, name, role) VALUES ('1', 'admin', 'admin', 'Administrador General', 'admin')");
+            }
+          });
+        }
+      });
     }
   });
 }
@@ -104,39 +130,88 @@ function initDB() {
 initDB();
 
 // --- Rutas de Respaldo y Restauración ---
-app.get('/api/backup', (req, res) => {
-  const dateStr = new Date().toISOString().replace(/[:.]/g, '-');
-  res.download(dbPath, `SystemIT_Backup_${dateStr}.sqlite`);
+app.get('/api/backup.php', (req, res) => {
+  const backup = { projects: [], inventory: [], clients: [] };
+  
+  db.all('SELECT * FROM projects', [], (err, projects) => {
+    backup.projects = projects;
+    db.all('SELECT * FROM inventory', [], (err, inventory) => {
+      backup.inventory = inventory;
+      db.all('SELECT * FROM clients', [], (err, clients) => {
+        backup.clients = clients;
+        db.all('SELECT * FROM users', [], (err, users) => {
+          backup.users = users;
+          const dateStr = new Date().toISOString().replace(/[:.]/g, '-');
+          const filename = `SystemIT_Backup_${dateStr}.json`;
+          
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+          res.send(JSON.stringify(backup));
+        });
+      });
+    });
+  });
 });
 
-app.post('/api/restore', upload.single('file'), (req, res) => {
+app.post('/api/restore.php', upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded for restore' });
   }
 
-  // 1. Cerrar conexión a la Base de Datos actual
-  db.close((err) => {
-    if (err) {
-      console.error('Error cerrando BD para restaurar:', err);
-      return res.status(500).json({ error: 'Error cerrando la base de datos actual.' });
+  fs.readFile(req.file.path, 'utf8', (err, jsonString) => {
+    if (err) return res.status(500).json({ error: 'Error reading file' });
+
+    try {
+      const data = JSON.parse(jsonString);
+      
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
+
+        if (data.projects) {
+          db.run('DELETE FROM projects');
+          const stmt = db.prepare('INSERT INTO projects (id, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, clientId, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+          data.projects.forEach(p => stmt.run(p.id, p.clientName, p.projectName, p.date, p.status, p.exchangeRate, p.materials, p.equipments, p.labor, p.invoices, p.payments, p.projectCode, p.expenses, p.tasks, p.clientId, p.images));
+          stmt.finalize();
+        }
+
+        if (data.inventory) {
+          db.run('DELETE FROM inventory');
+          const stmt = db.prepare('INSERT INTO inventory (id, name, unitCost, stockQuantity, category, lastUpdated) VALUES (?, ?, ?, ?, ?, ?)');
+          data.inventory.forEach(i => stmt.run(i.id, i.name, i.unitCost, i.stockQuantity, i.category, i.lastUpdated));
+          stmt.finalize();
+        }
+
+        if (data.clients) {
+          db.run('DELETE FROM clients');
+          const stmt = db.prepare('INSERT INTO clients (id, name, contactPerson, email, phone, address) VALUES (?, ?, ?, ?, ?, ?)');
+          data.clients.forEach(c => stmt.run(c.id, c.name, c.contactPerson, c.email, c.phone, c.address));
+          stmt.finalize();
+        }
+
+        if (data.users) {
+          db.run('DELETE FROM users');
+          const stmt = db.prepare('INSERT INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)');
+          if (data.users.length > 0) {
+            data.users.forEach(u => stmt.run(u.id, u.username, u.password, u.name, u.role));
+          } else {
+            stmt.run('1', 'admin', 'admin', 'Administrador General', 'admin');
+          }
+          stmt.finalize();
+        }
+
+        db.run('COMMIT', (err) => {
+          if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Restore failed' });
+          }
+          fs.unlink(req.file.path, () => {});
+          res.json({ success: true, message: 'Database restored successfully' });
+        });
+      });
+
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid JSON file' });
     }
-
-    // 2. Reemplazar archivo de BD
-    fs.copyFile(req.file.path, dbPath, (copyErr) => {
-      if (copyErr) {
-        console.error('Error sobreescribiendo BD:', copyErr);
-        // Si falla, intentamos reconectar la vieja
-        initDB();
-        return res.status(500).json({ error: 'Error sobreescribiendo el archivo de base de datos.' });
-      }
-
-      // 3. Borrar el archivo subido temporalmente
-      fs.unlink(req.file.path, () => {});
-
-      // 4. Reconectar a la nueva BD
-      initDB();
-      res.json({ success: true, message: 'Base de datos restaurada correctamente.' });
-    });
   });
 });
 
@@ -263,6 +338,114 @@ app.delete('/api/inventory.php', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
+});
+
+// --- Rutas para Clientes ---
+app.get('/api/clients.php', (req, res) => {
+  db.all('SELECT * FROM clients', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.post('/api/clients.php', (req, res) => {
+  const data = req.body;
+  const sql = `INSERT OR REPLACE INTO clients 
+    (id, name, contactPerson, email, phone, address) 
+    VALUES (?, ?, ?, ?, ?, ?)`;
+
+  const params = [data.id, data.name, data.contactPerson, data.email, data.phone, data.address];
+
+  db.run(sql, params, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+app.put('/api/clients.php', (req, res) => {
+  const data = req.body;
+  const sql = `INSERT OR REPLACE INTO clients 
+    (id, name, contactPerson, email, phone, address) 
+    VALUES (?, ?, ?, ?, ?, ?)`;
+
+  const params = [data.id, data.name, data.contactPerson, data.email, data.phone, data.address];
+
+  db.run(sql, params, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+app.delete('/api/clients.php', (req, res) => {
+  const { id } = req.query;
+  db.run('DELETE FROM clients WHERE id = ?', id, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+// --- Rutas para Usuarios ---
+app.get('/api/users.php', (req, res) => {
+  db.all('SELECT * FROM users', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.post('/api/users.php', (req, res) => {
+  const data = req.body;
+  // Verificar duplicados
+  db.get('SELECT id FROM users WHERE username = ? AND id != ?', [data.username, data.id], (err, row) => {
+    if (row) return res.status(409).json({ error: "El nombre de usuario ya está en uso" });
+    
+    const sql = `INSERT OR REPLACE INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)`;
+    const params = [data.id, data.username, data.password, data.name || '', data.role || 'tecnico'];
+
+    db.run(sql, params, function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    });
+  });
+});
+
+app.put('/api/users.php', (req, res) => {
+  const data = req.body;
+  // Verificar duplicados
+  db.get('SELECT id FROM users WHERE username = ? AND id != ?', [data.username, data.id], (err, row) => {
+    if (row) return res.status(409).json({ error: "El nombre de usuario ya está en uso" });
+    
+    const sql = `INSERT OR REPLACE INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)`;
+    const params = [data.id, data.username, data.password, data.name || '', data.role || 'tecnico'];
+
+    db.run(sql, params, function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    });
+  });
+});
+
+app.delete('/api/users.php', (req, res) => {
+  const { id } = req.query;
+  
+  db.get('SELECT role FROM users WHERE id = ?', [id], (err, row) => {
+    if (row && row.role === 'admin') {
+      db.get("SELECT COUNT(*) as count FROM users WHERE role = 'admin'", [], (err, row2) => {
+        if (row2 && row2.count <= 1) {
+          return res.status(403).json({ error: "No puedes eliminar al último administrador del sistema" });
+        }
+        deleteUser();
+      });
+    } else {
+      deleteUser();
+    }
+  });
+
+  function deleteUser() {
+    db.run('DELETE FROM users WHERE id = ?', id, function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    });
+  }
 });
 
 app.listen(port, () => {

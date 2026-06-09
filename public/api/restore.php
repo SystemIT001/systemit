@@ -86,6 +86,25 @@ try {
         }
     }
 
+    // Restore users
+    if (isset($data['users']) && is_array($data['users'])) {
+        $conn->exec("CREATE TABLE IF NOT EXISTS users (id VARCHAR(50) PRIMARY KEY, username VARCHAR(255) UNIQUE, password VARCHAR(255), name VARCHAR(255), role VARCHAR(50))");
+        $conn->exec("DELETE FROM users"); // Clear table
+        
+        if (count($data['users']) > 0) {
+            $stmt = $conn->prepare("INSERT INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)");
+            
+            foreach ($data['users'] as $u) {
+                $stmt->execute([
+                    $u['id'], $u['username'], $u['password'], $u['name'] ?? '', $u['role'] ?? 'tecnico'
+                ]);
+            }
+        } else {
+            // Seed default admin if user backup is empty
+            $conn->exec("INSERT INTO users (id, username, password, name, role) VALUES ('1', 'admin', 'admin', 'Administrador General', 'admin')");
+        }
+    }
+
     $conn->commit();
     echo json_encode(["success" => true, "message" => "Database restored successfully"]);
 

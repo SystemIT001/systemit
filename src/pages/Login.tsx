@@ -8,14 +8,17 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     
-    if (login(username, password)) {
+    const success = await login(username, password);
+    if (success) {
       const urlParams = new URLSearchParams(window.location.search);
       const returnUrl = urlParams.get('returnUrl') || '/views/proyectos.html';
       if (!window.location.pathname.includes(returnUrl)) {
@@ -23,6 +26,7 @@ const Login: React.FC = () => {
       }
     } else {
       setError('Usuario o contraseña incorrectos');
+      setLoading(false);
     }
   };
 
@@ -115,9 +119,9 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          <button type="submit" className="btn-primary" style={{ marginTop: '1rem', justifyContent: 'center', padding: '0.75rem' }}>
+          <button type="submit" className="btn-primary" style={{ marginTop: '1rem', justifyContent: 'center', padding: '0.75rem' }} disabled={loading}>
             <LogIn size={20} />
-            Entrar
+            {loading ? 'Iniciando...' : 'Entrar'}
           </button>
         </form>
       </div>

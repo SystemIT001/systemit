@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { User } from '../types';
 
-// Usuarios por defecto (en un sistema real estarían en la BD y hasheados)
-const USERS = [
-  { id: '1', username: 'admin', password: 'admin', role: 'admin', name: 'Administrador General' },
-  { id: '2', username: 'tecnico', password: 'tecnico', role: 'tecnico', name: 'Técnico de Obra' }
-];
-
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,28 +27,36 @@ export function useAuth() {
     setLoading(false);
   };
 
-  const login = (username: string, password: string): boolean => {
-    const foundUser = USERS.find(u => u.username === username && u.password === password);
-    if (foundUser) {
-      const userData: User = {
-        id: foundUser.id,
-        username: foundUser.username,
-        role: foundUser.role as 'admin' | 'tecnico',
-        name: foundUser.name
-      };
-      localStorage.setItem('systemit_auth', JSON.stringify(userData));
-      setUser(userData);
+  const login = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/users.php');
+      if (!response.ok) return false;
+      const users: User[] = await response.json();
       
-      const urlParams = new URLSearchParams(window.location.search);
-      const returnUrl = urlParams.get('returnUrl') || '/views/proyectos.html';
-      
-      // Asegurarse de que no estamos ya en la página de destino para evitar bucles
-      if (!window.location.pathname.includes(returnUrl)) {
-        window.location.href = returnUrl;
+      const foundUser = users.find(u => u.username === username && u.password === password);
+      if (foundUser) {
+        const userData: User = {
+          id: foundUser.id,
+          username: foundUser.username,
+          role: foundUser.role as 'admin' | 'tecnico',
+          name: foundUser.name
+        };
+        localStorage.setItem('systemit_auth', JSON.stringify(userData));
+        setUser(userData);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnUrl = urlParams.get('returnUrl') || '/views/proyectos.html';
+        
+        if (!window.location.pathname.includes(returnUrl)) {
+          window.location.href = returnUrl;
+        }
+        return true;
       }
-      return true;
+      return false;
+    } catch (error) {
+      console.error("Error en login:", error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {

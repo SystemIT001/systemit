@@ -27,6 +27,11 @@ try {
     $stmt = $conn->query("SELECT * FROM clients");
     $backup['clients'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Fetch users
+    $conn->exec("CREATE TABLE IF NOT EXISTS users (id VARCHAR(50) PRIMARY KEY, username VARCHAR(255) UNIQUE, password VARCHAR(255), name VARCHAR(255), role VARCHAR(50))");
+    $stmt = $conn->query("SELECT * FROM users");
+    $backup['users'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     $json = json_encode($backup);
 
     $date = date('Y-m-d_H-i-s');
