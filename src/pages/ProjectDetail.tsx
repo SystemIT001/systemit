@@ -474,94 +474,96 @@ const ProjectDetail: React.FC = () => {
     if (items.length === 0) return <p style={{ color: 'var(--text-muted)' }}>No hay ítems registrados.</p>;
     
     return (
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
-            <th style={{ padding: '0.75rem' }}>Descripción</th>
-            <th style={{ padding: '0.75rem' }}>Cantidad</th>
-            <th style={{ padding: '0.75rem' }}>Costo Unitario</th>
-            {(type === 'equipments' || type === 'materials') && <th style={{ padding: '0.75rem' }}>Ganancia</th>}
-            <th style={{ padding: '0.75rem' }}>Total</th>
-            <th style={{ padding: '0.75rem' }}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map(item => {
-            if (editingItem && editingItem.id === item.id && editingItem.type === type) {
+      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', margin: '1rem -1.5rem 0', padding: '0 1.5rem' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+              <th style={{ padding: '0.75rem' }}>Descripción</th>
+              <th style={{ padding: '0.75rem' }}>Cantidad</th>
+              <th style={{ padding: '0.75rem' }}>Costo Unitario</th>
+              {(type === 'equipments' || type === 'materials') && <th style={{ padding: '0.75rem' }}>Ganancia</th>}
+              <th style={{ padding: '0.75rem' }}>Total</th>
+              <th style={{ padding: '0.75rem' }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map(item => {
+              if (editingItem && editingItem.id === item.id && editingItem.type === type) {
+                return (
+                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '0.75rem' }}>
+                      <input type="text" value={editingItem.data.name} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, name: e.target.value}})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
+                    </td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <input type="number" value={editingItem.data.quantity} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, quantity: Number(e.target.value)}})} style={{ width: '80px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
+                    </td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input type="number" step="0.01" value={editingItem.data.unitCost} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, unitCost: Number(e.target.value)}})} style={{ width: '100px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
+                        <select value={editingItem.data.currency} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, currency: e.target.value}})} style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }}>
+                          <option value="NIO">NIO</option>
+                          <option value="USD">USD</option>
+                        </select>
+                      </div>
+                    </td>
+                    {(type === 'equipments' || type === 'materials') && (
+                      <td style={{ padding: '0.75rem' }}>
+                        <select value={editingItem.data.profitMargin} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, profitMargin: e.target.value === 'manual' ? 'manual' : Number(e.target.value)}})} style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }}>
+                          <option value="manual">Manual</option>
+                          <option value="0">0%</option>
+                          <option value="10">10%</option>
+                          <option value="15">15%</option>
+                          <option value="20">20%</option>
+                          <option value="25">25%</option>
+                          <option value="30">30%</option>
+                          <option value="35">35%</option>
+                          <option value="40">40%</option>
+                          <option value="45">45%</option>
+                          <option value="50">50%</option>
+                          <option value="60">60%</option>
+                          <option value="70">70%</option>
+                          <option value="100">100%</option>
+                        </select>
+                      </td>
+                    )}
+                    <td style={{ padding: '0.75rem', fontWeight: 600 }}>{formatCurrency(calculateItemTotal(editingItem.data), editingItem.data.currency)}</td>
+                    <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                      <button style={{ color: 'var(--success-color)', marginRight: '1rem' }} onClick={handleSaveEdit}>
+                        <Save size={16} />
+                      </button>
+                      <button style={{ color: 'var(--text-muted)' }} onClick={() => setEditingItem(null)}>
+                        <Trash2 size={16} style={{ display: 'none' }} /> Cancelar
+                      </button>
+                    </td>
+                  </tr>
+                );
+              }
+
               return (
-                <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '0.75rem' }}>
-                    <input type="text" value={editingItem.data.name} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, name: e.target.value}})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
-                  </td>
-                  <td style={{ padding: '0.75rem' }}>
-                    <input type="number" value={editingItem.data.quantity} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, quantity: Number(e.target.value)}})} style={{ width: '80px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
-                  </td>
-                  <td style={{ padding: '0.75rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input type="number" step="0.01" value={editingItem.data.unitCost} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, unitCost: Number(e.target.value)}})} style={{ width: '100px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
-                      <select value={editingItem.data.currency} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, currency: e.target.value}})} style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }}>
-                        <option value="NIO">NIO</option>
-                        <option value="USD">USD</option>
-                      </select>
-                    </div>
-                  </td>
+                <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ padding: '0.75rem' }}>{item.name}</td>
+                  <td style={{ padding: '0.75rem' }}>{item.quantity}</td>
+                  <td style={{ padding: '0.75rem' }}>{formatCurrency(item.unitCost, item.currency)}</td>
                   {(type === 'equipments' || type === 'materials') && (
                     <td style={{ padding: '0.75rem' }}>
-                      <select value={editingItem.data.profitMargin} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, profitMargin: e.target.value === 'manual' ? 'manual' : Number(e.target.value)}})} style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }}>
-                        <option value="manual">Manual</option>
-                        <option value="0">0%</option>
-                        <option value="10">10%</option>
-                        <option value="15">15%</option>
-                        <option value="20">20%</option>
-                        <option value="25">25%</option>
-                        <option value="30">30%</option>
-                        <option value="35">35%</option>
-                        <option value="40">40%</option>
-                        <option value="45">45%</option>
-                        <option value="50">50%</option>
-                        <option value="60">60%</option>
-                        <option value="70">70%</option>
-                        <option value="100">100%</option>
-                      </select>
+                      {item.profitMargin === 'manual' ? 'Manual' : (item.profitMargin ? `${item.profitMargin}%` : '0%')}
                     </td>
                   )}
-                  <td style={{ padding: '0.75rem', fontWeight: 600 }}>{formatCurrency(calculateItemTotal(editingItem.data), editingItem.data.currency)}</td>
+                  <td style={{ padding: '0.75rem', fontWeight: 600 }}>{formatCurrency(calculateItemTotal(item), item.currency)}</td>
                   <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                    <button style={{ color: 'var(--success-color)', marginRight: '1rem' }} onClick={handleSaveEdit}>
-                      <Save size={16} />
+                    <button style={{ color: 'var(--primary-color)', marginRight: '1rem' }} onClick={() => setEditingItem({ id: item.id, type, data: { ...item } })}>
+                      Editar
                     </button>
-                    <button style={{ color: 'var(--text-muted)' }} onClick={() => setEditingItem(null)}>
-                      <Trash2 size={16} style={{ display: 'none' }} /> Cancelar
+                    <button style={{ color: 'var(--danger-color)' }} onClick={() => handleDeleteItem(type, item.id)}>
+                      <Trash2 size={16} />
                     </button>
                   </td>
                 </tr>
               );
-            }
-
-            return (
-              <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td style={{ padding: '0.75rem' }}>{item.name}</td>
-                <td style={{ padding: '0.75rem' }}>{item.quantity}</td>
-                <td style={{ padding: '0.75rem' }}>{formatCurrency(item.unitCost, item.currency)}</td>
-                {(type === 'equipments' || type === 'materials') && (
-                  <td style={{ padding: '0.75rem' }}>
-                    {item.profitMargin === 'manual' ? 'Manual' : (item.profitMargin ? `${item.profitMargin}%` : '0%')}
-                  </td>
-                )}
-                <td style={{ padding: '0.75rem', fontWeight: 600 }}>{formatCurrency(calculateItemTotal(item), item.currency)}</td>
-                <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                  <button style={{ color: 'var(--primary-color)', marginRight: '1rem' }} onClick={() => setEditingItem({ id: item.id, type, data: { ...item } })}>
-                    Editar
-                  </button>
-                  <button style={{ color: 'var(--danger-color)' }} onClick={() => handleDeleteItem(type, item.id)}>
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            })}
+          </tbody>
+        </table>
+      </div>
     );
   };
 
