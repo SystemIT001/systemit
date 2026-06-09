@@ -45,9 +45,9 @@ const ProjectList: React.FC = () => {
           </div>
         ) : (
           projects.map(project => (
-            <div key={project.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div key={project.id} className="card project-card">
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
                   <h3 style={{ margin: 0 }}>{project.projectName}</h3>
                   {project.status === 'completed' && (
                     <span style={{ fontSize: '0.75rem', backgroundColor: 'rgba(34, 197, 94, 0.1)', color: 'var(--success-color)', padding: '0.2rem 0.6rem', borderRadius: '12px', border: '1px solid var(--success-color)', fontWeight: 500 }}>
@@ -69,7 +69,7 @@ const ProjectList: React.FC = () => {
                   Cliente: {project.clientName || 'N/A'} | Fecha: {project.date} | Total: <strong style={{ color: 'var(--success-color)' }}>{formatCurrency(calculateProjectTotalsDual(project).totalUSD, 'USD')}</strong>
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="project-card-actions">
                 <button 
                   className="btn-secondary" 
                   onClick={() => window.location.href = `/views/proyecto-detalle.html?id=${project.id}`}

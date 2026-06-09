@@ -218,3 +218,39 @@ input, select, textarea {
   }
 }
 
+.project-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.project-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .project-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .project-card-actions {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  
+  .project-card-actions > button {
+    flex: 1;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+  
+  .project-card-actions > button span {
+    display: none; /* Hide text on very small screens for icon-only buttons if needed, but flex:1 is usually enough */
+  }
+}
+
+
