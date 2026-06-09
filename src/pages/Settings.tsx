@@ -31,7 +31,7 @@ const Settings: React.FC = () => {
   };
 
   const handleBackup = () => {
-    window.location.href = '/api/backup';
+    window.location.href = '/api/backup.php';
   };
 
   const handleRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +51,7 @@ const Settings: React.FC = () => {
       formData.append('type', 'respaldos');
       formData.append('file', file);
 
-      const response = await fetch('/api/restore', {
+      const response = await fetch('/api/restore.php', {
         method: 'POST',
         body: formData,
       });
