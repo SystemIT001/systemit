@@ -15,6 +15,7 @@ export const apiFetch = async (input: RequestInfo | URL, init?: RequestInit): Pr
   const defaultHeaders: Record<string, string> = {};
   if (token) {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
+    defaultHeaders['X-Auth-Token'] = token;
   }
   
   if (init && init.body && !(init.body instanceof FormData)) {

@@ -37,7 +37,9 @@ function verifyAuth() {
     
     // Get authorization header safely across different server environments
     $authHeader = '';
-    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    if (isset($_SERVER['HTTP_X_AUTH_TOKEN'])) {
+        $authHeader = 'Bearer ' . trim($_SERVER['HTTP_X_AUTH_TOKEN']);
+    } elseif (isset($_SERVER['HTTP_AUTHORIZATION'])) {
         $authHeader = trim($_SERVER['HTTP_AUTHORIZATION']);
     } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
         $authHeader = trim($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
