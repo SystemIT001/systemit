@@ -43,7 +43,7 @@ export function useAuth() {
         return { success: false, error: `Respuesta no es JSON: ${text.substring(0, 100)}` };
       }
       
-      const foundUser = users.find(u => String(u.username).trim().toLowerCase() === String(username).trim().toLowerCase() && (u.password === password || u.clave === password));
+      const foundUser = users.find(u => u.username === username && (u.password === password || u.clave === password));
       if (foundUser) {
         const userData: User = {
           id: foundUser.id,
