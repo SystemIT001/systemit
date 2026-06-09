@@ -66,10 +66,13 @@ const Settings: React.FC = () => {
       const response = await fetch('/api/restore.php', {
         method: 'POST',
         body: formData,
+        credentials: 'same-origin'
       });
 
       if (!response.ok) {
-        const errData = await response.json();
+        const textData = await response.text();
+        let errData;
+        try { errData = JSON.parse(textData); } catch(e) { errData = { error: textData || `Error HTTP ${response.status} de InfinityFree` }; }
         throw new Error(errData.error || 'Error al restaurar');
       }
 
