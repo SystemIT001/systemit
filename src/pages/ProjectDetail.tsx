@@ -582,45 +582,47 @@ const ProjectDetail: React.FC = () => {
     return (
       <div style={{ marginBottom: '2rem' }}>
         <h4 style={{ marginBottom: '1rem' }}>{title}</h4>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', backgroundColor: 'rgba(0,0,0,0.02)' }}>
-              <th style={{ padding: '0.75rem' }}>Descripción</th>
-              <th style={{ padding: '0.75rem', textAlign: 'center' }}>Total Req.</th>
-              <th style={{ padding: '0.75rem', width: '150px' }}>Comprado</th>
-              <th style={{ padding: '0.75rem', textAlign: 'center' }}>Pendiente</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map(item => {
-              const purchased = item.purchasedQuantity || 0;
-              const pending = Math.max(0, item.quantity - purchased);
-              const isComplete = pending === 0;
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', margin: '0 -1.5rem', padding: '0 1.5rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                <th style={{ padding: '0.75rem' }}>Descripción</th>
+                <th style={{ padding: '0.75rem', textAlign: 'center' }}>Total Req.</th>
+                <th style={{ padding: '0.75rem', width: '150px' }}>Comprado</th>
+                <th style={{ padding: '0.75rem', textAlign: 'center' }}>Pendiente</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(item => {
+                const purchased = item.purchasedQuantity || 0;
+                const pending = Math.max(0, item.quantity - purchased);
+                const isComplete = pending === 0;
 
-              return (
-                <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isComplete ? 'rgba(34, 197, 94, 0.05)' : 'transparent' }}>
-                  <td style={{ padding: '0.75rem', textDecoration: isComplete ? 'line-through' : 'none', color: isComplete ? 'var(--success-color)' : 'inherit' }}>
-                    {item.name} {item.isAdditional ? <span style={{ fontSize: '0.75rem', backgroundColor: 'var(--primary-color)', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '12px', marginLeft: '0.5rem' }}>Extra</span> : ''}
-                  </td>
-                  <td style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>{item.quantity}</td>
-                  <td style={{ padding: '0.75rem' }}>
-                    <input 
-                      type="number" 
-                      min="0"
-                      step="0.01"
-                      value={purchased || ''} 
-                      onChange={e => handleUpdatePurchasedQuantity(type, item.id, Number(e.target.value))}
-                      style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', textAlign: 'center' }}
-                    />
-                  </td>
-                  <td style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600, color: pending > 0 ? 'var(--warning-color)' : 'var(--success-color)' }}>
-                    {pending}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                return (
+                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isComplete ? 'rgba(34, 197, 94, 0.05)' : 'transparent' }}>
+                    <td style={{ padding: '0.75rem', textDecoration: isComplete ? 'line-through' : 'none', color: isComplete ? 'var(--success-color)' : 'inherit' }}>
+                      {item.name} {item.isAdditional ? <span style={{ fontSize: '0.75rem', backgroundColor: 'var(--primary-color)', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '12px', marginLeft: '0.5rem' }}>Extra</span> : ''}
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600 }}>{item.quantity}</td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <input 
+                        type="number" 
+                        min="0"
+                        step="0.01"
+                        value={purchased || ''} 
+                        onChange={e => handleUpdatePurchasedQuantity(type, item.id, Number(e.target.value))}
+                        style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', textAlign: 'center' }}
+                      />
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 600, color: pending > 0 ? 'var(--warning-color)' : 'var(--success-color)' }}>
+                      {pending}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   };
