@@ -648,12 +648,12 @@ const ProjectDetail: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '4rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+      <div className="action-header">
         <a href="/views/proyectos.html" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
           <ArrowLeft size={20} />
           Volver
         </a>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className="action-buttons">
           <InvoiceImporter onImport={handleImportedItems} />
           <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}`}>
             <FileText size={20} />
