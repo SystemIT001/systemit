@@ -20,7 +20,8 @@ export interface LaborItem extends BaseItem {}
 export interface User {
   id: string;
   username: string;
-  role: 'admin' | 'tecnico';
+  password?: string;
+  role: string;
   name: string;
 }
 
