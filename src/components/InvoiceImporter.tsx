@@ -48,7 +48,7 @@ export const InvoiceImporter: React.FC<Props> = ({ onImport, mode = 'project' })
       formData.append('type', 'facturas');
       formData.append('file', file);
       
-      const response = await fetch('http://localhost:3001/api/upload', {
+      const response = await fetch('/api/upload.php', {
         method: 'POST',
         body: formData
       });
@@ -56,7 +56,7 @@ export const InvoiceImporter: React.FC<Props> = ({ onImport, mode = 'project' })
       
       setInvoiceData({
         fileName: data.fileName,
-        dataUrl: `http://localhost:3001${data.url}`,
+        dataUrl: data.url,
         dateAdded: new Date().toISOString()
       });
 

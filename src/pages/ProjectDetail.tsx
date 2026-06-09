@@ -301,7 +301,7 @@ const ProjectDetail: React.FC = () => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:3001/api/upload', {
+      const response = await fetch('/api/upload.php', {
         method: 'POST',
         body: formData
       });
@@ -310,8 +310,8 @@ const ProjectDetail: React.FC = () => {
       let updatedProject = { ...project! };
       const payment = updatedProject.payments?.find(p => p.id === paymentId);
       if (payment) {
-        // Guardamos la URL estática del backend, que debe apuntar a la ruta correcta con puerto 3001
-        payment.receiptImage = `http://localhost:3001${data.url}`;
+        // Guardamos la URL estática del backend
+        payment.receiptImage = data.url;
         updateProject(updatedProject);
         setProject(updatedProject);
       }
@@ -377,7 +377,7 @@ const ProjectDetail: React.FC = () => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:3001/api/upload', {
+      const response = await fetch('/api/upload.php', {
         method: 'POST',
         body: formData
       });
@@ -385,7 +385,7 @@ const ProjectDetail: React.FC = () => {
 
       const invoiceData = {
         fileName: data.fileName,
-        dataUrl: `http://localhost:3001${data.url}`,
+        dataUrl: data.url,
         dateAdded: new Date().toISOString()
       };
       
@@ -418,7 +418,7 @@ const ProjectDetail: React.FC = () => {
       formData.append('file', file);
 
       try {
-        const response = await fetch('http://localhost:3001/api/upload', {
+        const response = await fetch('/api/upload.php', {
           method: 'POST',
           body: formData
         });
@@ -426,7 +426,7 @@ const ProjectDetail: React.FC = () => {
         
         currentImages.push({
           fileName: data.fileName,
-          dataUrl: `http://localhost:3001${data.url}`,
+          dataUrl: data.url,
           dateAdded: new Date().toISOString()
         });
       } catch (err) {
