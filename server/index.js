@@ -19,8 +19,12 @@ app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 // Configuración de Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const type = req.body.type || 'facturas'; // 'facturas' o 'pagos'
-    cb(null, join(__dirname, '..', 'uploads', type));
+    const type = req.body.type || 'facturas'; // 'facturas' o 'pagos' o 'proyectos/PRJ-001'
+    const targetPath = join(__dirname, '..', 'uploads', type);
+    if (!fs.existsSync(targetPath)) {
+      fs.mkdirSync(targetPath, { recursive: true });
+    }
+    cb(null, targetPath);
   },
   filename: (req, file, cb) => {
     let baseName = 'archivo';
@@ -72,11 +76,17 @@ function initDB() {
         invoices TEXT,
         payments TEXT,
         projectCode TEXT,
-        expenses TEXT
+        expenses TEXT,
+        tasks TEXT,
+        clientId TEXT,
+        images TEXT
       )`);
 
-      // Intento de añadir columna si la tabla ya existía
+      // Intento de añadir columnas si la tabla ya existía
       db.run(`ALTER TABLE projects ADD COLUMN expenses TEXT`, () => {});
+      db.run(`ALTER TABLE projects ADD COLUMN tasks TEXT`, () => {});
+      db.run(`ALTER TABLE projects ADD COLUMN clientId TEXT`, () => {});
+      db.run(`ALTER TABLE projects ADD COLUMN images TEXT`, () => {});
 
       db.run(`CREATE TABLE IF NOT EXISTS inventory (
         id TEXT PRIMARY KEY,
@@ -143,6 +153,8 @@ app.get('/api/projects.php', (req, res) => {
       invoices: JSON.parse(row.invoices || '[]'),
       payments: JSON.parse(row.payments || '[]'),
       expenses: JSON.parse(row.expenses || '[]'),
+      tasks: JSON.parse(row.tasks || '[]'),
+      images: JSON.parse(row.images || '[]'),
       projectCode: row.projectCode || null,
     }));
     res.json(projects);
@@ -157,14 +169,16 @@ app.post('/api/projects.php', (req, res) => {
   const invoices = JSON.stringify(data.invoices || []);
   const payments = JSON.stringify(data.payments || []);
   const expenses = JSON.stringify(data.expenses || []);
+  const tasks = JSON.stringify(data.tasks || []);
+  const images = JSON.stringify(data.images || []);
 
   const sql = `INSERT OR REPLACE INTO projects 
-    (id, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    (id, clientId, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, images) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const params = [
-    data.id, data.clientName, data.projectName, data.date, data.status, 
-    data.exchangeRate || 36.62, materials, equipments, labor, invoices, payments, data.projectCode || null, expenses
+    data.id, data.clientId || null, data.clientName, data.projectName, data.date, data.status, 
+    data.exchangeRate || 36.62, materials, equipments, labor, invoices, payments, data.projectCode || null, expenses, tasks, images
   ];
 
   db.run(sql, params, function(err) {
@@ -181,14 +195,16 @@ app.put('/api/projects.php', (req, res) => {
   const invoices = JSON.stringify(data.invoices || []);
   const payments = JSON.stringify(data.payments || []);
   const expenses = JSON.stringify(data.expenses || []);
+  const tasks = JSON.stringify(data.tasks || []);
+  const images = JSON.stringify(data.images || []);
 
   const sql = `INSERT OR REPLACE INTO projects 
-    (id, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    (id, clientId, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, images) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const params = [
-    data.id, data.clientName, data.projectName, data.date, data.status, 
-    data.exchangeRate || 36.62, materials, equipments, labor, invoices, payments, data.projectCode || null, expenses
+    data.id, data.clientId || null, data.clientName, data.projectName, data.date, data.status, 
+    data.exchangeRate || 36.62, materials, equipments, labor, invoices, payments, data.projectCode || null, expenses, tasks, images
   ];
 
   db.run(sql, params, function(err) {

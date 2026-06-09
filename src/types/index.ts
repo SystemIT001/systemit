@@ -73,6 +73,12 @@ export interface Client {
   address: string;
 }
 
+export interface ProjectImage {
+  fileName: string;
+  dataUrl: string;
+  dateAdded: string;
+}
+
 export interface Project {
   id: string;
   projectCode?: number;
@@ -80,7 +86,7 @@ export interface Project {
   clientName: string;
   projectName: string;
   date: string;
-  status: 'draft' | 'completed';
+  status: 'not_started' | 'draft' | 'completed';
   exchangeRate?: number;
   materials: MaterialItem[];
   equipments: EquipmentItem[];
@@ -89,6 +95,7 @@ export interface Project {
   payments?: PaymentItem[];
   expenses?: ExpenseItem[];
   tasks?: ProjectTask[];
+  images?: ProjectImage[];
 }
 
 export interface PurchaseItem {

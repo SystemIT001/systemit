@@ -10,6 +10,8 @@ import { formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calcula
 const InvoiceView: React.FC = () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
+  const type = params.get('type') || 'detallada';
+  const isSummary = type === 'resumida';
   const { projects, loading, getProject } = useProjects();
   const [project, setProject] = useState<Project | null>(null);
 
@@ -152,6 +154,66 @@ const InvoiceView: React.FC = () => {
     );
   };
 
+  const renderSummaryTable = () => {
+    const materialsTotals = calculateItemsTotalsDual(project.materials, project.exchangeRate);
+    const equipmentsTotals = calculateItemsTotalsDual(project.equipments, project.exchangeRate);
+    const laborTotals = calculateItemsTotalsDual(project.labor, project.exchangeRate);
+
+    const hasMaterials = project.materials.length > 0;
+    const hasEquipments = project.equipments.length > 0;
+    const hasLabor = project.labor.length > 0;
+
+    if (!hasMaterials && !hasEquipments && !hasLabor) return null;
+
+    const totalUSD = materialsTotals.totalUSD + equipmentsTotals.totalUSD + laborTotals.totalUSD;
+    const totalNIO = materialsTotals.totalNIO + equipmentsTotals.totalNIO + laborTotals.totalNIO;
+
+    return (
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
+          Resumen de Costos
+        </h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+          <thead>
+            <tr style={{ color: 'var(--text-muted)', textAlign: 'left' }}>
+              <th style={{ padding: '0.5rem 0', width: '70%' }}>Concepto</th>
+              <th style={{ padding: '0.5rem 0', textAlign: 'right' }}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {hasMaterials && (
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <td style={{ padding: '0.75rem 0' }}>Materiales ferreteros</td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(materialsTotals.totalUSD, 'USD')}</td>
+              </tr>
+            )}
+            {hasEquipments && (
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <td style={{ padding: '0.75rem 0' }}>Equipos</td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(equipmentsTotals.totalUSD, 'USD')}</td>
+              </tr>
+            )}
+            {hasLabor && (
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <td style={{ padding: '0.75rem 0' }}>Mano de obra</td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(laborTotals.totalUSD, 'USD')}</td>
+              </tr>
+            )}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600, color: 'var(--text-muted)' }}>Subtotal</td>
+              <td style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600 }}>
+                <span style={{ display: 'block' }}>{formatCurrency(totalNIO, 'NIO')}</span>
+                <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatCurrency(totalUSD, 'USD')}</span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '4rem' }}>
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
@@ -197,9 +259,13 @@ const InvoiceView: React.FC = () => {
 
         {/* Tablas de Items */}
         <div style={{ minHeight: '300px' }}>
-          {renderInvoiceTable(project.materials, 'Materiales')}
-          {renderInvoiceTable(project.equipments, 'Equipos')}
-          {renderInvoiceTable(project.labor, 'Mano de Obra')}
+          {isSummary ? renderSummaryTable() : (
+            <>
+              {renderInvoiceTable(project.materials, 'Materiales')}
+              {renderInvoiceTable(project.equipments, 'Equipos')}
+              {renderInvoiceTable(project.labor, 'Mano de Obra')}
+            </>
+          )}
           {renderPaymentsTable(project.payments || [])}
         </div>
 
@@ -237,14 +303,7 @@ const InvoiceView: React.FC = () => {
 
                     {balanceUSD < 0 ? (
                       <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #0f1117' }}>
-                          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2563eb' }}>A FAVOR (NIO)</span>
-                          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2563eb' }}>{formatCurrency(Math.abs(balanceNIO), 'NIO')}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2563eb' }}>A FAVOR (USD)</span>
-                          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2563eb' }}>{formatCurrency(Math.abs(balanceUSD), 'USD')}</span>
-                        </div>
+                        <></>
                       </>
                     ) : (
                       <>

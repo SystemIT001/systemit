@@ -8,7 +8,13 @@ CREATE TABLE IF NOT EXISTS projects (
   materials LONGTEXT,
   equipments LONGTEXT,
   labor LONGTEXT,
-  invoices LONGTEXT
+  invoices LONGTEXT,
+  payments LONGTEXT,
+  projectCode VARCHAR(50),
+  expenses LONGTEXT,
+  tasks LONGTEXT,
+  clientId VARCHAR(50),
+  images LONGTEXT
 );
 
 CREATE TABLE IF NOT EXISTS inventory (

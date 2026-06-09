@@ -45,8 +45,8 @@ export const InvoiceImporter: React.FC<Props> = ({ onImport, mode = 'project' })
       if (customName.trim() !== '') {
         formData.append('customName', customName.trim());
       }
-      formData.append('file', file);
       formData.append('type', 'facturas');
+      formData.append('file', file);
       
       const response = await fetch('http://localhost:3001/api/upload', {
         method: 'POST',
@@ -173,7 +173,7 @@ export const InvoiceImporter: React.FC<Props> = ({ onImport, mode = 'project' })
                     </div>
                   )}
 
-                  {mode === 'project' && item.category === 'equipments' ? (
+                  {mode === 'project' && (item.category === 'equipments' || item.category === 'materials') ? (
                     <select value={item.profitMargin} onChange={e => handleUpdateItem(item.id, { profitMargin: e.target.value === 'manual' ? 'manual' : Number(e.target.value) })} style={{ width: '100%', padding: '0.5rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
                       <option value={30}>+30% Ganancia</option>
                       <option value={50}>+50% Ganancia</option>

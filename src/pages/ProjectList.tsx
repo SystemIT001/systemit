@@ -19,7 +19,7 @@ const ProjectList: React.FC = () => {
       clientName: '',
       projectName: 'Nuevo Proyecto',
       date: new Date().toISOString().split('T')[0],
-      status: 'draft' as const,
+      status: 'not_started' as const,
       materials: [],
       equipments: [],
       labor: []
@@ -47,7 +47,24 @@ const ProjectList: React.FC = () => {
           projects.map(project => (
             <div key={project.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ marginBottom: '0.25rem' }}>{project.projectName}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+                  <h3 style={{ margin: 0 }}>{project.projectName}</h3>
+                  {project.status === 'completed' && (
+                    <span style={{ fontSize: '0.75rem', backgroundColor: 'rgba(34, 197, 94, 0.1)', color: 'var(--success-color)', padding: '0.2rem 0.6rem', borderRadius: '12px', border: '1px solid var(--success-color)', fontWeight: 500 }}>
+                      Completado
+                    </span>
+                  )}
+                  {project.status === 'draft' && (
+                    <span style={{ fontSize: '0.75rem', backgroundColor: 'rgba(234, 179, 8, 0.1)', color: 'var(--warning-color)', padding: '0.2rem 0.6rem', borderRadius: '12px', border: '1px solid var(--warning-color)', fontWeight: 500 }}>
+                      En Proceso
+                    </span>
+                  )}
+                  {(!project.status || project.status === 'not_started') && (
+                    <span style={{ fontSize: '0.75rem', backgroundColor: 'rgba(100, 116, 139, 0.1)', color: '#94a3b8', padding: '0.2rem 0.6rem', borderRadius: '12px', border: '1px solid #94a3b8', fontWeight: 500 }}>
+                      No Iniciado
+                    </span>
+                  )}
+                </div>
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                   Cliente: {project.clientName || 'N/A'} | Fecha: {project.date} | Total: <strong style={{ color: 'var(--success-color)' }}>{formatCurrency(calculateProjectTotalsDual(project).totalUSD, 'USD')}</strong>
                 </p>

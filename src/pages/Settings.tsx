@@ -48,8 +48,8 @@ const Settings: React.FC = () => {
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
       formData.append('type', 'respaldos');
+      formData.append('file', file);
 
       const response = await fetch('/api/restore', {
         method: 'POST',

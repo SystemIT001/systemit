@@ -9,14 +9,14 @@ import type { Project, MaterialItem, EquipmentItem, LaborItem, InvoiceFile } fro
 import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateProjectCostsDual, calculateExpensesDual } from '../utils';
 import { InvoiceImporter } from '../components/InvoiceImporter';
 
-type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_control' | 'labor' | 'planificacion' | 'payments' | 'invoices' | 'expenses';
+type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_control' | 'labor' | 'planificacion' | 'payments' | 'invoices' | 'expenses' | 'gallery';
 
 const ProjectDetail: React.FC = () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   const { projects, loading, getProject, updateProject } = useProjects();
   const { inventory, addInventoryItem, updateInventoryItem } = useInventory();
-  const { clients } = useClients();
+  const { clients, addClient } = useClients();
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
 
@@ -65,6 +65,36 @@ const ProjectDetail: React.FC = () => {
     alert('Proyecto guardado exitosamente');
   };
 
+  const handleLinkNewClient = () => {
+    if (!project || !project.clientName) return;
+    
+    // Check if a client with that exact name exists first
+    const existing = clients.find(c => c.name.toLowerCase() === project.clientName.toLowerCase());
+    if (existing) {
+      const updatedProject = { ...project, clientId: existing.id };
+      setProject(updatedProject);
+      updateProject(updatedProject);
+      alert(`Cliente enlazado automáticamente con el directorio existente.`);
+      return;
+    }
+
+    // Create new
+    const newClient = {
+      id: generateId(),
+      name: project.clientName,
+      documentId: '',
+      phone: '',
+      email: '',
+      address: ''
+    };
+    addClient(newClient);
+    
+    const updatedProject = { ...project, clientId: newClient.id };
+    setProject(updatedProject);
+    updateProject(updatedProject);
+    alert(`Cliente "${newClient.name}" agregado al directorio y enlazado exitosamente.`);
+  };
+
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!itemName || quantity === '' || unitCost === '' || quantity <= 0 || unitCost < 0) return;
@@ -85,7 +115,12 @@ const ProjectDetail: React.FC = () => {
     }
 
     if (targetTab === 'materials') {
-      updatedProject.materials = [...updatedProject.materials, { ...newItem, isAdditional: activeTab === 'additionals' } as MaterialItem];
+      updatedProject.materials = [...updatedProject.materials, { 
+        ...newItem, 
+        profitMargin, 
+        manualPrice: profitMargin === 'manual' ? Number(manualPrice) : undefined,
+        isAdditional: activeTab === 'additionals' 
+      } as MaterialItem];
     } else if (targetTab === 'equipments') {
       updatedProject.equipments = [...updatedProject.equipments, { 
         ...newItem, 
@@ -117,9 +152,9 @@ const ProjectDetail: React.FC = () => {
       }
 
       if (projectQuantity > 0) {
-        const newItem = { id: item.id, name: item.name, quantity: projectQuantity, unitCost: item.unitCost };
+        const newItem = { id: item.id, name: item.name, quantity: projectQuantity, unitCost: item.unitCost, currency: 'USD' as 'USD' | 'NIO' }; // Default to USD or parse if needed
         if (item.category === 'materials') {
-          updatedProject.materials = [...updatedProject.materials, newItem as MaterialItem];
+          updatedProject.materials = [...updatedProject.materials, { ...newItem, profitMargin: item.profitMargin } as MaterialItem];
         } else if (item.category === 'equipments') {
           updatedProject.equipments = [...updatedProject.equipments, { ...newItem, profitMargin: item.profitMargin } as EquipmentItem];
         } else if (item.category === 'labor') {
@@ -262,8 +297,8 @@ const ProjectDetail: React.FC = () => {
     if (customName.trim() !== '') {
       formData.append('customName', customName.trim());
     }
-    formData.append('file', file);
     formData.append('type', 'pagos');
+    formData.append('file', file);
 
     try {
       const response = await fetch('http://localhost:3001/api/upload', {
@@ -335,8 +370,11 @@ const ProjectDetail: React.FC = () => {
     if (customName.trim() !== '') {
       formData.append('customName', customName.trim());
     }
+    
+    // Carpeta basada en el nombre del proyecto
+    const safeProjectName = project!.projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
+    formData.append('type', `proyectos/${safeProjectName}/facturas`);
     formData.append('file', file);
-    formData.append('type', 'facturas');
 
     try {
       const response = await fetch('http://localhost:3001/api/upload', {
@@ -361,6 +399,54 @@ const ProjectDetail: React.FC = () => {
     } catch (err) {
       alert("Error al subir el archivo PDF al servidor.");
     }
+  };
+
+  const handleProjectImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    let updatedProject = { ...project! };
+    let currentImages = updatedProject.images || [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const formData = new FormData();
+      
+      // Carpeta basada en el nombre del proyecto
+      const safeProjectName = project!.projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
+      formData.append('type', `proyectos/${safeProjectName}/galeria`);
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('http://localhost:3001/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        
+        currentImages.push({
+          fileName: data.fileName,
+          dataUrl: `http://localhost:3001${data.url}`,
+          dateAdded: new Date().toISOString()
+        });
+      } catch (err) {
+        alert(`Error al subir la imagen ${file.name}.`);
+      }
+    }
+    
+    updatedProject.images = currentImages;
+    updateProject(updatedProject);
+    setProject(updatedProject);
+  };
+
+  const handleDeleteImage = (index: number) => {
+    if (!window.confirm("¿Seguro que deseas eliminar esta imagen?")) return;
+    let updatedProject = { ...project! };
+    let currentImages = updatedProject.images || [];
+    currentImages.splice(index, 1);
+    updatedProject.images = currentImages;
+    updateProject(updatedProject);
+    setProject(updatedProject);
   };
 
   const handleViewFile = (dataUrl: string) => {
@@ -394,7 +480,7 @@ const ProjectDetail: React.FC = () => {
             <th style={{ padding: '0.75rem' }}>Descripción</th>
             <th style={{ padding: '0.75rem' }}>Cantidad</th>
             <th style={{ padding: '0.75rem' }}>Costo Unitario</th>
-            {type === 'equipments' && <th style={{ padding: '0.75rem' }}>Ganancia</th>}
+            {(type === 'equipments' || type === 'materials') && <th style={{ padding: '0.75rem' }}>Ganancia</th>}
             <th style={{ padding: '0.75rem' }}>Total</th>
             <th style={{ padding: '0.75rem' }}></th>
           </tr>
@@ -419,15 +505,23 @@ const ProjectDetail: React.FC = () => {
                       </select>
                     </div>
                   </td>
-                  {type === 'equipments' && (
+                  {(type === 'equipments' || type === 'materials') && (
                     <td style={{ padding: '0.75rem' }}>
                       <select value={editingItem.data.profitMargin} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, profitMargin: e.target.value === 'manual' ? 'manual' : Number(e.target.value)}})} style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }}>
                         <option value="manual">Manual</option>
+                        <option value="0">0%</option>
+                        <option value="10">10%</option>
                         <option value="15">15%</option>
                         <option value="20">20%</option>
                         <option value="25">25%</option>
                         <option value="30">30%</option>
+                        <option value="35">35%</option>
                         <option value="40">40%</option>
+                        <option value="45">45%</option>
+                        <option value="50">50%</option>
+                        <option value="60">60%</option>
+                        <option value="70">70%</option>
+                        <option value="100">100%</option>
                       </select>
                     </td>
                   )}
@@ -449,9 +543,9 @@ const ProjectDetail: React.FC = () => {
                 <td style={{ padding: '0.75rem' }}>{item.name}</td>
                 <td style={{ padding: '0.75rem' }}>{item.quantity}</td>
                 <td style={{ padding: '0.75rem' }}>{formatCurrency(item.unitCost, item.currency)}</td>
-                {type === 'equipments' && (
+                {(type === 'equipments' || type === 'materials') && (
                   <td style={{ padding: '0.75rem' }}>
-                    {item.profitMargin === 'manual' ? 'Manual' : `${item.profitMargin}%`}
+                    {item.profitMargin === 'manual' ? 'Manual' : (item.profitMargin ? `${item.profitMargin}%` : '0%')}
                   </td>
                 )}
                 <td style={{ padding: '0.75rem', fontWeight: 600 }}>{formatCurrency(calculateItemTotal(item), item.currency)}</td>
@@ -545,8 +639,11 @@ const ProjectDetail: React.FC = () => {
       { id: 'purchasing_control', label: 'Control de Compras' },
       { id: 'expenses', label: 'Gastos Operativos' },
       { id: 'payments', label: 'Pagos y Adelantos' },
+      { id: 'gallery', label: 'Galería de Imágenes' },
       { id: 'invoices', label: 'Facturas de Prov.' }
     );
+  } else {
+    tabs.push({ id: 'gallery', label: 'Galería de Imágenes' });
   }
 
   return (
@@ -560,7 +657,11 @@ const ProjectDetail: React.FC = () => {
           <InvoiceImporter onImport={handleImportedItems} />
           <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}`}>
             <FileText size={20} />
-            Generar Factura
+            Factura Detallada
+          </button>
+          <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}&type=resumida`}>
+            <FileText size={20} />
+            Factura Resumida
           </button>
           <button className="btn-primary" onClick={handleSave}>
             <Save size={20} />
@@ -631,9 +732,19 @@ const ProjectDetail: React.FC = () => {
                 </select>
                 {/* Fallback para proyectos antiguos que no tienen clientId pero sí clientName */}
                 {!project.clientId && project.clientName && (
-                  <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--warning-color)' }}>
-                    Cliente actual (sin enlazar): {project.clientName}. Por favor seleccione uno de la lista.
-                  </p>
+                  <div style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'rgba(234, 179, 8, 0.1)', border: '1px solid var(--warning-color)', borderRadius: '4px' }}>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--warning-color)', marginBottom: '0.5rem' }}>
+                      Cliente actual (sin enlazar): <strong>{project.clientName}</strong>
+                    </p>
+                    <button 
+                      className="btn-secondary" 
+                      onClick={handleLinkNewClient}
+                      style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', width: 'auto' }}
+                      type="button"
+                    >
+                      Enlazar / Crear en Directorio
+                    </button>
+                  </div>
                 )}
               </div>
               <div>
@@ -648,10 +759,11 @@ const ProjectDetail: React.FC = () => {
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Estado</label>
                 <select 
-                  value={project.status}
-                  onChange={e => setProject({...project, status: e.target.value as 'draft' | 'completed'})}
+                  value={project.status || 'not_started'}
+                  onChange={e => setProject({...project, status: e.target.value as 'not_started' | 'draft' | 'completed'})}
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
                 >
+                  <option value="not_started">No Iniciado</option>
                   <option value="draft">Borrador / En Proceso</option>
                   <option value="completed">Completado</option>
                 </select>
@@ -674,7 +786,7 @@ const ProjectDetail: React.FC = () => {
 
           {(activeTab === 'materials' || activeTab === 'equipments' || activeTab === 'labor' || activeTab === 'additionals') && (
             <div>
-              <form onSubmit={handleAddItem} style={{ display: 'grid', gridTemplateColumns: (activeTab === 'equipments' || (activeTab === 'additionals' && additionalType === 'equipments')) ? (profitMargin === 'manual' ? '2fr 1fr 1fr 1fr 1fr auto' : '2fr 1fr 1fr 1fr auto') : '2fr 1fr 1fr auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <form onSubmit={handleAddItem} style={{ display: 'grid', gridTemplateColumns: activeTab !== 'labor' ? (profitMargin === 'manual' ? '2fr 1fr 1fr 1fr 1fr auto' : '2fr 1fr 1fr 1fr auto') : '2fr 1fr 1fr auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 {activeTab === 'additionals' && (
                   <div style={{ gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Tipo de Adicional</label>
@@ -742,7 +854,7 @@ const ProjectDetail: React.FC = () => {
                   </div>
                 </div>
                 
-                {(activeTab === 'equipments' || (activeTab === 'additionals' && additionalType === 'equipments')) && (
+                {activeTab !== 'labor' && (
                   <>
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>% Ganancia</label>
@@ -751,8 +863,19 @@ const ProjectDetail: React.FC = () => {
                         onChange={e => setProfitMargin(e.target.value === 'manual' ? 'manual' : Number(e.target.value))} 
                         style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
                       >
+                        <option value={0}>0%</option>
+                        <option value={10}>10%</option>
+                        <option value={15}>15%</option>
+                        <option value={20}>20%</option>
+                        <option value={25}>25%</option>
                         <option value={30}>30%</option>
+                        <option value={35}>35%</option>
+                        <option value={40}>40%</option>
+                        <option value={45}>45%</option>
                         <option value={50}>50%</option>
+                        <option value={60}>60%</option>
+                        <option value={70}>70%</option>
+                        <option value={100}>100%</option>
                         <option value="manual">Manual (Precio Fijo)</option>
                       </select>
                     </div>
@@ -1177,10 +1300,63 @@ const ProjectDetail: React.FC = () => {
               )}
             </div>
           )}
+
+          {activeTab === 'gallery' && (
+            <div style={{ padding: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div>
+                  <h3 style={{ marginBottom: '0.5rem' }}>Galería del Proyecto</h3>
+                  <p style={{ color: 'var(--text-muted)' }}>Sube fotos del proyecto, avances o del trabajo finalizado.</p>
+                </div>
+                <div>
+                  <label className="btn-primary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Upload size={20} />
+                    Subir Imágenes
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      multiple 
+                      style={{ display: 'none' }} 
+                      onChange={handleProjectImageUpload} 
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {(!project.images || project.images.length === 0) ? (
+                <div style={{ textAlign: 'center', padding: '3rem', border: '2px dashed var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)' }}>
+                  <p>Aún no hay imágenes en la galería de este proyecto.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                  {project.images.map((img, idx) => (
+                    <div key={idx} style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--surface-color)', display: 'flex', flexDirection: 'column' }}>
+                      <div 
+                        style={{ height: '200px', backgroundImage: `url(${img.dataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer' }}
+                        onClick={() => window.open(img.dataUrl, '_blank')}
+                      ></div>
+                      <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%', fontSize: '0.875rem' }} title={img.fileName}>
+                          {img.fileName}
+                        </div>
+                        <button 
+                          onClick={() => handleDeleteImage(idx)} 
+                          style={{ color: 'var(--danger-color)', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                          title="Eliminar imagen"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       
-      {activeTab !== 'invoices' && (
+      {activeTab !== 'invoices' && activeTab !== 'gallery' && (
         <div style={{ marginTop: '2rem', textAlign: 'right' }}>
           <h3 style={{ color: 'var(--text-muted)' }}>
             {activeTab === 'materials' ? 'Total de Materiales:' : 
