@@ -16,6 +16,27 @@ const db = new sqlite3.Database(dbPath, (err) => {
   
   console.log('Conectado a la base de datos local SQLite.');
 
+  // LOGIN PARA OBTENER TOKEN
+  console.log('Iniciando sesión...');
+  let token = '';
+  (async () => {
+      try {
+          const loginRes = await fetch(`${CLOUD_URL}/api/users.php?action=login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: 'admin', password: 'admin123', clave: 'admin123' })
+          });
+          const loginData = await loginRes.json();
+          if (!loginData.success || !loginData.token) {
+              throw new Error('No se pudo obtener el token: ' + JSON.stringify(loginData));
+          }
+          token = loginData.token;
+          console.log('✅ Token obtenido correctamente.');
+      } catch (e) {
+          console.error('❌ Error de login:', e);
+          return;
+      }
+
   // MIGRAR PROYECTOS
   db.all('SELECT * FROM projects', async (err, rows) => {
     if (err) {
@@ -40,7 +61,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
             const response = await fetch(`${CLOUD_URL}/api/projects.php`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
                 body: JSON.stringify(payload)
             });
             const text = await response.text();
@@ -61,7 +85,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
         try {
             const response = await fetch(`${CLOUD_URL}/api/inventory.php`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(row)
             });
             const text = await response.text();
@@ -72,4 +99,5 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
     console.log('🎉 Migración de inventario completada.');
   });
+  })();
 });

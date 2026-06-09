@@ -29,14 +29,5 @@ export const apiFetch = async (input: RequestInfo | URL, init?: RequestInit): Pr
     }
   };
 
-  // Add cache-busting to GET requests to prevent browser/CDN caching
-  let finalInput = input;
-  if (!init || !init.method || init.method.toUpperCase() === 'GET') {
-    if (typeof finalInput === 'string') {
-      const separator = finalInput.includes('?') ? '&' : '?';
-      finalInput = `${finalInput}${separator}_t=${Date.now()}`;
-    }
-  }
-
-  return fetch(finalInput, finalInit);
+  return fetch(input, finalInit);
 };
