@@ -446,6 +446,7 @@ app.get('/api/users.php', (req, res) => {
 app.post('/api/users.php', (req, res) => {
   const data = req.body;
   const action = req.query.action;
+  console.log("POST /api/users.php", "action:", action, "body:", data);
 
   if (action === 'login') {
     db.get('SELECT * FROM users WHERE username = ?', [data.username], (err, user) => {
