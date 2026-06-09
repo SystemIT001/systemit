@@ -26,7 +26,9 @@ export default defineConfig({
         compras: resolve(__dirname, 'views/compras.html'),
         configuraciones: resolve(__dirname, 'views/configuraciones.html'),
         factura: resolve(__dirname, 'views/factura.html'),
-        clientes: resolve(__dirname, 'views/clientes.html')
+        clientes: resolve(__dirname, 'views/clientes.html'),
+        cotizaciones: resolve(__dirname, 'views/cotizaciones.html'),
+        tickets: resolve(__dirname, 'views/tickets.html')
       }
     }
   }

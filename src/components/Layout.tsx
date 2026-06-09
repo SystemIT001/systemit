@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X, FileText, LifeBuoy } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import './Layout.css';
@@ -43,6 +43,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     if (path.includes('inventario')) return 'Inventario / Bodega';
     if (path.includes('compras')) return 'Compras a Proveedores';
     if (path.includes('clientes')) return 'Directorio de Clientes';
+    if (path.includes('cotizaciones')) return 'Cotizaciones';
+    if (path.includes('tickets')) return 'Tickets de Soporte';
     return 'SystemIT';
   };
 
@@ -81,9 +83,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <LayoutDashboard size={20} />
             Dashboard
           </a>
-          <a href="/views/proyectos.html" className={`nav-item ${isActive('proyecto') ? 'active' : ''}`}>
+          <a 
+            href="/views/proyectos.html" 
+            className={`nav-item ${isActive('/views/proyectos.html') || isActive('/views/proyecto-detalle.html') ? 'active' : ''}`}
+          >
             <FolderKanban size={20} />
-            Proyectos
+            Proyectos Activos
+          </a>
+          <a 
+            href="/views/cotizaciones.html" 
+            className={`nav-item ${isActive('/views/cotizaciones.html') ? 'active' : ''}`}
+          >
+            <FileText size={20} />
+            Cotizaciones
+          </a>
+          <a 
+            href="/views/tickets.html" 
+            className={`nav-item ${isActive('/views/tickets.html') ? 'active' : ''}`}
+          >
+            <LifeBuoy size={20} />
+            Tickets Soporte
           </a>
           <a href="/views/clientes.html" className={`nav-item ${isActive('clientes') ? 'active' : ''}`}>
             <Users size={20} />

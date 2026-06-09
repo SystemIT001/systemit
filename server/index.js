@@ -89,6 +89,30 @@ function initDB() {
       db.run(`ALTER TABLE projects ADD COLUMN images TEXT`, () => {});
       db.run(`ALTER TABLE projects ADD COLUMN lastUpdated TEXT`, () => {});
 
+      db.run(`CREATE TABLE IF NOT EXISTS settings (
+        id TEXT PRIMARY KEY,
+        companyName TEXT,
+        address TEXT,
+        phone TEXT,
+        email TEXT,
+        ruc TEXT,
+        logo TEXT,
+        defaultTax REAL
+      )`);
+
+      db.run(`CREATE TABLE IF NOT EXISTS tickets (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        description TEXT,
+        clientName TEXT,
+        date TEXT,
+        status TEXT,
+        priority TEXT,
+        cost REAL,
+        currency TEXT,
+        lastUpdated INTEGER
+      )`);
+
       db.run(`CREATE TABLE IF NOT EXISTS purchases (
         id TEXT PRIMARY KEY,
         supplierName TEXT,
@@ -97,14 +121,6 @@ function initDB() {
         description TEXT,
         status TEXT,
         paymentMethod TEXT
-      )`);
-
-      db.run(`CREATE TABLE IF NOT EXISTS settings (
-        id TEXT PRIMARY KEY,
-        companyName TEXT,
-        subtitle TEXT,
-        docType TEXT,
-        footerText TEXT
       )`);
 
       db.run(`CREATE TABLE IF NOT EXISTS inventory (
@@ -560,13 +576,45 @@ app.get('/api/settings.php', (req, res) => {
   });
 });
 
-app.post('/api/settings.php', (req, res) => {
-  const data = req.body;
-  const sql = `INSERT OR REPLACE INTO settings (id, companyName, subtitle, docType, footerText) VALUES ('global', ?, ?, ?, ?)`;
-  const params = [data.companyName, data.subtitle, data.docType, data.footerText];
-  db.run(sql, params, function(err) {
+app.post('/api/settings', (req, res) => {
+  const settings = req.body;
+  const id = settings.id || 'default';
+  
+  db.run(`INSERT OR REPLACE INTO settings (id, companyName, address, phone, email, ruc, logo, defaultTax) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, settings.companyName, settings.address, settings.phone, settings.email, settings.ruc, settings.logo, settings.defaultTax],
+    (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'Settings saved' });
+    }
+  );
+});
+
+// Tickets Endpoints
+app.get('/api/tickets', (req, res) => {
+  db.all('SELECT * FROM tickets', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
+    res.json(rows);
+  });
+});
+
+app.post('/api/tickets', (req, res) => {
+  const ticket = req.body;
+  const lastUpdated = Date.now();
+  db.run(`INSERT OR REPLACE INTO tickets (id, title, description, clientName, date, status, priority, cost, currency, lastUpdated) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [ticket.id, ticket.title, ticket.description, ticket.clientName, ticket.date, ticket.status, ticket.priority, ticket.cost, ticket.currency, lastUpdated],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'Ticket saved', id: ticket.id, lastUpdated });
+    }
+  );
+});
+
+app.delete('/api/tickets/:id', (req, res) => {
+  db.run('DELETE FROM tickets WHERE id = ?', [req.params.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: 'Ticket deleted' });
   });
 });
 

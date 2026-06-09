@@ -39,12 +39,12 @@ const ProjectList: React.FC = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-        {projects.length === 0 ? (
+        {projects.filter(p => p.status !== 'quote').length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
             <p style={{ color: 'var(--text-muted)' }}>No hay proyectos creados todavía.</p>
           </div>
         ) : (
-          projects.map(project => (
+          projects.filter(p => p.status !== 'quote').map(project => (
             <div key={project.id} className="card project-card">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>

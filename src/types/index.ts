@@ -13,6 +13,7 @@ export interface MaterialItem extends BaseItem {}
 export interface EquipmentItem extends BaseItem {
   profitMargin: number | 'manual'; // Margen de ganancia aplicable
   manualPrice?: number; // Precio unitario de venta final manual
+  serialNumber?: string; // Número de serie o garantía
 }
 
 export interface LaborItem extends BaseItem {}
@@ -65,6 +66,19 @@ export interface ProjectTask {
   status: 'pending' | 'in_progress' | 'completed';
 }
 
+export interface Ticket {
+  id: string;
+  title: string;
+  description: string;
+  clientName: string;
+  date: string;
+  status: 'open' | 'in_progress' | 'resolved';
+  priority: 'low' | 'normal' | 'high';
+  cost: number;
+  currency: 'NIO' | 'USD';
+  lastUpdated?: number;
+}
+
 export interface Client {
   id: string;
   name: string;
@@ -87,7 +101,7 @@ export interface Project {
   clientName: string;
   projectName: string;
   date: string;
-  status: 'not_started' | 'draft' | 'completed';
+  status: 'not_started' | 'draft' | 'completed' | 'quote';
   exchangeRate?: number;
   materials: MaterialItem[];
   equipments: EquipmentItem[];

@@ -89,7 +89,10 @@ const InvoiceView: React.FC = () => {
               const sellPrice = item.profitMargin ? item.unitCost * (1 + item.profitMargin / 100) : item.unitCost;
               return (
                 <tr key={index} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '0.75rem 0' }}>{item.name}</td>
+                  <td style={{ padding: '0.75rem 0' }}>
+                    {item.name}
+                    {item.serialNumber && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>S/N: {item.serialNumber}</div>}
+                  </td>
                   <td style={{ padding: '0.75rem 0', textAlign: 'center' }}>{item.quantity}</td>
                   <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(sellPrice, item.currency)}</td>
                   <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(calculateItemTotal(item), item.currency)}</td>

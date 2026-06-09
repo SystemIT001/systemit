@@ -25,11 +25,12 @@ const ProjectDetail: React.FC = () => {
   // Form states
   const [itemName, setItemName] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [quantity, setQuantity] = useState<number | ''>('');
+  const [quantity, setQuantity] = useState<number | ''>(1);
   const [unitCost, setUnitCost] = useState<number | ''>('');
   const [itemCurrency, setItemCurrency] = useState<'USD' | 'NIO'>('USD');
-  const [profitMargin, setProfitMargin] = useState<number | 'manual'>(30);
-  const [manualPrice, setManualPrice] = useState<number | ''>('');
+  const [profitMargin, setProfitMargin] = useState<number | 'manual'>(0);
+  const [manualPrice, setManualPrice] = useState<number>(0);
+  const [serialNumber, setSerialNumber] = useState<string>('');
   
   // Payment states
   const [paymentAmount, setPaymentAmount] = useState<number | ''>('');
@@ -104,7 +105,8 @@ const ProjectDetail: React.FC = () => {
       name: itemName,
       quantity: Number(quantity),
       unitCost: Number(unitCost),
-      currency: itemCurrency
+      currency: itemCurrency,
+      serialNumber: activeTab === 'equipments' ? serialNumber : undefined
     };
 
     const updatedProject = { ...project };
@@ -137,8 +139,12 @@ const ProjectDetail: React.FC = () => {
     
     // Reset form
     setItemName('');
-    setQuantity('');
+    setQuantity(1);
     setUnitCost('');
+    setProfitMargin(0);
+    setManualPrice(0);
+    setSerialNumber('');
+    setAdditionalType('materials');
   };
 
   const handleImportedItems = (items: any[], invoiceData: InvoiceFile) => {
@@ -482,6 +488,7 @@ const ProjectDetail: React.FC = () => {
               <th style={{ padding: '0.75rem' }}>Cantidad</th>
               <th style={{ padding: '0.75rem' }}>Costo Unitario</th>
               {(type === 'equipments' || type === 'materials') && <th style={{ padding: '0.75rem' }}>Ganancia</th>}
+              {type === 'equipments' && <th style={{ padding: '0.75rem' }}>Nº Serie (Opcional)</th>}
               <th style={{ padding: '0.75rem' }}>Total</th>
               <th style={{ padding: '0.75rem' }}></th>
             </tr>
@@ -526,6 +533,11 @@ const ProjectDetail: React.FC = () => {
                         </select>
                       </td>
                     )}
+                    {type === 'equipments' && (
+                      <td style={{ padding: '0.75rem' }}>
+                        <input type="text" placeholder="Ej. SN-12345" value={editingItem.data.serialNumber || ''} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, serialNumber: e.target.value}})} style={{ width: '120px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
+                      </td>
+                    )}
                     <td style={{ padding: '0.75rem', fontWeight: 600 }}>{formatCurrency(calculateItemTotal(editingItem.data), editingItem.data.currency)}</td>
                     <td style={{ padding: '0.75rem', textAlign: 'right' }}>
                       <button style={{ color: 'var(--success-color)', marginRight: '1rem' }} onClick={handleSaveEdit}>
@@ -547,6 +559,11 @@ const ProjectDetail: React.FC = () => {
                   {(type === 'equipments' || type === 'materials') && (
                     <td style={{ padding: '0.75rem' }}>
                       {item.profitMargin === 'manual' ? 'Manual' : (item.profitMargin ? `${item.profitMargin}%` : '0%')}
+                    </td>
+                  )}
+                  {type === 'equipments' && (
+                    <td style={{ padding: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      {item.serialNumber || '-'}
                     </td>
                   )}
                   <td style={{ padding: '0.75rem', fontWeight: 600 }}>{formatCurrency(calculateItemTotal(item), item.currency)}</td>
@@ -923,6 +940,19 @@ const ProjectDetail: React.FC = () => {
                       </div>
                     )}
                   </>
+                )}
+
+                {activeTab === 'equipments' && (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Nº Serie (Opcional)</label>
+                    <input 
+                      type="text" 
+                      value={serialNumber} 
+                      onChange={e => setSerialNumber(e.target.value)}
+                      placeholder="Ej. SN-123"
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
+                    />
+                  </div>
                 )}
 
                 <button type="submit" className="btn-primary" style={{ padding: '0.75rem 1rem' }}>
