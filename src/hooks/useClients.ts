@@ -9,43 +9,72 @@ export function useClients() {
     loadClients();
   }, []);
 
-  const loadClients = () => {
+  const loadClients = async () => {
     try {
+      setLoading(true);
+      const response = await fetch('/api/clients.php');
+      if (!response.ok) throw new Error('Failed to load clients');
+      const data = await response.json();
+      setClients(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error loading clients from API:', error);
+      // Fallback a localStorage por si acaso
       const stored = localStorage.getItem('systemit_clients');
       if (stored) {
         setClients(JSON.parse(stored));
       }
-    } catch (error) {
-      console.error('Error loading clients:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const saveClients = (newClients: Client[]) => {
+  const addClient = async (client: Client) => {
     try {
-      localStorage.setItem('systemit_clients', JSON.stringify(newClients));
-      setClients(newClients);
+      const response = await fetch('/api/clients.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(client)
+      });
+      if (!response.ok) throw new Error('Failed to add client');
+      setClients([...clients, client]);
     } catch (error) {
-      console.error('Error saving clients:', error);
-      alert('Error guardando en memoria local');
+      console.error('Error saving client:', error);
+      alert('Error guardando en el servidor');
     }
   };
 
-  const addClient = (client: Client) => {
-    saveClients([...clients, client]);
+  const updateClient = async (updatedClient: Client) => {
+    try {
+      const response = await fetch('/api/clients.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedClient)
+      });
+      if (!response.ok) throw new Error('Failed to update client');
+      
+      const newClients = clients.map(c => 
+        c.id === updatedClient.id ? updatedClient : c
+      );
+      setClients(newClients);
+    } catch (error) {
+      console.error('Error updating client:', error);
+      alert('Error actualizando en el servidor');
+    }
   };
 
-  const updateClient = (updatedClient: Client) => {
-    const newClients = clients.map(c => 
-      c.id === updatedClient.id ? updatedClient : c
-    );
-    saveClients(newClients);
-  };
-
-  const deleteClient = (id: string) => {
-    const newClients = clients.filter(c => c.id !== id);
-    saveClients(newClients);
+  const deleteClient = async (id: string) => {
+    try {
+      const response = await fetch(`/api/clients.php?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete client');
+      
+      const newClients = clients.filter(c => c.id !== id);
+      setClients(newClients);
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      alert('Error eliminando en el servidor');
+    }
   };
 
   const getClient = (id: string) => {
@@ -58,6 +87,7 @@ export function useClients() {
     addClient,
     updateClient,
     deleteClient,
-    getClient
+    getClient,
+    refreshClients: loadClients
   };
 }

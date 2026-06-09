@@ -21,6 +21,12 @@ try {
     $stmt = $conn->query("SELECT * FROM inventory");
     $backup['inventory'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Fetch clients
+    // Ensure table exists first in case it's a new install
+    $conn->exec("CREATE TABLE IF NOT EXISTS clients (id VARCHAR(50) PRIMARY KEY, name VARCHAR(255), contactPerson VARCHAR(255), email VARCHAR(255), phone VARCHAR(50), address TEXT)");
+    $stmt = $conn->query("SELECT * FROM clients");
+    $backup['clients'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     $json = json_encode($backup);
 
     $date = date('Y-m-d_H-i-s');

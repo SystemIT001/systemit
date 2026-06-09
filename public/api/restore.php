@@ -69,6 +69,23 @@ try {
         }
     }
 
+    // Restore clients
+    if (isset($data['clients']) && is_array($data['clients'])) {
+        $conn->exec("CREATE TABLE IF NOT EXISTS clients (id VARCHAR(50) PRIMARY KEY, name VARCHAR(255), contactPerson VARCHAR(255), email VARCHAR(255), phone VARCHAR(50), address TEXT)");
+        $conn->exec("DELETE FROM clients"); // Clear table
+        
+        if (count($data['clients']) > 0) {
+            $stmt = $conn->prepare("INSERT INTO clients (id, name, contactPerson, email, phone, address) VALUES (?, ?, ?, ?, ?, ?)");
+            
+            foreach ($data['clients'] as $c) {
+                $stmt->execute([
+                    $c['id'], $c['name'], $c['contactPerson'] ?? '', $c['email'] ?? '', 
+                    $c['phone'] ?? '', $c['address'] ?? ''
+                ]);
+            }
+        }
+    }
+
     $conn->commit();
     echo json_encode(["success" => true, "message" => "Database restored successfully"]);
 
