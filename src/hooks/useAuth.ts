@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import type { User } from '../types';
 
 export function useAuth() {
@@ -11,12 +11,12 @@ export function useAuth() {
 
     if (storedAuth) {
       setUser(JSON.parse(storedAuth));
-      // Si estamos en login y ya hay sesión, redirigir
+      // Si estamos en login y ya hay sesiÃ³n, redirigir
       if (isLoginPage) {
         window.location.href = '/views/proyectos.html';
       }
     } else if (!isLoginPage) {
-      // Guardar la URL actual para retornar después de login
+      // Guardar la URL actual para retornar despuÃ©s de login
       const currentUrl = window.location.pathname + window.location.search;
       window.location.href = `/views/login.html?returnUrl=${encodeURIComponent(currentUrl)}`;
     }
@@ -44,7 +44,7 @@ export function useAuth() {
         return { success: true };
       }
       
-      return { success: false, error: 'Usuario o contraseña incorrectos' };
+      return { success: false, error: 'Usuario o contraseÃ±a incorrectos' };
     } catch (error: any) {
       console.error("Error en login:", error);
       return { success: false, error: `Error de red: ${error.message}` };

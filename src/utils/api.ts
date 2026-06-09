@@ -31,5 +31,14 @@ export const apiFetch = async (input: RequestInfo | URL, init?: RequestInit): Pr
     }
   };
 
-  return fetch(input, finalInit);
+  const response = await fetch(input, finalInit);
+  
+  if (response.status === 401 || response.status === 403) {
+    localStorage.removeItem('systemit_auth');
+    if (!window.location.pathname.includes('login.html')) {
+      window.location.href = '/views/login.html';
+    }
+  }
+  
+  return response;
 };

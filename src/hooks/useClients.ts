@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Client } from '../types';
 import { apiFetch } from '../utils/api';
 
 export function useClients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadClients();
+  }, []);
 
   const loadClients = async () => {
     try {

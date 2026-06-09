@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import type { Ticket } from '../types';
 import { apiFetch } from '../utils/api';
 
