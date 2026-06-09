@@ -9,7 +9,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://systemit.site.je',
+        target: 'http://localhost:3001',
         changeOrigin: true
       }
     }
