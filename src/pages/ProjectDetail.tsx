@@ -601,7 +601,9 @@ const ProjectDetail: React.FC = () => {
                     )}
                   </td>
                   <td style={{ padding: '0.75rem' }}>{item.quantity}</td>
-                  <td style={{ padding: '0.75rem' }}>{formatCurrency(item.unitCost, item.currency)}</td>
+                  <td style={{ padding: '0.75rem' }}>
+                    {item.clientProvides ? <span style={{ color: 'var(--text-muted)' }}>-</span> : formatCurrency(item.unitCost, item.currency)}
+                  </td>
                   {(type === 'equipments' || type === 'materials') && (
                     <td style={{ padding: '0.75rem' }}>
                       {item.profitMargin === 'manual' ? 'Manual' : (item.profitMargin ? `${item.profitMargin}%` : '0%')}
@@ -614,9 +616,7 @@ const ProjectDetail: React.FC = () => {
                   )}
                   <td style={{ padding: '0.75rem', fontWeight: 600 }}>
                     {item.clientProvides ? (
-                      <span style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>
-                        {formatCurrency(item.quantity * item.unitCost, item.currency)}
-                      </span>
+                      <span style={{ color: 'var(--text-muted)' }}>-</span>
                     ) : (
                       formatCurrency(calculateItemTotal(item), item.currency)
                     )}
@@ -1030,7 +1030,28 @@ const ProjectDetail: React.FC = () => {
                 </button>
               </form>
 
-              {activeTab === 'materials' && renderTable(project.materials.filter(i => !i.isAdditional), 'materials')}
+              {activeTab === 'materials' && (
+                <>
+                  {project.materials.filter(i => !i.isAdditional).length > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                      <button 
+                        type="button"
+                        className="btn-secondary" 
+                        onClick={() => {
+                          const allClient = project.materials.filter(i => !i.isAdditional).every(m => m.clientProvides);
+                          const updated = { ...project };
+                          updated.materials = updated.materials.map(m => (!m.isAdditional ? { ...m, clientProvides: !allClient } : m));
+                          setProject(updated);
+                        }}
+                        style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                      >
+                        {project.materials.filter(i => !i.isAdditional).every(m => m.clientProvides) ? 'Desmarcar Todos (Cliente Compra)' : 'Marcar Todos (Cliente Compra)'}
+                      </button>
+                    </div>
+                  )}
+                  {renderTable(project.materials.filter(i => !i.isAdditional), 'materials')}
+                </>
+              )}
               {activeTab === 'equipments' && renderTable(project.equipments.filter(i => !i.isAdditional), 'equipments')}
               {activeTab === 'labor' && renderTable(project.labor, 'labor')}
               

@@ -103,7 +103,7 @@ const InvoiceView: React.FC = () => {
                   </td>
                   <td style={{ padding: '0.75rem 0', textAlign: 'center' }}>{item.quantity}</td>
                   <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
-                    {item.clientProvides ? <span style={{ color: '#94a3b8', textDecoration: 'line-through' }}>{formatCurrency(sellPrice, item.currency)}</span> : formatCurrency(sellPrice, item.currency)}
+                    {item.clientProvides ? <span style={{ color: '#94a3b8' }}>-</span> : formatCurrency(sellPrice, item.currency)}
                   </td>
                   <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
                     {item.clientProvides ? <span style={{ color: '#94a3b8' }}>-</span> : formatCurrency(calculateItemTotal(item), item.currency)}
