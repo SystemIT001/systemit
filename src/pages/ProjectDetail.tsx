@@ -1040,8 +1040,50 @@ const ProjectDetail: React.FC = () => {
                   {renderTable(project.materials.filter(i => !i.isAdditional), 'materials')}
                 </>
               )}
-              {activeTab === 'equipments' && renderTable(project.equipments.filter(i => !i.isAdditional), 'equipments')}
-              {activeTab === 'labor' && renderTable(project.labor, 'labor')}
+              {activeTab === 'equipments' && (
+                <>
+                  {project.equipments.filter(i => !i.isAdditional).length > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                      <button 
+                        type="button"
+                        className="btn-secondary" 
+                        onClick={() => {
+                          const allClient = project.equipments.filter(i => !i.isAdditional).every(m => m.clientProvides);
+                          const updated = { ...project };
+                          updated.equipments = updated.equipments.map(m => (!m.isAdditional ? { ...m, clientProvides: !allClient } : m));
+                          setProject(updated);
+                        }}
+                        style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                      >
+                        {project.equipments.filter(i => !i.isAdditional).every(m => m.clientProvides) ? 'Desmarcar Todos (Cliente Compra)' : 'Marcar Todos (Cliente Compra)'}
+                      </button>
+                    </div>
+                  )}
+                  {renderTable(project.equipments.filter(i => !i.isAdditional), 'equipments')}
+                </>
+              )}
+              {activeTab === 'labor' && (
+                <>
+                  {project.labor.length > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                      <button 
+                        type="button"
+                        className="btn-secondary" 
+                        onClick={() => {
+                          const allClient = project.labor.every(m => m.clientProvides);
+                          const updated = { ...project };
+                          updated.labor = updated.labor.map(m => ({ ...m, clientProvides: !allClient }));
+                          setProject(updated);
+                        }}
+                        style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                      >
+                        {project.labor.every(m => m.clientProvides) ? 'Desmarcar Todos (Cliente Compra)' : 'Marcar Todos (Cliente Compra)'}
+                      </button>
+                    </div>
+                  )}
+                  {renderTable(project.labor, 'labor')}
+                </>
+              )}
               
               {activeTab === 'additionals' && (
                 <>
