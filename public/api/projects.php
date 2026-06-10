@@ -17,10 +17,10 @@ if ($method === 'GET') {
     $projects = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         // Deserializar los campos JSON
-        $row['materials'] = json_decode($row['materials'], true) ?: [];
-        $row['equipments'] = json_decode($row['equipments'], true) ?: [];
-        $row['labor'] = json_decode($row['labor'], true) ?: [];
-        $row['invoices'] = json_decode($row['invoices'], true) ?: [];
+        $row['materials'] = json_decode($row['materials'] ?? '[]', true) ?: [];
+        $row['equipments'] = json_decode($row['equipments'] ?? '[]', true) ?: [];
+        $row['labor'] = json_decode($row['labor'] ?? '[]', true) ?: [];
+        $row['invoices'] = json_decode($row['invoices'] ?? '[]', true) ?: [];
         $row['payments'] = json_decode($row['payments'] ?? '[]', true) ?: [];
         $row['expenses'] = json_decode($row['expenses'] ?? '[]', true) ?: [];
         $row['tasks'] = json_decode($row['tasks'] ?? '[]', true) ?: [];
