@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Building2, Lock, User, LogIn, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { useSettings } from '../hooks/useSettings';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -11,6 +12,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { settings } = useSettings();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +59,7 @@ const Login: React.FC = () => {
           <Building2 size={48} />
         </div>
         
-        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>SystemIT</h1>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>{settings?.companyName || 'SystemIT'}</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Inicia sesión para continuar</p>
 
         {error && (

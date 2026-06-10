@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X, FileText, LifeBuoy } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
+import { useSettings } from '../hooks/useSettings';
 import './Layout.css';
 
 interface LayoutProps {
@@ -12,6 +13,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const path = window.location.pathname;
   const { user, loading, logout, checkAuth } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { settings } = useSettings();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Close sidebar when path changes on mobile
@@ -67,7 +69,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <ReceiptText className="brand-icon" size={28} />
-            <span>SystemIT</span>
+            <span>{settings?.companyName || 'SystemIT'}</span>
           </div>
           {/* Close button inside sidebar for mobile */}
           <button 
