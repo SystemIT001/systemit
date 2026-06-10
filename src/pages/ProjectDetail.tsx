@@ -93,6 +93,11 @@ const ProjectDetail: React.FC = () => {
     alert('Proyecto guardado exitosamente');
   };
 
+  const handleOpenPDF = async (type: 'detallada' | 'resumida') => {
+    await targetUpdateProject(project); // Auto-save before opening PDF
+    window.location.href = `/views/factura.html?id=${project.id}${type === 'resumida' ? '&type=resumida' : ''}${isQuote ? '&isQuote=true' : ''}`;
+  };
+
   const handleLinkNewClient = () => {
     if (!project || !project.clientName) return;
     
@@ -726,11 +731,11 @@ const ProjectDetail: React.FC = () => {
         </a>
         <div className="action-buttons">
           {!isQuote && <InvoiceImporter onImport={handleImportedItems} />}
-          <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}${isQuote ? '&isQuote=true' : ''}`}>
+          <button className="btn-secondary" onClick={() => handleOpenPDF('detallada')}>
             <FileText size={20} />
             {isQuote ? 'Cotización Detallada' : 'Factura Detallada'}
           </button>
-          <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}&type=resumida${isQuote ? '&isQuote=true' : ''}`}>
+          <button className="btn-secondary" onClick={() => handleOpenPDF('resumida')}>
             <FileText size={20} />
             {isQuote ? 'Cotización Resumida' : 'Factura Resumida'}
           </button>
