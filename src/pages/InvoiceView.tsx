@@ -396,6 +396,15 @@ const InvoiceView: React.FC = () => {
           </div>
         </div>
         
+        {/* Client Purchases Note */}
+        {(project.materials.some(i => i.clientProvides) || project.equipments.some(i => i.clientProvides) || project.labor.some(i => i.clientProvides)) && (
+          <div style={{ marginTop: '3rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '8px', borderLeft: '4px solid #64748b' }}>
+            <p style={{ color: '#475569', fontSize: '0.875rem', margin: 0 }}>
+              <strong>Nota importante:</strong> Ciertos materiales o equipos han sido marcados para que el cliente los adquiera por su cuenta. Estos ítems no se incluyen en el costo total de este documento y su compra será asumida directamente por el cliente.
+            </p>
+          </div>
+        )}
+
         {/* Footer */}
         <div style={{ marginTop: '4rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
           <p>{footerText}</p>
