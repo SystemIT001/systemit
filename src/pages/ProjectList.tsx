@@ -8,7 +8,7 @@ const ProjectList: React.FC = () => {
   const { projects, addProject, deleteProject } = useProjects();
 
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     const actualProjects = projects.filter(p => p.status !== 'quote');
     const nextCode = actualProjects.length > 0 
       ? Math.max(...actualProjects.map(p => p.projectCode || 0)) + 1 
@@ -25,8 +25,10 @@ const ProjectList: React.FC = () => {
       equipments: [],
       labor: []
     };
-    addProject(newProject);
-    window.location.href = `/views/proyecto-detalle.html?id=${newProject.id}`;
+    const res = await addProject(newProject);
+    if (res.success) {
+      window.location.href = `/views/proyecto-detalle.html?id=${newProject.id}`;
+    }
   };
 
   return (

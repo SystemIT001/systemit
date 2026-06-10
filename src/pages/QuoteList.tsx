@@ -8,7 +8,7 @@ const QuoteList: React.FC = () => {
   const { quotes, addQuote, deleteQuote } = useQuotes();
   const { projects, addProject } = useProjects();
 
-  const handleCreateQuote = () => {
+  const handleCreateQuote = async () => {
     const quoteProjects = quotes;
     const nextCode = quoteProjects.length > 0 
       ? Math.max(...quoteProjects.map(p => p.projectCode || 0)) + 1 
@@ -25,8 +25,10 @@ const QuoteList: React.FC = () => {
       equipments: [],
       labor: []
     };
-    addQuote(newQuote);
-    window.location.href = `/views/proyecto-detalle.html?id=${newQuote.id}&type=quote`;
+    const res = await addQuote(newQuote);
+    if (res.success) {
+      window.location.href = `/views/proyecto-detalle.html?id=${newQuote.id}&type=quote`;
+    }
   };
 
   const handleConvertToProject = async (quote: any) => {

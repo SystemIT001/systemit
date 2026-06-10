@@ -4,6 +4,28 @@ verifyAuth();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Ensure the table exists
+try {
+    $conn->exec("CREATE TABLE IF NOT EXISTS quotes (
+        id VARCHAR(50) PRIMARY KEY,
+        clientId VARCHAR(50),
+        clientName VARCHAR(255),
+        projectName VARCHAR(255),
+        projectCode VARCHAR(50),
+        date VARCHAR(50),
+        status VARCHAR(50),
+        exchangeRate DECIMAL(10,2),
+        materials LONGTEXT,
+        equipments LONGTEXT,
+        labor LONGTEXT,
+        expenses LONGTEXT,
+        tasks LONGTEXT,
+        lastUpdated BIGINT
+    )");
+} catch(Exception $e) {
+    // Ignore error
+}
+
 // Ensure unused columns are dropped if they exist (MySQL)
 try {
     $conn->exec("ALTER TABLE quotes DROP COLUMN invoices");
