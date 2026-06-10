@@ -670,7 +670,7 @@ const ProjectDetail: React.FC = () => {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '4rem' }}>
       <div className="action-header">
-        <a href="/views/proyectos.html" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
+        <a href={window.location.search.includes('type=quote') ? "/views/cotizaciones.html" : "/views/proyectos.html"} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
           <ArrowLeft size={20} />
           Volver
         </a>

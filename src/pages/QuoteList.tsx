@@ -24,7 +24,7 @@ const QuoteList: React.FC = () => {
       labor: []
     };
     addProject(newQuote);
-    window.location.href = `/views/proyecto-detalle.html?id=${newQuote.id}`;
+    window.location.href = `/views/proyecto-detalle.html?id=${newQuote.id}&type=quote`;
   };
 
   const handleConvertToProject = (project: any) => {
@@ -84,7 +84,7 @@ const QuoteList: React.FC = () => {
                 </button>
                 <button 
                   className="btn-secondary" 
-                  onClick={() => window.location.href = `/views/proyecto-detalle.html?id=${project.id}`}
+                  onClick={() => window.location.href = `/views/proyecto-detalle.html?id=${project.id}&type=quote`}
                   style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 >
                   <FileText size={18} />

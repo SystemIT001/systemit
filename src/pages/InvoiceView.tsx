@@ -219,7 +219,7 @@ const InvoiceView: React.FC = () => {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '4rem' }}>
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
-        <a href={`/views/proyecto-detalle.html?id=${project.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
+        <a href={`/views/proyecto-detalle.html?id=${project.id}${project?.status === 'quote' ? '&type=quote' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
           <ArrowLeft size={20} />
           Volver al Proyecto
         </a>

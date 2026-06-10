@@ -39,6 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const getPageTitle = () => {
     if (path === '/' || path.endsWith('index.html')) return 'Dashboard';
+    if (path.includes('proyecto-detalle') && window.location.search.includes('type=quote')) return 'Edición de Cotización';
     if (path.includes('proyecto')) return 'Gestión de Proyectos';
     if (path.includes('inventario')) return 'Inventario / Bodega';
     if (path.includes('compras')) return 'Compras a Proveedores';
@@ -85,14 +86,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </a>
           <a 
             href="/views/proyectos.html" 
-            className={`nav-item ${isActive('/views/proyectos.html') || isActive('/views/proyecto-detalle.html') ? 'active' : ''}`}
+            className={`nav-item ${isActive('/views/proyectos.html') || (isActive('/views/proyecto-detalle.html') && !window.location.search.includes('type=quote')) ? 'active' : ''}`}
           >
             <FolderKanban size={20} />
             Proyectos Activos
           </a>
           <a 
             href="/views/cotizaciones.html" 
-            className={`nav-item ${isActive('/views/cotizaciones.html') ? 'active' : ''}`}
+            className={`nav-item ${isActive('/views/cotizaciones.html') || (isActive('/views/proyecto-detalle.html') && window.location.search.includes('type=quote')) ? 'active' : ''}`}
           >
             <FileText size={20} />
             Cotizaciones
