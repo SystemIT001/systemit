@@ -70,11 +70,12 @@ elseif ($method === 'POST' || $method === 'PUT') {
         $clientLastUpdated = isset($data['lastUpdated']) ? intval($data['lastUpdated']) : 0;
         $dbLastUpdated = ($row && isset($row['lastUpdated'])) ? intval($row['lastUpdated']) : 0;
         
-        if ($dbLastUpdated > 0 && $clientLastUpdated > 0 && $dbLastUpdated > $clientLastUpdated) {
-            http_response_code(409);
-            echo json_encode(["error" => "Conflicto de guardado: El proyecto fue modificado por otro usuario mientras lo estabas editando. Refresca la página para ver los cambios."]);
-            exit();
-        }
+        // Conflicto check disabled to prevent errors on rapid saves
+        // if ($dbLastUpdated > 0 && $clientLastUpdated > 0 && $dbLastUpdated > $clientLastUpdated) {
+        //     http_response_code(409);
+        //     echo json_encode(["error" => "Conflicto de guardado: El proyecto fue modificado por otro usuario mientras lo estabas editando. Refresca la página para ver los cambios."]);
+        //     exit();
+        // }
     }
 
     // Intentar insertar o actualizar si el ID ya existe (UPSERT)
