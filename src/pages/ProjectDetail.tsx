@@ -7,10 +7,10 @@ import { useInventory } from '../hooks/useInventory';
 import { useClients } from '../hooks/useClients';
 import { useAuth } from '../hooks/useAuth';
 import type { Project, MaterialItem, EquipmentItem, LaborItem, InvoiceFile } from '../types';
-import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateProjectCostsDual, calculateExpensesDual, calculateProjectRealRevenueDual } from '../utils';
+import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateExpensesDual, calculateProjectRealRevenueDual } from '../utils';
 import { InvoiceImporter } from '../components/InvoiceImporter';
 
-type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_control' | 'labor' | 'planificacion' | 'payments' | 'invoices' | 'expenses' | 'gallery';
+type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_control' | 'labor' | 'planificacion' | 'payments' | 'invoices' | 'expenses' | 'gallery' | 'profit';
 
 const ProjectDetail: React.FC = () => {
   const params = new URLSearchParams(window.location.search);
@@ -692,6 +692,7 @@ const ProjectDetail: React.FC = () => {
       tabs.push(
         { id: 'purchasing_control', label: 'Control de Compras' },
         { id: 'expenses', label: 'Gastos Operativos' },
+        { id: 'profit', label: 'Ganancias' },
         { id: 'payments', label: 'Pagos y Adelantos' },
         { id: 'gallery', label: 'Galería de Imágenes' },
         { id: 'invoices', label: 'Facturas de Prov.' }
@@ -1236,48 +1237,88 @@ const ProjectDetail: React.FC = () => {
 
               {/* Expense Summary */}
               <div style={{ marginTop: '3rem', padding: '1.5rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Resumen de Gastos y Ganancia Libre (USD)</h4>
+                <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Resumen de Gastos</h4>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span>Ganancia Bruta (Total Insumos/Labor - Costo Base):</span>
-                  <strong style={{ fontSize: '1.1rem', color: 'var(--success-color)' }}>
-                    {(() => {
-                      const totalSales = calculateProjectTotalsDual(project).totalUSD;
-                      const totalCost = calculateProjectCostsDual(project).totalUSD;
-                      const totalExpenses = calculateExpensesDual(project.expenses, project.exchangeRate).totalUSD;
-                      return formatCurrency(totalSales - totalCost - totalExpenses, 'USD');
-                    })()}
-                  </strong>
-                </div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: 'var(--danger-color)' }}>
-                  <span>Total Gastos Operativos:</span>
-                  <strong style={{ fontSize: '1.1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>Total Gastos Operativos:</span>
+                  <strong style={{ fontSize: '1.5rem', color: 'var(--danger-color)' }}>
                     {(() => {
                       return formatCurrency(calculateExpensesDual(project.expenses, project.exchangeRate).totalUSD, 'USD');
                     })()}
                   </strong>
                 </div>
+              </div>
+            </div>
+          )}
 
+          {activeTab === 'profit' && (
+            <div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3>Desglose de Ganancias del Proyecto</h3>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
                 {(() => {
-                  const totalSales = calculateProjectTotalsDual(project).totalUSD;
-                  const totalCost = calculateProjectCostsDual(project).totalUSD;
-                  const totalExpenses = calculateExpensesDual(project.expenses, project.exchangeRate).totalUSD;
-                  // La ganancia libre ahora es igual a la ganancia bruta, ya que los gastos los asume el cliente
-                  const netProfit = totalSales - totalCost - totalExpenses;
-                  
+                  let materialsProfitUSD = 0;
+                  let equipmentsProfitUSD = 0;
+                  let laborProfitUSD = 0;
+                  const exchangeRate = project.exchangeRate || 36.62;
+
+                  (project.materials || []).forEach((item: any) => {
+                    const itemTotal = calculateItemTotal(item);
+                    const itemCost = item.unitCost * item.quantity;
+                    const profit = itemTotal - itemCost;
+                    materialsProfitUSD += (item.currency === 'NIO' ? profit / exchangeRate : profit);
+                  });
+
+                  (project.equipments || []).forEach((item: any) => {
+                    const itemTotal = calculateItemTotal(item);
+                    const itemCost = item.unitCost * item.quantity;
+                    const profit = itemTotal - itemCost;
+                    equipmentsProfitUSD += (item.currency === 'NIO' ? profit / exchangeRate : profit);
+                  });
+
+                  (project.labor || []).forEach((item: any) => {
+                    const itemTotal = calculateItemTotal(item);
+                    laborProfitUSD += (item.currency === 'NIO' ? itemTotal / exchangeRate : itemTotal);
+                  });
+
+                  const totalProfitUSD = materialsProfitUSD + equipmentsProfitUSD + laborProfitUSD;
+
                   return (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px dashed var(--border-color)' }}>
-                      <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>Ganancia Libre (Neta):</span>
-                      <strong style={{ fontSize: '1.5rem', color: netProfit >= 0 ? 'var(--success-color)' : 'var(--danger-color)' }}>
-                        {formatCurrency(netProfit, 'USD')}
-                      </strong>
-                    </div>
+                    <>
+                      <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid var(--primary-color)' }}>
+                        <h4 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Ganancia en Materiales</h4>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-color)' }}>
+                          {formatCurrency(materialsProfitUSD, 'USD')}
+                        </div>
+                      </div>
+                      <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid var(--secondary-color)' }}>
+                        <h4 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Ganancia en Equipos</h4>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-color)' }}>
+                          {formatCurrency(equipmentsProfitUSD, 'USD')}
+                        </div>
+                      </div>
+                      <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid var(--warning-color)' }}>
+                        <h4 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Ingreso por Mano de Obra</h4>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-color)' }}>
+                          {formatCurrency(laborProfitUSD, 'USD')}
+                        </div>
+                      </div>
+                      
+                      <div className="card" style={{ padding: '1.5rem', backgroundColor: 'var(--surface-hover)', gridColumn: '1 / -1', marginTop: '1rem', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>Ganancia Total del Proyecto:</span>
+                        <strong style={{ fontSize: '2rem', color: 'var(--success-color)' }}>
+                          {formatCurrency(totalProfitUSD, 'USD')}
+                        </strong>
+                      </div>
+                    </>
                   );
                 })()}
               </div>
             </div>
           )}
+
           {activeTab === 'planificacion' && (
             <div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
