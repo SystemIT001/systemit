@@ -1,8 +1,11 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import type { User } from '../types';
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const storedAuth = localStorage.getItem('systemit_auth');
+    return storedAuth ? JSON.parse(storedAuth) : null;
+  });
   const [loading, setLoading] = useState(true);
 
   const checkAuth = () => {
