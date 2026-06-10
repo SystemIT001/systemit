@@ -58,6 +58,22 @@ const ProjectDetail: React.FC = () => {
   const [additionalType, setAdditionalType] = useState<'materials'|'equipments'>('materials');
   const [taskDesc, setTaskDesc] = useState('');
   
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    setItemName('');
+    setQuantity(1);
+    setUnitCost('');
+    setItemCurrency('USD');
+    setProfitMargin(0);
+    setManualPrice(0);
+    setSerialNumber('');
+    setPaymentAmount('');
+    setPaymentDesc('');
+    setExpenseAmount('');
+    setExpenseDesc('');
+    setTaskDesc('');
+  };
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -715,7 +731,7 @@ const ProjectDetail: React.FC = () => {
           {tabs.map(t => (
             <button
               key={t.id}
-              onClick={() => setActiveTab(t.id as any)}
+              onClick={() => handleTabChange(t.id as any)}
               style={{
                 flex: '0 0 auto', padding: '1rem', fontWeight: 600, whiteSpace: 'nowrap',
                 color: activeTab === t.id ? 'var(--primary-color)' : 'var(--text-muted)',
@@ -732,7 +748,7 @@ const ProjectDetail: React.FC = () => {
         <div className="mobile-only" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)' }}>
           <select 
             value={activeTab}
-            onChange={e => setActiveTab(e.target.value as any)}
+            onChange={e => handleTabChange(e.target.value as any)}
             style={{ 
               width: '100%', 
               padding: '0.875rem', 
