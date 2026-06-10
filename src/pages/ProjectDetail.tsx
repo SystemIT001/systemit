@@ -7,7 +7,7 @@ import { useInventory } from '../hooks/useInventory';
 import { useClients } from '../hooks/useClients';
 import { useAuth } from '../hooks/useAuth';
 import type { Project, MaterialItem, EquipmentItem, LaborItem, InvoiceFile } from '../types';
-import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateProjectCostsDual, calculateExpensesDual } from '../utils';
+import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateProjectCostsDual, calculateExpensesDual, calculateProjectRealRevenueDual } from '../utils';
 import { InvoiceImporter } from '../components/InvoiceImporter';
 
 type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_control' | 'labor' | 'planificacion' | 'payments' | 'invoices' | 'expenses' | 'gallery';
@@ -1451,6 +1451,21 @@ const ProjectDetail: React.FC = () => {
               })()}
             </span>
           </h3>
+
+          {/* Ganancia Real del Proyecto, visible solo cuando no se está en una pestaña individual */}
+          {(activeTab !== 'materials' && activeTab !== 'equipments' && activeTab !== 'labor') && (
+            <h3 style={{ color: 'var(--text-muted)', marginTop: '1rem', fontSize: '1rem' }}>
+              Ganancia Real (Mano de Obra + Margen en Insumos):
+              <span style={{ color: 'var(--primary-color)', fontSize: '1.5rem', display: 'block', marginTop: '0.25rem' }}>
+                {(() => {
+                  const profit = calculateProjectRealRevenueDual(project);
+                  return (
+                    <>{formatCurrency(profit.totalNIO, 'NIO')} | {formatCurrency(profit.totalUSD, 'USD')}</>
+                  );
+                })()}
+              </span>
+            </h3>
+          )}
         </div>
       )}
     </div>
