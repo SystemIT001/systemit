@@ -6,6 +6,7 @@ export interface BaseItem {
   currency?: 'NIO' | 'USD';
   purchasedQuantity?: number;
   isAdditional?: boolean;
+  clientProvides?: boolean;
 }
 
 export interface MaterialItem extends BaseItem {}

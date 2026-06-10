@@ -98,11 +98,16 @@ const InvoiceView: React.FC = () => {
                 <tr key={index} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td style={{ padding: '0.75rem 0' }}>
                     {item.name}
+                    {item.clientProvides && <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', padding: '0.1rem 0.3rem', backgroundColor: '#f1f5f9', border: '1px solid #94a3b8', color: '#64748b', borderRadius: '4px', whiteSpace: 'nowrap' }}>Cliente compra</span>}
                     {item.serialNumber && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>S/N: {item.serialNumber}</div>}
                   </td>
                   <td style={{ padding: '0.75rem 0', textAlign: 'center' }}>{item.quantity}</td>
-                  <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(sellPrice, item.currency)}</td>
-                  <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>{formatCurrency(calculateItemTotal(item), item.currency)}</td>
+                  <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
+                    {item.clientProvides ? <span style={{ color: '#94a3b8', textDecoration: 'line-through' }}>{formatCurrency(sellPrice, item.currency)}</span> : formatCurrency(sellPrice, item.currency)}
+                  </td>
+                  <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
+                    {item.clientProvides ? <span style={{ color: '#94a3b8' }}>-</span> : formatCurrency(calculateItemTotal(item), item.currency)}
+                  </td>
                 </tr>
               );
             })}

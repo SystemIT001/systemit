@@ -13,6 +13,7 @@ export const formatCurrency = (value: number, currency: 'NIO' | 'USD' | 'MXN' = 
 };
 
 export const calculateItemTotal = (item: any) => {
+  if (item.clientProvides) return 0;
   if (item.profitMargin === 'manual' && item.manualPrice !== undefined) {
     return item.quantity * item.manualPrice;
   }
@@ -24,6 +25,7 @@ export const calculateItemTotal = (item: any) => {
 };
 
 export const calculateItemCost = (item: any) => {
+  if (item.clientProvides) return 0;
   return item.quantity * item.unitCost;
 };
 

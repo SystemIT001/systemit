@@ -40,6 +40,7 @@ const ProjectDetail: React.FC = () => {
   const [profitMargin, setProfitMargin] = useState<number | 'manual'>(0);
   const [manualPrice, setManualPrice] = useState<number>(0);
   const [serialNumber, setSerialNumber] = useState<string>('');
+  const [clientProvides, setClientProvides] = useState<boolean>(false);
   
   // Payment states
   const [paymentAmount, setPaymentAmount] = useState<number | ''>('');
@@ -67,6 +68,7 @@ const ProjectDetail: React.FC = () => {
     setProfitMargin(0);
     setManualPrice(0);
     setSerialNumber('');
+    setClientProvides(false);
     setPaymentAmount('');
     setPaymentDesc('');
     setExpenseAmount('');
@@ -146,17 +148,23 @@ const ProjectDetail: React.FC = () => {
         ...newItem, 
         profitMargin, 
         manualPrice: profitMargin === 'manual' ? Number(manualPrice) : undefined,
-        isAdditional: activeTab === 'additionals' 
+        isAdditional: activeTab === 'additionals',
+        clientProvides
       } as MaterialItem];
     } else if (targetTab === 'equipments') {
       updatedProject.equipments = [...updatedProject.equipments, { 
         ...newItem, 
         profitMargin, 
         manualPrice: profitMargin === 'manual' ? Number(manualPrice) : undefined,
-        isAdditional: activeTab === 'additionals'
+        isAdditional: activeTab === 'additionals',
+        clientProvides
       } as EquipmentItem];
     } else if (targetTab === 'labor') {
-      updatedProject.labor = [...updatedProject.labor, newItem as LaborItem];
+      updatedProject.labor = [...updatedProject.labor, {
+        ...newItem,
+        isAdditional: activeTab === 'additionals',
+        clientProvides
+      } as LaborItem];
     }
 
     setProject(updatedProject);
@@ -169,6 +177,7 @@ const ProjectDetail: React.FC = () => {
     setProfitMargin(0);
     setManualPrice(0);
     setSerialNumber('');
+    setClientProvides(false);
     setAdditionalType('materials');
   };
 
@@ -583,7 +592,14 @@ const ProjectDetail: React.FC = () => {
 
               return (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '0.75rem' }}>{item.name}</td>
+                  <td style={{ padding: '0.75rem' }}>
+                    {item.name}
+                    {item.clientProvides && (
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', padding: '0.1rem 0.3rem', backgroundColor: 'var(--surface-color)', border: '1px solid var(--primary-color)', color: 'var(--primary-color)', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                        Cliente compra
+                      </span>
+                    )}
+                  </td>
                   <td style={{ padding: '0.75rem' }}>{item.quantity}</td>
                   <td style={{ padding: '0.75rem' }}>{formatCurrency(item.unitCost, item.currency)}</td>
                   {(type === 'equipments' || type === 'materials') && (
@@ -596,7 +612,15 @@ const ProjectDetail: React.FC = () => {
                       {item.serialNumber || '-'}
                     </td>
                   )}
-                  <td style={{ padding: '0.75rem', fontWeight: 600 }}>{formatCurrency(calculateItemTotal(item), item.currency)}</td>
+                  <td style={{ padding: '0.75rem', fontWeight: 600 }}>
+                    {item.clientProvides ? (
+                      <span style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>
+                        {formatCurrency(item.quantity * item.unitCost, item.currency)}
+                      </span>
+                    ) : (
+                      formatCurrency(calculateItemTotal(item), item.currency)
+                    )}
+                  </td>
                   <td style={{ padding: '0.75rem', textAlign: 'right' }}>
                     <button style={{ color: 'var(--primary-color)', marginRight: '1rem' }} onClick={() => setEditingItem({ id: item.id, type, data: { ...item } })}>
                       Editar
@@ -869,7 +893,7 @@ const ProjectDetail: React.FC = () => {
 
           {(activeTab === 'materials' || activeTab === 'equipments' || activeTab === 'labor' || activeTab === 'additionals') && (
             <div>
-              <form onSubmit={handleAddItem} className="responsive-form-grid" style={{ display: 'grid', gridTemplateColumns: activeTab !== 'labor' ? (profitMargin === 'manual' ? '2fr 1fr 1fr 1fr 1fr auto' : '2fr 1fr 1fr 1fr auto') : '2fr 1fr 1fr auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <form onSubmit={handleAddItem} className="responsive-form-grid" style={{ display: 'grid', gridTemplateColumns: activeTab !== 'labor' ? (profitMargin === 'manual' ? '2fr 1fr 1fr 1fr 1fr auto auto' : '2fr 1fr 1fr 1fr auto auto') : '2fr 1fr 1fr auto auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 {activeTab === 'additionals' && (
                   <div style={{ gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Tipo de Adicional</label>
@@ -993,6 +1017,13 @@ const ProjectDetail: React.FC = () => {
                     />
                   </div>
                 )}
+
+                <div style={{ display: 'flex', alignItems: 'center', height: '100%', paddingBottom: '0.75rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text-color)' }}>
+                    <input type="checkbox" checked={clientProvides} onChange={e => setClientProvides(e.target.checked)} style={{ width: '1rem', height: '1rem', accentColor: 'var(--primary-color)' }} />
+                    El cliente comprará
+                  </label>
+                </div>
 
                 <button type="submit" className="btn-primary" style={{ padding: '0.75rem 1rem' }}>
                   <Plus size={20} />
