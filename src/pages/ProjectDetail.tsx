@@ -892,11 +892,12 @@ const ProjectDetail: React.FC = () => {
                             onMouseDown={() => {
                               setItemName(item.name);
                               setUnitCost(item.unitCost);
+                              setItemCurrency(item.currency || 'USD');
                               setShowSuggestions(false);
                             }}
                           >
                             <div style={{ fontWeight: 500 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Costo: ${item.unitCost} | Stock: {item.stockQuantity}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Costo: {formatCurrency(item.unitCost, item.currency || 'USD')} | Stock: {item.stockQuantity}</div>
                           </div>
                         ))}
                     </div>
