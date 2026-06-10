@@ -7,8 +7,9 @@ const QuoteList: React.FC = () => {
   const { projects, addProject, deleteProject, updateProject } = useProjects();
 
   const handleCreateQuote = () => {
-    const nextCode = projects.length > 0 
-      ? Math.max(...projects.map(p => p.projectCode || 0)) + 1 
+    const quoteProjects = projects.filter(p => p.status === 'quote');
+    const nextCode = quoteProjects.length > 0 
+      ? Math.max(...quoteProjects.map(p => p.projectCode || 0)) + 1 
       : 1;
 
     const newQuote = {
@@ -28,7 +29,12 @@ const QuoteList: React.FC = () => {
 
   const handleConvertToProject = (project: any) => {
     if (window.confirm(`¿Estás seguro de convertir la cotización "${project.projectName}" en un proyecto oficial?`)) {
-      const updatedProject = { ...project, status: 'not_started' };
+      const actualProjects = projects.filter(p => p.status !== 'quote');
+      const nextCode = actualProjects.length > 0 
+        ? Math.max(...actualProjects.map(p => p.projectCode || 0)) + 1 
+        : 1;
+
+      const updatedProject = { ...project, status: 'not_started', projectCode: nextCode };
       updateProject(updatedProject);
       window.location.href = `/views/proyectos.html`;
     }

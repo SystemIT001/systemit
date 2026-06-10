@@ -9,8 +9,9 @@ const ProjectList: React.FC = () => {
 
 
   const handleCreateProject = () => {
-    const nextCode = projects.length > 0 
-      ? Math.max(...projects.map(p => p.projectCode || 0)) + 1 
+    const actualProjects = projects.filter(p => p.status !== 'quote');
+    const nextCode = actualProjects.length > 0 
+      ? Math.max(...actualProjects.map(p => p.projectCode || 0)) + 1 
       : 1;
 
     const newProject = {
