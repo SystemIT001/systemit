@@ -686,7 +686,10 @@ const ProjectDetail: React.FC = () => {
   ];
 
   if (isQuote) {
-    tabs.push({ id: 'expenses', label: 'Gastos Operativos' });
+    tabs.push(
+      { id: 'expenses', label: 'Gastos Operativos' },
+      { id: 'profit', label: 'Ganancias' }
+    );
   } else {
     if (user?.role === 'admin') {
       tabs.push(
