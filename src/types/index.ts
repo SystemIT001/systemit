@@ -32,6 +32,7 @@ export interface InventoryItem {
   unitCost: number;
   stockQuantity: number;
   category: 'materials' | 'equipments';
+  currency?: 'NIO' | 'USD';
   lastUpdated: string;
 }
 

@@ -15,7 +15,7 @@ const InventoryList: React.FC = () => {
 
   const handleStartAdd = () => {
     setIsAdding(true);
-    setEditForm({ name: '', unitCost: 0, stockQuantity: 1, category: 'equipments' });
+    setEditForm({ name: '', unitCost: 0, stockQuantity: 1, category: 'equipments', currency: 'USD' });
   };
 
   const handleStartEdit = (item: InventoryItem) => {
@@ -33,6 +33,7 @@ const InventoryList: React.FC = () => {
         unitCost: Number(editForm.unitCost),
         stockQuantity: Number(editForm.stockQuantity),
         category: editForm.category as 'materials' | 'equipments',
+        currency: editForm.currency as 'USD' | 'NIO',
         lastUpdated: new Date().toISOString()
       });
       setIsAdding(false);
@@ -77,6 +78,7 @@ const InventoryList: React.FC = () => {
             <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', textAlign: 'left' }}>
               <th style={{ padding: '1rem' }}>Nombre del Artículo</th>
               <th style={{ padding: '1rem' }}>Categoría</th>
+              <th style={{ padding: '1rem' }}>Moneda</th>
               <th style={{ padding: '1rem' }}>Costo Unitario</th>
               <th style={{ padding: '1rem' }}>Stock Disponible</th>
               <th style={{ padding: '1rem', textAlign: 'right' }}>Acciones</th>
@@ -92,6 +94,12 @@ const InventoryList: React.FC = () => {
                   <select value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value as any})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
                     <option value="equipments">Equipo</option>
                     <option value="materials">Material</option>
+                  </select>
+                </td>
+                <td style={{ padding: '1rem' }}>
+                  <select value={editForm.currency} onChange={e => setEditForm({...editForm, currency: e.target.value as any})} style={{ width: '80px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
+                    <option value="USD">USD</option>
+                    <option value="NIO">NIO</option>
                   </select>
                 </td>
                 <td style={{ padding: '1rem' }}>
@@ -111,7 +119,7 @@ const InventoryList: React.FC = () => {
 
             {filteredInventory.length === 0 && !isAdding && (
               <tr>
-                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                   No se encontraron productos en bodega.
                 </td>
               </tr>
@@ -142,9 +150,21 @@ const InventoryList: React.FC = () => {
                   </td>
                   <td style={{ padding: '1rem' }}>
                     {isEditing ? (
+                      <select value={editForm.currency || 'USD'} onChange={e => setEditForm({...editForm, currency: e.target.value as any})} style={{ width: '80px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
+                        <option value="USD">USD</option>
+                        <option value="NIO">NIO</option>
+                      </select>
+                    ) : (
+                      <span style={{ padding: '0.25rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)' }}>
+                        {item.currency || 'USD'}
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ padding: '1rem' }}>
+                    {isEditing ? (
                       <input type="number" min="0" step="0.01" value={editForm.unitCost} onChange={e => setEditForm({...editForm, unitCost: Number(e.target.value)})} style={{ width: '100px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }} />
                     ) : (
-                      formatCurrency(item.unitCost)
+                      formatCurrency(item.unitCost, item.currency || 'USD')
                     )}
                   </td>
                   <td style={{ padding: '1rem' }}>

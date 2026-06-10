@@ -4,6 +4,13 @@ verifyAuth();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Ensure currency column exists
+try {
+    $conn->exec("ALTER TABLE inventory ADD COLUMN currency VARCHAR(10) DEFAULT 'USD'");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
 if ($method === 'GET') {
     $stmt = $conn->query("SELECT * FROM inventory");
     $inventory = [];
@@ -28,12 +35,13 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $unitCost = isset($data['unitCost']) ? floatval($data['unitCost']) : 0;
     $stockQuantity = isset($data['stockQuantity']) ? intval($data['stockQuantity']) : 0;
     $category = $data['category'] ?? 'materials';
+    $currency = $data['currency'] ?? 'USD';
     $lastUpdated = $data['lastUpdated'] ?? date('Y-m-d\TH:i:s\Z');
 
-    $sql = "INSERT INTO inventory (id, name, unitCost, stockQuantity, category, lastUpdated) 
-            VALUES (:id, :name, :unitCost, :stockQuantity, :category, :lastUpdated)
+    $sql = "INSERT INTO inventory (id, name, unitCost, stockQuantity, category, currency, lastUpdated) 
+            VALUES (:id, :name, :unitCost, :stockQuantity, :category, :currency, :lastUpdated)
             ON DUPLICATE KEY UPDATE 
-            name=:name, unitCost=:unitCost, stockQuantity=:stockQuantity, category=:category, lastUpdated=:lastUpdated";
+            name=:name, unitCost=:unitCost, stockQuantity=:stockQuantity, category=:category, currency=:currency, lastUpdated=:lastUpdated";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([
@@ -42,6 +50,7 @@ elseif ($method === 'POST' || $method === 'PUT') {
         ':unitCost' => $unitCost,
         ':stockQuantity' => $stockQuantity,
         ':category' => $category,
+        ':currency' => $currency,
         ':lastUpdated' => $lastUpdated
     ]);
 
