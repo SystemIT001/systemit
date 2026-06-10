@@ -66,6 +66,47 @@ export const calculateProjectTotalsDual = (project: any) => {
   return calculateItemsTotalsDual(items, exchangeRate);
 };
 
+export const calculateProjectRealRevenueDual = (project: any) => {
+  if (!project) return { totalUSD: 0, totalNIO: 0 };
+  const exchangeRate = project.exchangeRate || 36.62;
+
+  let totalUSD = 0;
+  let totalNIO = 0;
+
+  const goods = [
+    ...(project.materials || []),
+    ...(project.equipments || [])
+  ];
+
+  goods.forEach(item => {
+    const itemTotal = calculateItemTotal(item);
+    const itemCost = calculateItemCost(item);
+    const profit = itemTotal - itemCost;
+    
+    if (item.currency === 'NIO') {
+      totalNIO += profit;
+      totalUSD += profit / exchangeRate;
+    } else {
+      totalUSD += profit;
+      totalNIO += profit * exchangeRate;
+    }
+  });
+
+  const labor = project.labor || [];
+  labor.forEach((item: any) => {
+    const itemTotal = calculateItemTotal(item);
+    if (item.currency === 'NIO') {
+      totalNIO += itemTotal;
+      totalUSD += itemTotal / exchangeRate;
+    } else {
+      totalUSD += itemTotal;
+      totalNIO += itemTotal * exchangeRate;
+    }
+  });
+
+  return { totalUSD, totalNIO };
+};
+
 export const calculateProjectCostsDual = (project: any) => {
   if (!project) return { totalUSD: 0, totalNIO: 0 };
   const exchangeRate = project.exchangeRate || 36.62;

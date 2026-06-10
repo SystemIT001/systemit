@@ -1,7 +1,7 @@
 import React from 'react';
 import { useProjects } from '../hooks/useProjects';
 import { FolderKanban, TrendingUp, CheckCircle } from 'lucide-react';
-import { calculateProjectTotalsDual, formatCurrency } from '../utils';
+import { calculateProjectRealRevenueDual, formatCurrency } from '../utils';
 
 const Dashboard: React.FC = () => {
   const { projects } = useProjects();
@@ -10,7 +10,7 @@ const Dashboard: React.FC = () => {
   const completedProjects = projects.filter(p => p.status === 'completed').length;
   
   const estimatedRevenue = projects.reduce((acc, curr) => {
-    return acc + calculateProjectTotalsDual(curr).totalUSD;
+    return acc + calculateProjectRealRevenueDual(curr).totalUSD;
   }, 0);
 
   return (
@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
             <TrendingUp size={28} />
           </div>
           <div>
-            <h3 style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>Ingresos Estimados (Total)</h3>
+            <h3 style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>Ingreso Real (Ganancia)</h3>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{formatCurrency(estimatedRevenue)}</p>
           </div>
         </div>
