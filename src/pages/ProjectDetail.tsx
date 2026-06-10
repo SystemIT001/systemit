@@ -696,11 +696,11 @@ const ProjectDetail: React.FC = () => {
           {!isQuote && <InvoiceImporter onImport={handleImportedItems} />}
           <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}${isQuote ? '&isQuote=true' : ''}`}>
             <FileText size={20} />
-            Factura Detallada
+            {isQuote ? 'Cotización Detallada' : 'Factura Detallada'}
           </button>
           <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}&type=resumida${isQuote ? '&isQuote=true' : ''}`}>
             <FileText size={20} />
-            Factura Resumida
+            {isQuote ? 'Cotización Resumida' : 'Factura Resumida'}
           </button>
           <button className="btn-primary" onClick={handleSave}>
             <Save size={20} />
