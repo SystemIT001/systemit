@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
+import { useQuotes } from '../hooks/useQuotes';
 import { useInventory } from '../hooks/useInventory';
 import { useClients } from '../hooks/useClients';
 import { useAuth } from '../hooks/useAuth';
@@ -14,7 +15,15 @@ type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_con
 const ProjectDetail: React.FC = () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  const { projects, loading, getProject, updateProject } = useProjects();
+  const isQuote = window.location.search.includes('type=quote') || window.location.search.includes('isQuote=true');
+  
+  const { projects, loading: projectsLoading, getProject, updateProject } = useProjects();
+  const { quotes, loading: quotesLoading, getQuote, updateQuote } = useQuotes();
+  
+  const loading = isQuote ? quotesLoading : projectsLoading;
+  const targetGetProject = isQuote ? getQuote : getProject;
+  const targetUpdateProject = isQuote ? updateQuote : updateProject;
+  const targetDependencies = isQuote ? quotes : projects;
   const { inventory, addInventoryItem, updateInventoryItem } = useInventory();
   const { clients, addClient } = useClients();
   const { user } = useAuth();
@@ -53,16 +62,16 @@ const ProjectDetail: React.FC = () => {
 
   useEffect(() => {
     if (id && !loading) {
-      const p = getProject(id);
+      const p = targetGetProject(id);
       if (p) setProject(p);
     }
-  }, [id, projects, loading]);
+  }, [id, targetDependencies, loading]);
 
   if (loading) return <div style={{ padding: '2rem' }}>Cargando proyecto...</div>;
   if (!project) return <div style={{ padding: '2rem' }}>Proyecto no encontrado.</div>;
 
   const handleSave = () => {
-    updateProject(project);
+    targetUpdateProject(project);
     alert('Proyecto guardado exitosamente');
   };
 
@@ -74,7 +83,7 @@ const ProjectDetail: React.FC = () => {
     if (existing) {
       const updatedProject = { ...project, clientId: existing.id };
       setProject(updatedProject);
-      updateProject(updatedProject);
+      targetUpdateProject(updatedProject);
       alert(`Cliente enlazado automáticamente con el directorio existente.`);
       return;
     }
@@ -92,7 +101,7 @@ const ProjectDetail: React.FC = () => {
     
     const updatedProject = { ...project, clientId: newClient.id };
     setProject(updatedProject);
-    updateProject(updatedProject);
+    targetUpdateProject(updatedProject);
     alert(`Cliente "${newClient.name}" agregado al directorio y enlazado exitosamente.`);
   };
 
@@ -135,7 +144,7 @@ const ProjectDetail: React.FC = () => {
     }
 
     setProject(updatedProject);
-    updateProject(updatedProject);
+    targetUpdateProject(updatedProject);
     
     // Reset form
     setItemName('');
@@ -200,7 +209,7 @@ const ProjectDetail: React.FC = () => {
     } catch (e) {
       alert("Error: El archivo PDF es demasiado grande para la memoria local (Límite 5MB). Se importaron los ítems correctamente, pero no se pudo adjuntar el archivo PDF en sí.");
       updatedProject.invoices = currentInvoices;
-      updateProject(updatedProject);
+      targetUpdateProject(updatedProject);
       setProject(updatedProject);
     }
   };
@@ -209,7 +218,7 @@ const ProjectDetail: React.FC = () => {
     const updatedProject = { ...project };
     updatedProject[tab] = updatedProject[tab].filter((item: any) => item.id !== itemId) as any;
     setProject(updatedProject);
-    updateProject(updatedProject);
+    targetUpdateProject(updatedProject);
   };
 
   const handleSaveEdit = () => {
@@ -221,6 +230,7 @@ const ProjectDetail: React.FC = () => {
       items[idx] = editingItem.data;
     }
     setProject(updatedProject);
+    targetUpdateProject(updatedProject);
     setEditingItem(null);
   };
 
@@ -231,7 +241,7 @@ const ProjectDetail: React.FC = () => {
       const updatedProject = { ...project };
       updatedProject.invoices = updatedProject.invoices?.filter((_, i) => i !== index);
       setProject(updatedProject);
-      updateProject(updatedProject);
+      targetUpdateProject(updatedProject);
     }
   };
 
@@ -250,6 +260,7 @@ const ProjectDetail: React.FC = () => {
     const updatedProject = { ...project! };
     updatedProject.payments = [...(updatedProject.payments || []), newPayment];
     setProject(updatedProject);
+    targetUpdateProject(updatedProject);
     
     setPaymentAmount('');
     setPaymentDesc('');
@@ -259,6 +270,7 @@ const ProjectDetail: React.FC = () => {
     const updatedProject = { ...project! };
     updatedProject.payments = updatedProject.payments?.filter(p => p.id !== id);
     setProject(updatedProject);
+    targetUpdateProject(updatedProject);
   };
 
   const handleAddExpense = (e: React.FormEvent) => {
@@ -277,6 +289,7 @@ const ProjectDetail: React.FC = () => {
     const updatedProject = { ...project! };
     updatedProject.expenses = [...(updatedProject.expenses || []), newExpense as any];
     setProject(updatedProject);
+    targetUpdateProject(updatedProject);
     
     setExpenseAmount('');
     setExpenseDesc('');
@@ -286,6 +299,7 @@ const ProjectDetail: React.FC = () => {
     const updatedProject = { ...project! };
     updatedProject.expenses = updatedProject.expenses?.filter(e => e.id !== id);
     setProject(updatedProject);
+    targetUpdateProject(updatedProject);
   };
 
   const handleUploadPaymentReceipt = async (paymentId: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -318,7 +332,7 @@ const ProjectDetail: React.FC = () => {
       if (payment) {
         // Guardamos la URL estática del backend
         payment.receiptImage = data.url;
-        updateProject(updatedProject);
+        targetUpdateProject(updatedProject);
         setProject(updatedProject);
       }
     } catch (err) {
@@ -339,7 +353,7 @@ const ProjectDetail: React.FC = () => {
     const updatedProject = { ...project! };
     updatedProject.tasks = [...(updatedProject.tasks || []), newTask];
     setProject(updatedProject);
-    updateProject(updatedProject);
+    targetUpdateProject(updatedProject);
     
     setTaskDesc('');
   };
@@ -350,7 +364,7 @@ const ProjectDetail: React.FC = () => {
     if (task) {
       task.status = status;
       setProject(updatedProject);
-      updateProject(updatedProject);
+      targetUpdateProject(updatedProject);
     }
   };
 
@@ -358,7 +372,7 @@ const ProjectDetail: React.FC = () => {
     const updatedProject = { ...project! };
     updatedProject.tasks = updatedProject.tasks?.filter(t => t.id !== id);
     setProject(updatedProject);
-    updateProject(updatedProject);
+    targetUpdateProject(updatedProject);
   };
 
   const handleDirectFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -399,7 +413,7 @@ const ProjectDetail: React.FC = () => {
       const currentInvoices = updatedProject.invoices || [];
       updatedProject.invoices = [...currentInvoices, invoiceData];
       
-      updateProject(updatedProject);
+      await targetUpdateProject(updatedProject);
       setProject(updatedProject);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
@@ -441,7 +455,7 @@ const ProjectDetail: React.FC = () => {
     }
     
     updatedProject.images = currentImages;
-    updateProject(updatedProject);
+    targetUpdateProject(updatedProject);
     setProject(updatedProject);
   };
 
@@ -451,7 +465,7 @@ const ProjectDetail: React.FC = () => {
     const currentImages = updatedProject.images || [];
     currentImages.splice(index, 1);
     updatedProject.images = currentImages;
-    updateProject(updatedProject);
+    targetUpdateProject(updatedProject);
     setProject(updatedProject);
   };
 
@@ -591,7 +605,7 @@ const ProjectDetail: React.FC = () => {
     if (item) {
       item.purchasedQuantity = quantity;
       setProject(updatedProject);
-      updateProject(updatedProject);
+      targetUpdateProject(updatedProject);
     }
   };
 
@@ -652,19 +666,23 @@ const ProjectDetail: React.FC = () => {
     { id: 'materials', label: 'Materiales Ferreteros' },
     { id: 'equipments', label: 'Equipos' },
     { id: 'labor', label: 'Mano de Obra' },
-    { id: 'additionals', label: 'Adicionales' }
+    ...(isQuote ? [] : [{ id: 'additionals' as Tab, label: 'Adicionales' }])
   ];
 
-  if (user?.role === 'admin') {
-    tabs.push(
-      { id: 'purchasing_control', label: 'Control de Compras' },
-      { id: 'expenses', label: 'Gastos Operativos' },
-      { id: 'payments', label: 'Pagos y Adelantos' },
-      { id: 'gallery', label: 'Galería de Imágenes' },
-      { id: 'invoices', label: 'Facturas de Prov.' }
-    );
+  if (isQuote) {
+    tabs.push({ id: 'expenses', label: 'Gastos Operativos' });
   } else {
-    tabs.push({ id: 'gallery', label: 'Galería de Imágenes' });
+    if (user?.role === 'admin') {
+      tabs.push(
+        { id: 'purchasing_control', label: 'Control de Compras' },
+        { id: 'expenses', label: 'Gastos Operativos' },
+        { id: 'payments', label: 'Pagos y Adelantos' },
+        { id: 'gallery', label: 'Galería de Imágenes' },
+        { id: 'invoices', label: 'Facturas de Prov.' }
+      );
+    } else {
+      tabs.push({ id: 'gallery', label: 'Galería de Imágenes' });
+    }
   }
 
   return (
@@ -675,12 +693,12 @@ const ProjectDetail: React.FC = () => {
           Volver
         </a>
         <div className="action-buttons">
-          <InvoiceImporter onImport={handleImportedItems} />
-          <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}`}>
+          {!isQuote && <InvoiceImporter onImport={handleImportedItems} />}
+          <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}${isQuote ? '&isQuote=true' : ''}`}>
             <FileText size={20} />
             Factura Detallada
           </button>
-          <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}&type=resumida`}>
+          <button className="btn-secondary" onClick={() => window.location.href = `/views/factura.html?id=${project.id}&type=resumida${isQuote ? '&isQuote=true' : ''}`}>
             <FileText size={20} />
             Factura Resumida
           </button>

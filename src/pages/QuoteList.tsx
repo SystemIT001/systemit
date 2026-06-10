@@ -1,13 +1,15 @@
 import React from 'react';
 import { Plus, Trash2, Printer, FileText, ArrowRight } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
+import { useQuotes } from '../hooks/useQuotes';
 import { generateId, formatCurrency, calculateProjectTotalsDual } from '../utils';
 
 const QuoteList: React.FC = () => {
-  const { projects, addProject, deleteProject, updateProject } = useProjects();
+  const { quotes, addQuote, deleteQuote } = useQuotes();
+  const { projects, addProject } = useProjects();
 
   const handleCreateQuote = () => {
-    const quoteProjects = projects.filter(p => p.status === 'quote');
+    const quoteProjects = quotes;
     const nextCode = quoteProjects.length > 0 
       ? Math.max(...quoteProjects.map(p => p.projectCode || 0)) + 1 
       : 1;
@@ -23,20 +25,24 @@ const QuoteList: React.FC = () => {
       equipments: [],
       labor: []
     };
-    addProject(newQuote);
+    addQuote(newQuote);
     window.location.href = `/views/proyecto-detalle.html?id=${newQuote.id}&type=quote`;
   };
 
-  const handleConvertToProject = (project: any) => {
-    if (window.confirm(`¿Estás seguro de convertir la cotización "${project.projectName}" en un proyecto oficial?`)) {
-      const actualProjects = projects.filter(p => p.status !== 'quote');
+  const handleConvertToProject = async (quote: any) => {
+    if (window.confirm(`¿Estás seguro de convertir la cotización "${quote.projectName}" en un proyecto oficial?`)) {
+      const actualProjects = projects;
       const nextCode = actualProjects.length > 0 
         ? Math.max(...actualProjects.map(p => p.projectCode || 0)) + 1 
         : 1;
 
-      const updatedProject = { ...project, status: 'not_started', projectCode: nextCode };
-      updateProject(updatedProject);
-      window.location.href = `/views/proyectos.html`;
+      const newProject = { ...quote, status: 'not_started', projectCode: nextCode };
+      
+      const res = await addProject(newProject);
+      if (res.success) {
+        await deleteQuote(quote.id);
+        window.location.href = `/views/proyectos.html`;
+      }
     }
   };
 
@@ -54,12 +60,12 @@ const QuoteList: React.FC = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-        {projects.filter(p => p.status === 'quote').length === 0 ? (
+        {quotes.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
             <p style={{ color: 'var(--text-muted)' }}>No hay cotizaciones pendientes.</p>
           </div>
         ) : (
-          projects.filter(p => p.status === 'quote').map(project => (
+          quotes.map(project => (
             <div key={project.id} className="card project-card">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
@@ -92,13 +98,18 @@ const QuoteList: React.FC = () => {
                 </button>
                 <button 
                   className="btn-secondary" 
-                  onClick={() => window.location.href = `/views/factura.html?id=${project.id}`}
+                  onClick={() => window.location.href = `/views/factura.html?id=${project.id}&isQuote=true`}
                 >
                   <Printer size={16} /> Imprimir
                 </button>
                 <button 
                   style={{ backgroundColor: 'transparent', color: 'var(--danger-color)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--danger-color)' }}
-                  onClick={() => deleteProject(project.id)}
+                  onClick={() => {
+                    if (window.confirm(`¿Seguro que deseas eliminar la cotización "${project.projectName}"?`)) {
+                      deleteQuote(project.id);
+                    }
+                  }}
+                  title="Eliminar"
                 >
                   <Trash2 size={16} />
                 </button>

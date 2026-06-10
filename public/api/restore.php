@@ -53,6 +53,25 @@ try {
         }
     }
 
+    // Restore quotes
+    if (isset($data['quotes']) && is_array($data['quotes'])) {
+        $conn->exec("CREATE TABLE IF NOT EXISTS quotes (id VARCHAR(50) PRIMARY KEY, clientName VARCHAR(255), projectName VARCHAR(255), date VARCHAR(50), status VARCHAR(50), exchangeRate DECIMAL(10,2), materials LONGTEXT, equipments LONGTEXT, labor LONGTEXT, projectCode VARCHAR(50), expenses LONGTEXT, tasks LONGTEXT, clientId VARCHAR(50))");
+        $conn->exec("DELETE FROM quotes"); // Clear table
+        
+        if (count($data['quotes']) > 0) {
+            $stmt = $conn->prepare("INSERT INTO quotes (id, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, projectCode, expenses, tasks, clientId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            
+            foreach ($data['quotes'] as $q) {
+                $stmt->execute([
+                    $q['id'], $q['clientName'], $q['projectName'], $q['date'], $q['status'], 
+                    $q['exchangeRate'], $q['materials'], $q['equipments'], $q['labor'], 
+                    $q['projectCode'], $q['expenses'], 
+                    $q['tasks'], $q['clientId']
+                ]);
+            }
+        }
+    }
+
     // Restore inventory
     if (isset($data['inventory']) && is_array($data['inventory'])) {
         $conn->exec("DELETE FROM inventory"); // Clear table

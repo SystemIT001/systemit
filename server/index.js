@@ -89,6 +89,23 @@ function initDB() {
       db.run(`ALTER TABLE projects ADD COLUMN images TEXT`, () => {});
       db.run(`ALTER TABLE projects ADD COLUMN lastUpdated TEXT`, () => {});
 
+      db.run(`CREATE TABLE IF NOT EXISTS quotes (
+        id TEXT PRIMARY KEY,
+        clientName TEXT,
+        projectName TEXT,
+        date TEXT,
+        status TEXT,
+        exchangeRate REAL,
+        materials TEXT,
+        equipments TEXT,
+        labor TEXT,
+        projectCode TEXT,
+        expenses TEXT,
+        tasks TEXT,
+        clientId TEXT,
+        lastUpdated TEXT
+      )`);
+
       db.run(`CREATE TABLE IF NOT EXISTS settings (
         id TEXT PRIMARY KEY,
         companyName TEXT,
@@ -342,6 +359,92 @@ app.put('/api/projects.php', (req, res) => {
 app.delete('/api/projects.php', (req, res) => {
   const { id } = req.query;
   db.run('DELETE FROM projects WHERE id = ?', id, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+// --- Rutas para Cotizaciones ---
+app.get('/api/quotes.php', (req, res) => {
+  db.all('SELECT * FROM quotes', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    const quotes = rows.map(row => ({
+      ...row,
+      materials: JSON.parse(row.materials || '[]'),
+      equipments: JSON.parse(row.equipments || '[]'),
+      labor: JSON.parse(row.labor || '[]'),
+      expenses: JSON.parse(row.expenses || '[]'),
+      tasks: JSON.parse(row.tasks || '[]'),
+      projectCode: row.projectCode || null,
+    }));
+    res.json(quotes);
+  });
+});
+
+app.post('/api/quotes.php', (req, res) => {
+  const data = req.body;
+  const materials = JSON.stringify(data.materials || []);
+  const equipments = JSON.stringify(data.equipments || []);
+  const labor = JSON.stringify(data.labor || []);
+  const expenses = JSON.stringify(data.expenses || []);
+  const tasks = JSON.stringify(data.tasks || []);
+
+  const currentLastUpdated = Date.now();
+
+  const sql = `INSERT OR REPLACE INTO quotes 
+    (id, clientId, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, projectCode, expenses, tasks, lastUpdated) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  const params = [
+    data.id, data.clientId || null, data.clientName, data.projectName, data.date, data.status, 
+    data.exchangeRate || 36.62, materials, equipments, labor, data.projectCode || null, expenses, tasks, currentLastUpdated.toString()
+  ];
+
+  db.run(sql, params, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, lastUpdated: currentLastUpdated });
+  });
+});
+
+app.put('/api/quotes.php', (req, res) => {
+  const data = req.body;
+  const materials = JSON.stringify(data.materials || []);
+  const equipments = JSON.stringify(data.equipments || []);
+  const labor = JSON.stringify(data.labor || []);
+  const expenses = JSON.stringify(data.expenses || []);
+  const tasks = JSON.stringify(data.tasks || []);
+
+  const currentLastUpdated = Date.now();
+
+  db.get('SELECT lastUpdated FROM quotes WHERE id = ?', [data.id], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    if (row && row.lastUpdated && data.lastUpdated && parseInt(row.lastUpdated) > data.lastUpdated) {
+      return res.status(409).json({ 
+        error: "Conflicto de guardado: La cotización fue modificada por otro usuario." 
+      });
+    }
+
+    const sql = `INSERT OR REPLACE INTO quotes 
+      (id, clientId, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, projectCode, expenses, tasks, lastUpdated) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    const params = [
+      data.id, data.clientId || null, data.clientName, data.projectName, data.date, data.status, 
+      data.exchangeRate || 36.62, materials, equipments, labor, data.projectCode || null, expenses, tasks, currentLastUpdated.toString()
+    ];
+
+    db.run(sql, params, function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, lastUpdated: currentLastUpdated });
+    });
+  });
+});
+
+app.delete('/api/quotes.php', (req, res) => {
+  const { id } = req.query;
+  db.run('DELETE FROM quotes WHERE id = ?', id, function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });

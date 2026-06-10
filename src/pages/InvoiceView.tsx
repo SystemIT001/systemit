@@ -4,6 +4,7 @@ import { ArrowLeft, Printer, Building2, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { useProjects } from '../hooks/useProjects';
+import { useQuotes } from '../hooks/useQuotes';
 import type { Project } from '../types';
 import { useSettings } from '../hooks/useSettings';
 import { formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual } from '../utils';
@@ -13,7 +14,13 @@ const InvoiceView: React.FC = () => {
   const id = params.get('id');
   const type = params.get('type') || 'detallada';
   const isSummary = type === 'resumida';
-  const { projects, loading, getProject } = useProjects();
+  const isQuote = window.location.search.includes('type=quote') || window.location.search.includes('isQuote=true');
+  const { projects, loading: projectsLoading, getProject } = useProjects();
+  const { quotes, loading: quotesLoading, getQuote } = useQuotes();
+  
+  const loading = isQuote ? quotesLoading : projectsLoading;
+  const targetGetProject = isQuote ? getQuote : getProject;
+  const targetDependencies = isQuote ? quotes : projects;
   const [project, setProject] = useState<Project | null>(null);
 
   const { settings, loading: settingsLoading } = useSettings();
@@ -21,10 +28,10 @@ const InvoiceView: React.FC = () => {
 
   useEffect(() => {
     if (id && !loading) {
-      const p = getProject(id);
+      const p = targetGetProject(id);
       if (p) setProject(p);
     }
-  }, [id, projects, loading]);
+  }, [id, targetDependencies, loading]);
 
   if (loading || settingsLoading) return <div style={{ padding: '2rem' }}>Cargando factura...</div>;
   if (!project) return <div style={{ padding: '2rem' }}>Proyecto no encontrado.</div>;

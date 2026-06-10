@@ -17,6 +17,10 @@ try {
     $stmt = $conn->query("SELECT * FROM projects");
     $backup['projects'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Fetch quotes
+    $stmt = $conn->query("SELECT * FROM quotes");
+    $backup['quotes'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     // Fetch inventory
     $stmt = $conn->query("SELECT * FROM inventory");
     $backup['inventory'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
