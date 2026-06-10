@@ -14,24 +14,24 @@ const InvoiceView: React.FC = () => {
   const id = params.get('id');
   const type = params.get('type') || 'detallada';
   const isSummary = type === 'resumida';
-  const isQuote = window.location.search.includes('type=quote') || window.location.search.includes('isQuote=true');
-  const { projects, loading: projectsLoading, getProject } = useProjects();
-  const { quotes, loading: quotesLoading, getQuote } = useQuotes();
   
-  const loading = isQuote ? quotesLoading : projectsLoading;
-  const targetGetProject = isQuote ? getQuote : getProject;
-  const targetDependencies = isQuote ? quotes : projects;
+  const { projects, loading: projectsLoading } = useProjects();
+  const { quotes, loading: quotesLoading } = useQuotes();
+  
+  const loading = projectsLoading || quotesLoading;
   const [project, setProject] = useState<Project | null>(null);
+
+  const isQuote = project?.status === 'quote';
 
   const { settings, loading: settingsLoading } = useSettings();
   const { companyName, subtitle, docType, footerText } = settings;
 
   useEffect(() => {
     if (id && !loading) {
-      const p = targetGetProject(id);
+      const p = projects.find(p => p.id === id) || quotes.find(q => q.id === id);
       if (p) setProject(p);
     }
-  }, [id, targetDependencies, loading]);
+  }, [id, projects, quotes, loading]);
 
   if (loading || settingsLoading) return <div style={{ padding: '2rem' }}>Cargando factura...</div>;
   if (!project) return <div style={{ padding: '2rem' }}>Proyecto no encontrado.</div>;
@@ -275,7 +275,7 @@ const InvoiceView: React.FC = () => {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '4rem' }}>
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
-        <a href={`/views/proyecto-detalle.html?id=${project.id}${isQuote ? '&isQuote=true' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
+        <a href={`/views/proyecto-detalle.html?id=${project.id}${isQuote ? '&type=quote' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
           <ArrowLeft size={20} />
           {isQuote ? 'Volver a la Cotización' : 'Volver al Proyecto'}
         </a>

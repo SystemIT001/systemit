@@ -15,19 +15,19 @@ type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_con
 const ProjectDetail: React.FC = () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  const isQuote = window.location.search.includes('type=quote') || window.location.search.includes('isQuote=true');
   
   const { projects, loading: projectsLoading, getProject, updateProject } = useProjects();
   const { quotes, loading: quotesLoading, getQuote, updateQuote } = useQuotes();
   
-  const loading = isQuote ? quotesLoading : projectsLoading;
-  const targetGetProject = isQuote ? getQuote : getProject;
-  const targetUpdateProject = isQuote ? updateQuote : updateProject;
-  const targetDependencies = isQuote ? quotes : projects;
+  const loading = projectsLoading || quotesLoading;
+  
   const { inventory, addInventoryItem, updateInventoryItem } = useInventory();
   const { clients, addClient } = useClients();
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
+
+  const isQuote = project?.status === 'quote';
+  const targetUpdateProject = isQuote ? updateQuote : updateProject;
 
   const [activeTab, setActiveTab] = useState<Tab>('info');
 
@@ -80,10 +80,10 @@ const ProjectDetail: React.FC = () => {
 
   useEffect(() => {
     if (id && !loading) {
-      const p = targetGetProject(id);
+      const p = getProject(id) || getQuote(id);
       if (p) setProject(p);
     }
-  }, [id, targetDependencies, loading]);
+  }, [id, projects, quotes, loading]);
 
   if (loading) return <div style={{ padding: '2rem' }}>Cargando proyecto...</div>;
   if (!project) return <div style={{ padding: '2rem' }}>Proyecto no encontrado.</div>;
