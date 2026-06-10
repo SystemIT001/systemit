@@ -700,34 +700,22 @@ const ProjectDetail: React.FC = () => {
     );
   };
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'info', label: 'Info General' },
-    { id: 'planificacion', label: 'Planificación' },
-    { id: 'materials', label: 'Materiales Ferreteros' },
-    { id: 'equipments', label: 'Equipos' },
-    { id: 'labor', label: 'Mano de Obra' },
-    ...(isQuote ? [] : [{ id: 'additionals' as Tab, label: 'Adicionales' }])
+  const allTabs: { id: Tab; label: string; show: boolean }[] = [
+    { id: 'info', label: 'Info General', show: true },
+    { id: 'gallery', label: 'Galería de Imágenes', show: !isQuote },
+    { id: 'equipments', label: 'Equipos', show: true },
+    { id: 'materials', label: 'Materiales Ferreteros', show: true },
+    { id: 'labor', label: 'Mano de Obra', show: true },
+    { id: 'additionals', label: 'Adicionales', show: !isQuote },
+    { id: 'planificacion', label: 'Planificación', show: true },
+    { id: 'purchasing_control', label: 'Control de Compras', show: !isQuote && user?.role === 'admin' },
+    { id: 'expenses', label: 'Gastos Operativos', show: isQuote || user?.role === 'admin' },
+    { id: 'payments', label: 'Pagos y Adelantos', show: !isQuote && user?.role === 'admin' },
+    { id: 'invoices', label: 'Facturas de Prov.', show: !isQuote && user?.role === 'admin' },
+    { id: 'profit', label: 'Ganancias', show: isQuote || user?.role === 'admin' },
   ];
 
-  if (isQuote) {
-    tabs.push(
-      { id: 'expenses', label: 'Gastos Operativos' },
-      { id: 'profit', label: 'Ganancias' }
-    );
-  } else {
-    if (user?.role === 'admin') {
-      tabs.push(
-        { id: 'purchasing_control', label: 'Control de Compras' },
-        { id: 'expenses', label: 'Gastos Operativos' },
-        { id: 'profit', label: 'Ganancias' },
-        { id: 'payments', label: 'Pagos y Adelantos' },
-        { id: 'gallery', label: 'Galería de Imágenes' },
-        { id: 'invoices', label: 'Facturas de Prov.' }
-      );
-    } else {
-      tabs.push({ id: 'gallery', label: 'Galería de Imágenes' });
-    }
-  }
+  const tabs = allTabs.filter(t => t.show).map(({ id, label }) => ({ id, label }));
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '4rem' }}>
