@@ -63,7 +63,13 @@ export const calculateProjectTotalsDual = (project: any) => {
     ...(project.labor || [])
   ];
 
-  return calculateItemsTotalsDual(items, exchangeRate);
+  const itemsTotals = calculateItemsTotalsDual(items, exchangeRate);
+  const expensesTotals = calculateExpensesDual(project.expenses || [], exchangeRate);
+
+  return {
+    totalUSD: itemsTotals.totalUSD + expensesTotals.totalUSD,
+    totalNIO: itemsTotals.totalNIO + expensesTotals.totalNIO
+  };
 };
 
 export const calculateProjectRealRevenueDual = (project: any) => {

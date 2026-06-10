@@ -1239,12 +1239,13 @@ const ProjectDetail: React.FC = () => {
                 <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Resumen de Gastos y Ganancia Libre (USD)</h4>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span>Ganancia Bruta (Total Ventas - Costo Base):</span>
+                  <span>Ganancia Bruta (Total Insumos/Labor - Costo Base):</span>
                   <strong style={{ fontSize: '1.1rem', color: 'var(--success-color)' }}>
                     {(() => {
                       const totalSales = calculateProjectTotalsDual(project).totalUSD;
                       const totalCost = calculateProjectCostsDual(project).totalUSD;
-                      return formatCurrency(totalSales - totalCost, 'USD');
+                      const totalExpenses = calculateExpensesDual(project.expenses, project.exchangeRate).totalUSD;
+                      return formatCurrency(totalSales - totalCost - totalExpenses, 'USD');
                     })()}
                   </strong>
                 </div>
@@ -1261,9 +1262,9 @@ const ProjectDetail: React.FC = () => {
                 {(() => {
                   const totalSales = calculateProjectTotalsDual(project).totalUSD;
                   const totalCost = calculateProjectCostsDual(project).totalUSD;
-                  const grossProfit = totalSales - totalCost;
                   const totalExpenses = calculateExpensesDual(project.expenses, project.exchangeRate).totalUSD;
-                  const netProfit = grossProfit - totalExpenses;
+                  // La ganancia libre ahora es igual a la ganancia bruta, ya que los gastos los asume el cliente
+                  const netProfit = totalSales - totalCost - totalExpenses;
                   
                   return (
                     <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px dashed var(--border-color)' }}>

@@ -121,6 +121,50 @@ const InvoiceView: React.FC = () => {
     );
   };
 
+  const renderExpensesTable = (expenses: any[]) => {
+    if (!expenses || expenses.length === 0) return null;
+
+    const simulatedItems = expenses.map(p => ({ quantity: 1, unitCost: p.amount, currency: p.currency }));
+    const totals = calculateItemsTotalsDual(simulatedItems, project.exchangeRate);
+
+    return (
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
+          Gastos Operativos
+        </h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+          <thead>
+            <tr style={{ color: 'var(--text-muted)', textAlign: 'left' }}>
+              <th style={{ padding: '0.5rem 0', width: '20%' }}>Categoría</th>
+              <th style={{ padding: '0.5rem 0', width: '60%' }}>Descripción</th>
+              <th style={{ padding: '0.5rem 0', textAlign: 'right' }}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {expenses.map((exp, index) => (
+              <tr key={index} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <td style={{ padding: '0.75rem 0' }}>{exp.category}</td>
+                <td style={{ padding: '0.75rem 0' }}>{exp.description}</td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right', fontWeight: 600 }}>
+                  {formatCurrency(exp.amount, exp.currency)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={2} style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600, color: 'var(--text-muted)' }}>Subtotal Gastos Operativos</td>
+              <td style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600 }}>
+                <span style={{ display: 'block' }}>{formatCurrency(totals.totalNIO, 'NIO')}</span>
+                <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatCurrency(totals.totalUSD, 'USD')}</span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    );
+  };
+
   const renderPaymentsTable = (payments: any[]) => {
     if (!payments || payments.length === 0) return null;
 
@@ -273,6 +317,7 @@ const InvoiceView: React.FC = () => {
               {renderInvoiceTable(project.materials, 'Materiales')}
               {renderInvoiceTable(project.equipments, 'Equipos')}
               {renderInvoiceTable(project.labor, 'Mano de Obra')}
+              {renderExpensesTable(project.expenses || [])}
             </>
           )}
           {renderPaymentsTable(project.payments || [])}
