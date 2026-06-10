@@ -55,7 +55,7 @@ const InvoiceView: React.FC = () => {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${docType}_PRJ-${String(project.projectCode || 0).padStart(3, '0')}_${project.clientName || 'Cliente'}.pdf`);
+      pdf.save(`${docType}_${project.status === 'quote' ? 'CTZ-' : 'PRJ-'}${String(project.projectCode || 0).padStart(3, '0')}_${project.clientName || 'Cliente'}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Hubo un error al generar el PDF.');
@@ -247,7 +247,7 @@ const InvoiceView: React.FC = () => {
           </div>
           <div style={{ textAlign: 'right', width: '300px' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f1117', textTransform: 'uppercase' }}>{docType}</h2>
-            <p style={{ color: '#64748b', marginTop: '0.5rem' }}><strong>Ref:</strong> PRJ-{String(project.projectCode || 0).padStart(3, '0')}</p>
+            <p style={{ color: '#64748b', marginTop: '0.5rem' }}><strong>Ref:</strong> {project.status === 'quote' ? 'CTZ-' : 'PRJ-'}{String(project.projectCode || 0).padStart(3, '0')}</p>
             <p style={{ color: '#64748b' }}><strong>Fecha:</strong> {new Date(project.date).toLocaleDateString()}</p>
           </div>
         </div>
