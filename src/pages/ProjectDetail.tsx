@@ -26,7 +26,7 @@ const ProjectDetail: React.FC = () => {
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
 
-  const isQuote = project?.status === 'quote';
+  const isQuote = window.location.search.includes('type=quote');
   const targetUpdateProject = isQuote ? updateQuote : updateProject;
 
   const [activeTab, setActiveTab] = useState<Tab>('info');
