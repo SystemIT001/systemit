@@ -93,7 +93,7 @@ const ProjectDetail: React.FC = () => {
     alert('Proyecto guardado exitosamente');
   };
 
-  const isQuote = project ? project.status === 'quote' : isQuoteUrl;
+  const isQuote = isQuoteUrl;
 
   const handleOpenPDF = async (type: 'detallada' | 'resumida') => {
     await targetUpdateProject(project); // Auto-save before opening PDF
