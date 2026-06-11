@@ -129,7 +129,7 @@ elseif ($method === 'POST' || $method === 'PUT') {
         ':clientToken' => $clientToken
     ]);
 
-    echo json_encode(["success" => true, "message" => "Project saved successfully", "lastUpdated" => $currentLastUpdated]);
+    echo json_encode(["success" => true, "message" => "Project saved successfully", "lastUpdated" => $currentLastUpdated, "clientToken" => $clientToken]);
 }
 elseif ($method === 'DELETE') {
     // Eliminar un proyecto

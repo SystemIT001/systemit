@@ -104,18 +104,18 @@ const ProjectDetail: React.FC = () => {
     if (!project) return;
     
     // Auto-save first to ensure clientToken is saved
-    await targetUpdateProject(project);
+    const response = await targetUpdateProject(project);
+    const updatedToken = response?.project?.clientToken || project.clientToken;
 
     // Get the base URL
     const baseUrl = window.location.origin;
-    const token = project.clientToken;
 
-    if (!token) {
+    if (!updatedToken) {
       alert("Error: No se encontró el token de cliente. Guarde el proyecto e intente nuevamente.");
       return;
     }
 
-    const portalUrl = `${baseUrl}/views/portal.html?token=${token}`;
+    const portalUrl = `${baseUrl}/views/portal.html?token=${updatedToken}`;
     
     try {
       await navigator.clipboard.writeText(portalUrl);

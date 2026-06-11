@@ -37,9 +37,9 @@ export const useProjects = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Error saving');
       
-      const newProject = { ...project, lastUpdated: data.lastUpdated };
+      const newProject = { ...project, lastUpdated: data.lastUpdated, clientToken: data.clientToken };
       setProjects(prev => [newProject, ...prev]);
-      return { success: true };
+      return { success: true, project: newProject };
     } catch (error: any) {
       alert(`Error: ${error.message}`);
       return { success: false };
@@ -62,9 +62,9 @@ export const useProjects = () => {
       }
       if (!response.ok) throw new Error(data.error || 'Error saving');
 
-      const savedProject = { ...updatedProject, lastUpdated: data.lastUpdated };
+      const savedProject = { ...updatedProject, lastUpdated: data.lastUpdated, clientToken: data.clientToken || updatedProject.clientToken };
       setProjects(prev => prev.map(p => p.id === savedProject.id ? savedProject : p));
-      return { success: true };
+      return { success: true, project: savedProject };
     } catch (error: any) {
       alert(`Error: ${error.message}`);
       return { success: false };
