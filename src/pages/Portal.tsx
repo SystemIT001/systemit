@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, calculateProjectTotalsDual } from '../utils';
+import { formatCurrency, calculateProjectTotalsDual, calculateItemsTotalsDual } from '../utils';
 import type { Project } from '../types';
 import { FileText, CheckCircle, Clock, AlertTriangle, Send } from 'lucide-react';
 
@@ -143,6 +143,76 @@ const Portal: React.FC = () => {
               </h3>
             </div>
           </div>
+
+          {/* Resumen de Costos */}
+          {(() => {
+            const exchangeRate = project.exchangeRate || 36.62;
+            const materialsTotals = calculateItemsTotalsDual(project.materials || [], exchangeRate);
+            const equipmentsTotals = calculateItemsTotalsDual(project.equipments || [], exchangeRate);
+            const laborTotals = calculateItemsTotalsDual(project.labor || [], exchangeRate);
+
+            const hasMaterials = (project.materials || []).length > 0;
+            const hasEquipments = (project.equipments || []).length > 0;
+            const hasLabor = (project.labor || []).length > 0;
+
+            if (!hasMaterials && !hasEquipments && !hasLabor) return null;
+
+            return (
+              <div style={{ marginBottom: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
+                <h3 style={{ margin: '0 0 1rem 0', color: '#64748b', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Resumen de Costos
+                </h3>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+                  <thead>
+                    <tr style={{ color: '#64748b', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ padding: '0.5rem 0', width: '70%', fontWeight: 500 }}>Concepto</th>
+                      <th style={{ padding: '0.5rem 0', textAlign: 'right', fontWeight: 500 }}>Total (USD)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {hasMaterials && (
+                      <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '0.75rem 0', color: '#334155' }}>Materiales ferreteros</td>
+                        <td style={{ padding: '0.75rem 0', textAlign: 'right', color: '#0f172a', fontWeight: 500 }}>{formatCurrency(materialsTotals.totalUSD, 'USD')}</td>
+                      </tr>
+                    )}
+                    {hasEquipments && (
+                      <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '0.75rem 0', color: '#334155' }}>Equipos</td>
+                        <td style={{ padding: '0.75rem 0', textAlign: 'right', color: '#0f172a', fontWeight: 500 }}>{formatCurrency(equipmentsTotals.totalUSD, 'USD')}</td>
+                      </tr>
+                    )}
+                    {hasLabor && (
+                      <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '0.75rem 0', color: '#334155' }}>Mano de obra</td>
+                        <td style={{ padding: '0.75rem 0', textAlign: 'right', color: '#0f172a', fontWeight: 500 }}>{formatCurrency(laborTotals.totalUSD, 'USD')}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td style={{ textAlign: 'right', padding: '1rem 0', fontWeight: 600, color: '#64748b' }}>Tasa de Cambio</td>
+                      <td style={{ textAlign: 'right', padding: '1rem 0', color: '#64748b' }}>
+                        {formatCurrency(exchangeRate, 'NIO')} / USD
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ textAlign: 'right', padding: '0.5rem 0', fontWeight: 600, color: '#0f172a' }}>TOTAL (NIO)</td>
+                      <td style={{ textAlign: 'right', padding: '0.5rem 0', fontWeight: 700, color: '#0f172a', fontSize: '1.1rem' }}>
+                        {formatCurrency(totals.totalNIO, 'NIO')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ textAlign: 'right', padding: '0.5rem 0', fontWeight: 600, color: '#0f172a' }}>TOTAL (USD)</td>
+                      <td style={{ textAlign: 'right', padding: '0.5rem 0', fontWeight: 700, color: '#059669', fontSize: '1.25rem' }}>
+                        {formatCurrency(totals.totalUSD, 'USD')}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            );
+          })()}
 
           <div style={{ backgroundColor: '#f8fafc', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem' }}>
             <h3 style={{ margin: '0 0 1rem 0', color: '#0f172a', fontSize: '1.1rem' }}>Estado Actual</h3>
