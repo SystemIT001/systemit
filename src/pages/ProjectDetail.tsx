@@ -26,8 +26,8 @@ const ProjectDetail: React.FC = () => {
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
 
-  const isQuote = window.location.search.includes('type=quote');
-  const targetUpdateProject = isQuote ? updateQuote : updateProject;
+  const isQuoteUrl = window.location.search.includes('type=quote');
+  const targetUpdateProject = isQuoteUrl ? updateQuote : updateProject;
 
   const [activeTab, setActiveTab] = useState<Tab>('info');
 
@@ -92,6 +92,8 @@ const ProjectDetail: React.FC = () => {
     targetUpdateProject(project);
     alert('Proyecto guardado exitosamente');
   };
+
+  const isQuote = project ? project.status === 'quote' : isQuoteUrl;
 
   const handleOpenPDF = async (type: 'detallada' | 'resumida') => {
     await targetUpdateProject(project); // Auto-save before opening PDF
