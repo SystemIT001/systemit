@@ -56,8 +56,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return path.includes(matchPath);
   };
 
+  const isDetailView = path.includes('proyecto-detalle.html');
+
   return (
-    <div className="layout-container">
+    <div className={`layout-container ${isDetailView ? 'desktop-collapsed' : ''}`}>
       {/* Mobile Overlay */}
       <div 
         className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''} no-print`} 

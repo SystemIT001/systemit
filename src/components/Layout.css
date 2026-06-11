@@ -35,6 +35,29 @@
   justify-content: center;
 }
 
+/* Desktop collapsed mode (Project Details) */
+@media (min-width: 769px) {
+  .layout-container.desktop-collapsed .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+  }
+
+  .layout-container.desktop-collapsed .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .layout-container.desktop-collapsed .mobile-overlay.open {
+    display: block;
+  }
+
+  .layout-container.desktop-collapsed .mobile-menu-btn {
+    display: flex;
+  }
+}
+
 .brand {
   font-size: 1.5rem;
   font-weight: 700;
