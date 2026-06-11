@@ -26,6 +26,13 @@ try {
     // Ignore error
 }
 
+// Ensure lastUpdated column exists (MySQL)
+try {
+    $conn->exec("ALTER TABLE quotes ADD COLUMN lastUpdated BIGINT");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
 // Ensure unused columns are dropped if they exist (MySQL)
 try {
     $conn->exec("ALTER TABLE quotes DROP COLUMN invoices");

@@ -40,14 +40,14 @@ try {
         $conn->exec("DELETE FROM projects"); // Clear table
         
         if (count($data['projects']) > 0) {
-            $stmt = $conn->prepare("INSERT INTO projects (id, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, clientId, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO projects (id, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, invoices, payments, projectCode, expenses, tasks, clientId, images, lastUpdated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             foreach ($data['projects'] as $p) {
                 $stmt->execute([
                     $p['id'], $p['clientName'], $p['projectName'], $p['date'], $p['status'], 
                     $p['exchangeRate'], $p['materials'], $p['equipments'], $p['labor'], 
                     $p['invoices'], $p['payments'], $p['projectCode'], $p['expenses'], 
-                    $p['tasks'], $p['clientId'], $p['images']
+                    $p['tasks'], $p['clientId'], $p['images'], $p['lastUpdated'] ?? 0
                 ]);
             }
         }
@@ -55,18 +55,18 @@ try {
 
     // Restore quotes
     if (isset($data['quotes']) && is_array($data['quotes'])) {
-        $conn->exec("CREATE TABLE IF NOT EXISTS quotes (id VARCHAR(50) PRIMARY KEY, clientName VARCHAR(255), projectName VARCHAR(255), date VARCHAR(50), status VARCHAR(50), exchangeRate DECIMAL(10,2), materials LONGTEXT, equipments LONGTEXT, labor LONGTEXT, projectCode VARCHAR(50), expenses LONGTEXT, tasks LONGTEXT, clientId VARCHAR(50))");
+        $conn->exec("CREATE TABLE IF NOT EXISTS quotes (id VARCHAR(50) PRIMARY KEY, clientName VARCHAR(255), projectName VARCHAR(255), date VARCHAR(50), status VARCHAR(50), exchangeRate DECIMAL(10,2), materials LONGTEXT, equipments LONGTEXT, labor LONGTEXT, projectCode VARCHAR(50), expenses LONGTEXT, tasks LONGTEXT, clientId VARCHAR(50), lastUpdated BIGINT)");
         $conn->exec("DELETE FROM quotes"); // Clear table
         
         if (count($data['quotes']) > 0) {
-            $stmt = $conn->prepare("INSERT INTO quotes (id, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, projectCode, expenses, tasks, clientId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO quotes (id, clientName, projectName, date, status, exchangeRate, materials, equipments, labor, projectCode, expenses, tasks, clientId, lastUpdated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             foreach ($data['quotes'] as $q) {
                 $stmt->execute([
                     $q['id'], $q['clientName'], $q['projectName'], $q['date'], $q['status'], 
                     $q['exchangeRate'], $q['materials'], $q['equipments'], $q['labor'], 
                     $q['projectCode'], $q['expenses'], 
-                    $q['tasks'], $q['clientId']
+                    $q['tasks'], $q['clientId'], $q['lastUpdated'] ?? 0
                 ]);
             }
         }

@@ -730,7 +730,6 @@ const ProjectDetail: React.FC = () => {
           Volver
         </a>
         <div className="action-buttons">
-          {!isQuote && <InvoiceImporter onImport={handleImportedItems} />}
           <button className="btn-secondary" onClick={() => handleOpenPDF('detallada')}>
             <FileText size={20} />
             {isQuote ? 'Cotización Detallada' : 'Factura Detallada'}
@@ -746,25 +745,7 @@ const ProjectDetail: React.FC = () => {
         </div>
       </div>
       
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {/* Desktop Tabs */}
-        <div className="desktop-only" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              onClick={() => handleTabChange(t.id as any)}
-              style={{
-                flex: '0 0 auto', padding: '1rem', fontWeight: 600, whiteSpace: 'nowrap',
-                color: activeTab === t.id ? 'var(--primary-color)' : 'var(--text-muted)',
-                borderBottom: activeTab === t.id ? '2px solid var(--primary-color)' : '2px solid transparent',
-                transition: 'all 0.2s'
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
+      <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '80vh' }}>
         {/* Mobile Tabs Dropdown */}
         <div className="mobile-only" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)' }}>
           <select 
@@ -788,7 +769,47 @@ const ProjectDetail: React.FC = () => {
           </select>
         </div>
 
-        <div style={{ padding: '2rem' }}>
+        <div style={{ display: 'flex', flex: 1, flexDirection: 'row', overflow: 'hidden' }}>
+          {/* Desktop Sidebar Menu */}
+          <div className="desktop-only" style={{ 
+            width: '260px', 
+            borderRight: '1px solid var(--border-color)', 
+            backgroundColor: 'var(--surface-color)', 
+            display: 'flex',
+            flexDirection: 'column',
+            flexShrink: 0,
+            overflowY: 'auto'
+          }}>
+            <div style={{ padding: '1.5rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '0.5px' }}>
+              Módulos del Proyecto
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', padding: '0 0.75rem 1rem 0.75rem' }}>
+              {tabs.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => handleTabChange(t.id as any)}
+                  style={{
+                    textAlign: 'left',
+                    padding: '0.875rem 1rem',
+                    margin: '0.25rem 0',
+                    borderRadius: '8px',
+                    fontWeight: activeTab === t.id ? 600 : 500,
+                    color: activeTab === t.id ? 'var(--primary-color)' : 'var(--text-main)',
+                    backgroundColor: activeTab === t.id ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                    border: '1px solid ' + (activeTab === t.id ? 'rgba(99, 102, 241, 0.2)' : 'transparent'),
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer'
+                  }}
+                  onMouseOver={(e) => { if(activeTab !== t.id) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)' }}
+                  onMouseOut={(e) => { if(activeTab !== t.id) e.currentTarget.style.backgroundColor = 'transparent' }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ flex: 1, padding: '2rem', overflowY: 'auto', backgroundColor: 'transparent' }}>
           {activeTab === 'info' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '600px' }}>
               <div style={{ display: 'flex', gap: '1.5rem' }}>
@@ -1025,8 +1046,11 @@ const ProjectDetail: React.FC = () => {
 
               {activeTab === 'materials' && (
                 <>
-                  {project.materials.filter(i => !i.isAdditional).length > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div>
+                      {!isQuote && <InvoiceImporter onImport={handleImportedItems} />}
+                    </div>
+                    {project.materials.filter(i => !i.isAdditional).length > 0 && (
                       <button 
                         type="button"
                         className="btn-secondary" 
@@ -1035,20 +1059,24 @@ const ProjectDetail: React.FC = () => {
                           const updated = { ...project };
                           updated.materials = updated.materials.map(m => (!m.isAdditional ? { ...m, clientProvides: !allClient } : m));
                           setProject(updated);
+                          targetUpdateProject(updated);
                         }}
                         style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
                       >
                         {project.materials.filter(i => !i.isAdditional).every(m => m.clientProvides) ? 'Desmarcar Todos (Cliente Compra)' : 'Marcar Todos (Cliente Compra)'}
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   {renderTable(project.materials.filter(i => !i.isAdditional), 'materials')}
                 </>
               )}
               {activeTab === 'equipments' && (
                 <>
-                  {project.equipments.filter(i => !i.isAdditional).length > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div>
+                      {!isQuote && <InvoiceImporter onImport={handleImportedItems} />}
+                    </div>
+                    {project.equipments.filter(i => !i.isAdditional).length > 0 && (
                       <button 
                         type="button"
                         className="btn-secondary" 
@@ -1057,20 +1085,24 @@ const ProjectDetail: React.FC = () => {
                           const updated = { ...project };
                           updated.equipments = updated.equipments.map(m => (!m.isAdditional ? { ...m, clientProvides: !allClient } : m));
                           setProject(updated);
+                          targetUpdateProject(updated);
                         }}
                         style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
                       >
                         {project.equipments.filter(i => !i.isAdditional).every(m => m.clientProvides) ? 'Desmarcar Todos (Cliente Compra)' : 'Marcar Todos (Cliente Compra)'}
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   {renderTable(project.equipments.filter(i => !i.isAdditional), 'equipments')}
                 </>
               )}
               {activeTab === 'labor' && (
                 <>
-                  {project.labor.length > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div>
+                      {!isQuote && <InvoiceImporter onImport={handleImportedItems} />}
+                    </div>
+                    {project.labor.length > 0 && (
                       <button 
                         type="button"
                         className="btn-secondary" 
@@ -1079,13 +1111,14 @@ const ProjectDetail: React.FC = () => {
                           const updated = { ...project };
                           updated.labor = updated.labor.map(m => ({ ...m, clientProvides: !allClient }));
                           setProject(updated);
+                          targetUpdateProject(updated);
                         }}
                         style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
                       >
                         {project.labor.every(m => m.clientProvides) ? 'Desmarcar Todos (Cliente Compra)' : 'Marcar Todos (Cliente Compra)'}
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   {renderTable(project.labor, 'labor')}
                 </>
               )}
@@ -1578,6 +1611,7 @@ const ProjectDetail: React.FC = () => {
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
       

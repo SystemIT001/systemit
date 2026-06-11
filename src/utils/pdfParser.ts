@@ -21,10 +21,12 @@ export const extractItemsFromPDF = async (fileUrl: string | ArrayBuffer): Promis
     const content = await page.getTextContent();
     const strings = content.items.map((item: any) => item.str.trim()).filter((s: string) => s !== '');
     
-    // Heurística simple para proformas estilo Smart Security y otras que usan 'pcs' o 'unidad'
+    const units = ['pcs', 'unidad', 'unidades', 'pza', 'pzas', 'pieza', 'piezas', 'und', 'unds', 'u', 'u.', 'c/u', 'mt', 'mts', 'm', 'rollo', 'rollos', 'caja', 'cajas', 'par', 'pares', 'gl', 'gln', 'galon', 'galones'];
+    
     for (let j = 0; j < strings.length; j++) {
-      const lower = strings[j].toLowerCase();
-      if (lower === 'pcs' || lower === 'unidad' || lower === 'unidades') {
+      const lower = strings[j].toLowerCase().trim();
+      
+      if (units.includes(lower)) {
         const quantity = Number(strings[j - 1]);
         
         let nameParts = [];
@@ -50,6 +52,42 @@ export const extractItemsFromPDF = async (fileUrl: string | ArrayBuffer): Promis
              quantity,
              unitCost
            });
+           continue; // Salta al siguiente token
+        }
+      }
+      
+      // Fallback Heurística Matemática: Cantidad -> Precio Unitario -> Total
+      // Si encontramos 3 números consecutivos donde num1 * num2 == num3
+      const q = Number(strings[j]);
+      const p1Str = strings[j + 1] ? strings[j + 1].replace(/,/g, '') : 'NaN';
+      const p2Str = strings[j + 2] ? strings[j + 2].replace(/,/g, '') : 'NaN';
+      
+      const p1 = parseFloat(p1Str);
+      const p2 = parseFloat(p2Str);
+      
+      if (!isNaN(q) && !isNaN(p1) && !isNaN(p2) && q > 0 && p1 >= 0) {
+        // Verifica si la matemática cuadra (con un pequeño margen de error por redondeos)
+        if (Math.abs((q * p1) - p2) < 0.05) {
+          let nameParts = [];
+          let index = j - 1;
+          while (index >= 0 && isNaN(Number(strings[index]))) {
+             if (strings[index] !== '') nameParts.unshift(strings[index]);
+             index--;
+             if (j - index > 6) break; 
+          }
+          
+          const name = nameParts.join(' ').trim();
+          
+          // Solo lo agregamos si no es un artículo que ya agregamos (evitar duplicados)
+          // O simplemente si tiene un nombre válido
+          if (name && name.length > 2) {
+             items.push({
+               name: name,
+               quantity: q,
+               unitCost: p1
+             });
+             j += 2; // Avanzamos el índice para no re-procesar el precio y el total
+          }
         }
       }
     }

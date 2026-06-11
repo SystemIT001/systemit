@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X, FileText, LifeBuoy } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X, FileText, LifeBuoy, PieChart } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../hooks/useSettings';
@@ -120,6 +120,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <a href="/views/compras.html" className={`nav-item ${isActive('compras') ? 'active' : ''}`}>
                 <ShoppingCart size={20} />
                 Compras a Prov.
+              </a>
+              <a href="/views/reportes.html" className={`nav-item ${isActive('reportes') ? 'active' : ''}`}>
+                <PieChart size={20} />
+                Reportes
               </a>
               <a href="/views/configuraciones.html" className={`nav-item ${isActive('configuracion') ? 'active' : ''}`}>
                 <Settings size={20} />
