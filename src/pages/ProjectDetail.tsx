@@ -826,7 +826,7 @@ const ProjectDetail: React.FC = () => {
                   <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Código (Auto)</label>
                   <input 
                     type="text" 
-                    value={`${project.status === 'quote' ? 'CTZ-' : 'PRJ-'}${String(project.projectCode || 0).padStart(3, '0')}`} 
+                    value={`${isQuote ? 'CTZ-' : 'PRJ-'}${String(project.projectCode || 0).padStart(3, '0')}`} 
                     readOnly
                     style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-muted)', cursor: 'not-allowed' }}
                   />
