@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X, FileText, LifeBuoy, PieChart, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, FileText, LifeBuoy, PieChart, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../hooks/useSettings';
@@ -73,14 +73,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <ReceiptText className="brand-icon" size={28} />
             <span>{settings?.companyName || 'SystemIT'}</span>
           </div>
-          {/* Close button inside sidebar for mobile */}
-          <button 
-            className="sidebar-close-btn" 
-            onClick={() => setIsMobileMenuOpen(false)}
-            style={{ marginLeft: 'auto' }}
-          >
-            <X size={24} />
-          </button>
         </div>
 
         <nav className="nav-links">
