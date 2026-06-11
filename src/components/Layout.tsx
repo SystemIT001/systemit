@@ -25,6 +25,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     checkAuth();
   }, []);
 
+  // Close sidebar when ESC key is pressed
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useEffect(() => {
     if (!loading && !user && !path.includes('login.html')) {
       window.location.href = '/views/login.html';
