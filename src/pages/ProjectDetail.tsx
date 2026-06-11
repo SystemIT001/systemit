@@ -899,14 +899,27 @@ const ProjectDetail: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Fecha</label>
-                <input 
-                  type="date" 
-                  value={project.date} 
-                  onChange={e => setProject({...project, date: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
-                />
+              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Fecha</label>
+                  <input 
+                    type="date" 
+                    value={project.date} 
+                    onChange={e => setProject({...project, date: e.target.value})}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
+                  />
+                </div>
+                {isQuote && (
+                  <div style={{ flex: 1, minWidth: '200px' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Válida Hasta</label>
+                    <input 
+                      type="date" 
+                      value={project.validUntil || ''} 
+                      onChange={e => setProject({...project, validUntil: e.target.value})}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
+                    />
+                  </div>
+                )}
               </div>
               {!isQuote && (
                 <div>

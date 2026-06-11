@@ -40,6 +40,13 @@ try {
     // Column already exists, ignore
 }
 
+// Ensure validUntil column exists
+try {
+    $conn->exec("ALTER TABLE quotes ADD COLUMN validUntil VARCHAR(50)");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
 // Ensure unused columns are dropped if they exist (MySQL)
 try {
     $conn->exec("ALTER TABLE quotes DROP COLUMN invoices");
@@ -83,7 +90,13 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $date = $data['date'] ?? '';
     $status = $data['status'] ?? 'draft';
     $exchangeRate = isset($data['exchangeRate']) ? floatval($data['exchangeRate']) : 36.62;
+    $validUntil = $data['validUntil'] ?? null;
     
+    // Si no tiene fecha de validez y es cotización, asignar por defecto 15 días a partir de hoy
+    if (empty($validUntil)) {
+        $validUntil = date('Y-m-d', strtotime('+15 days'));
+    }
+
     // Serializar campos complejos a JSON
     $materials = json_encode($data['materials'] ?? []);
     $equipments = json_encode($data['equipments'] ?? []);
@@ -102,20 +115,14 @@ elseif ($method === 'POST' || $method === 'PUT') {
         
         $clientLastUpdated = isset($data['lastUpdated']) ? intval($data['lastUpdated']) : 0;
         $dbLastUpdated = ($row && isset($row['lastUpdated'])) ? intval($row['lastUpdated']) : 0;
-        // Conflicto check disabled to prevent errors on rapid saves
-        // if ($dbLastUpdated > 0 && $clientLastUpdated > 0 && $dbLastUpdated > $clientLastUpdated) {
-        //     http_response_code(409);
-        //     echo json_encode(["error" => "Conflicto de guardado: El proyecto fue modificado por otro usuario mientras lo estabas editando. Refresca la página para ver los cambios."]);
-        //     exit();
-        // }
     }
 
     // Intentar insertar o actualizar si el ID ya existe (UPSERT)
-    $sql = "INSERT INTO quotes (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, expenses, tasks, lastUpdated, clientToken) 
-            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :expenses, :tasks, :lastUpdated, :clientToken)
+    $sql = "INSERT INTO quotes (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, expenses, tasks, lastUpdated, clientToken, validUntil) 
+            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :expenses, :tasks, :lastUpdated, :clientToken, :validUntil)
             ON DUPLICATE KEY UPDATE 
             clientId=:clientId, clientName=:clientName, projectName=:projectName, projectCode=:projectCode, date=:date, status=:status, 
-            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, expenses=:expenses, tasks=:tasks, lastUpdated=:lastUpdated, clientToken=:clientToken";
+            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, expenses=:expenses, tasks=:tasks, lastUpdated=:lastUpdated, clientToken=:clientToken, validUntil=:validUntil";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([
@@ -133,10 +140,11 @@ elseif ($method === 'POST' || $method === 'PUT') {
         ':expenses' => $expenses,
         ':tasks' => $tasks,
         ':lastUpdated' => $currentLastUpdated,
-        ':clientToken' => $clientToken
+        ':clientToken' => $clientToken,
+        ':validUntil' => $validUntil
     ]);
 
-    echo json_encode(["success" => true, "message" => "Project saved successfully", "lastUpdated" => $currentLastUpdated, "clientToken" => $clientToken]);
+    echo json_encode(["success" => true, "message" => "Project saved successfully", "lastUpdated" => $currentLastUpdated, "clientToken" => $clientToken, "validUntil" => $validUntil]);
 }
 elseif ($method === 'DELETE') {
     // Eliminar un proyecto

@@ -15,6 +15,35 @@ const Portal: React.FC = () => {
   const [ticketDesc, setTicketDesc] = useState('');
   const [ticketSuccess, setTicketSuccess] = useState(false);
 
+  // Countdown timer
+  const [timeLeft, setTimeLeft] = useState<{days: number, hours: number, minutes: number, seconds: number, expired: boolean} | null>(null);
+
+  useEffect(() => {
+    if (!project || !isQuote || !project.validUntil) return;
+    
+    // Asumimos que expira al final del día indicado en validUntil
+    const endDate = new Date(`${project.validUntil}T23:59:59`);
+    
+    const calculateTimeLeft = () => {
+      const difference = endDate.getTime() - new Date().getTime();
+      if (difference <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: true });
+        return;
+      }
+      setTimeLeft({
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+        expired: false
+      });
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(timer);
+  }, [project, isQuote]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
@@ -219,11 +248,28 @@ const Portal: React.FC = () => {
             
             {isQuote ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Clock size={24} color="#f59e0b" />
-                <div>
-                  <p style={{ margin: 0, fontWeight: 500, color: '#b45309' }}>Pendiente de Aprobación</p>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>Revisa la propuesta. Si estás de acuerdo, puedes aprobarla aquí mismo.</p>
+                <Clock size={24} color={timeLeft?.expired ? '#ef4444' : '#f59e0b'} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontWeight: 500, color: timeLeft?.expired ? '#991b1b' : '#b45309' }}>
+                    {timeLeft?.expired ? 'Cotización Expirada' : 'Pendiente de Aprobación'}
+                  </p>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
+                    {timeLeft?.expired 
+                      ? 'El tiempo de validez de esta propuesta ha terminado. Por favor, solicita una actualización.'
+                      : 'Revisa la propuesta. Si estás de acuerdo, puedes aprobarla aquí mismo.'}
+                  </p>
                 </div>
+                {timeLeft && !timeLeft.expired && (
+                  <div style={{ textAlign: 'right', backgroundColor: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                    <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Expira en</p>
+                    <div style={{ display: 'flex', gap: '0.5rem', fontWeight: 600, color: '#0f172a', fontFamily: 'monospace', fontSize: '1.1rem' }}>
+                      <span>{timeLeft.days}d</span>
+                      <span>{String(timeLeft.hours).padStart(2, '0')}h</span>
+                      <span>{String(timeLeft.minutes).padStart(2, '0')}m</span>
+                      <span>{String(timeLeft.seconds).padStart(2, '0')}s</span>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -243,17 +289,17 @@ const Portal: React.FC = () => {
             <div style={{ textAlign: 'center' }}>
               <button 
                 onClick={handleApprove}
-                disabled={actionLoading}
+                disabled={actionLoading || timeLeft?.expired}
                 style={{
-                  backgroundColor: '#3b82f6',
+                  backgroundColor: timeLeft?.expired ? '#cbd5e1' : '#3b82f6',
                   color: 'white',
                   border: 'none',
                   padding: '1rem 2rem',
                   borderRadius: '8px',
                   fontSize: '1.1rem',
                   fontWeight: 600,
-                  cursor: actionLoading ? 'not-allowed' : 'pointer',
-                  opacity: actionLoading ? 0.7 : 1,
+                  cursor: (actionLoading || timeLeft?.expired) ? 'not-allowed' : 'pointer',
+                  opacity: (actionLoading || timeLeft?.expired) ? 0.7 : 1,
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.5rem',
@@ -261,7 +307,7 @@ const Portal: React.FC = () => {
                 }}
               >
                 <CheckCircle size={20} />
-                {actionLoading ? 'Procesando...' : 'Aprobar Cotización e Iniciar Proyecto'}
+                {actionLoading ? 'Procesando...' : (timeLeft?.expired ? 'Cotización Expirada' : 'Aprobar Cotización e Iniciar Proyecto')}
               </button>
             </div>
           )}
