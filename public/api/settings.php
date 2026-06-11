@@ -13,6 +13,12 @@ try {
         webhookUrl TEXT
     )");
 
+    try {
+        $conn->exec("ALTER TABLE settings ADD COLUMN webhookUrl TEXT");
+    } catch(Exception $e) {
+        // Column already exists, ignore
+    }
+
     $method = $_SERVER['REQUEST_METHOD'];
 
     if ($method === 'GET') {
