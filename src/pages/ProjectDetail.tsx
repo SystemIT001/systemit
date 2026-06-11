@@ -877,18 +877,20 @@ const ProjectDetail: React.FC = () => {
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
                 />
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Estado</label>
-                <select 
-                  value={project.status || 'not_started'}
-                  onChange={e => setProject({...project, status: e.target.value as 'not_started' | 'draft' | 'completed'})}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
-                >
-                  <option value="not_started">No Iniciado</option>
-                  <option value="draft">Borrador / En Proceso</option>
-                  <option value="completed">Completado</option>
-                </select>
-              </div>
+              {!isQuote && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Estado</label>
+                  <select 
+                    value={project.status || 'not_started'}
+                    onChange={e => setProject({...project, status: e.target.value as 'not_started' | 'draft' | 'completed'})}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
+                  >
+                    <option value="not_started">No Iniciado</option>
+                    <option value="draft">Borrador / En Proceso</option>
+                    <option value="completed">Completado</option>
+                  </select>
+                </div>
+              )}
 
               {user?.role === 'admin' && (
                 <div>
