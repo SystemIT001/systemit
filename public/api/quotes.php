@@ -92,9 +92,9 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $exchangeRate = isset($data['exchangeRate']) ? floatval($data['exchangeRate']) : 36.62;
     $validUntil = $data['validUntil'] ?? null;
     
-    // Si no tiene fecha de validez y es cotización, asignar por defecto 15 días a partir de hoy
+    // Si no tiene fecha de validez y es cotización, asignar por defecto 7 días a partir de hoy
     if (empty($validUntil)) {
-        $validUntil = date('Y-m-d', strtotime('+15 days'));
+        $validUntil = date('Y-m-d', strtotime('+7 days'));
     }
 
     // Serializar campos complejos a JSON
