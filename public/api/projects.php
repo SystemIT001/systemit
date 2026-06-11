@@ -11,6 +11,13 @@ try {
     // Column already exists, ignore
 }
 
+// Ensure clientToken column exists
+try {
+    $conn->exec("ALTER TABLE projects ADD COLUMN clientToken VARCHAR(255)");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
 if ($method === 'GET') {
     // Obtener todos los proyectos
     $stmt = $conn->query("SELECT * FROM projects");

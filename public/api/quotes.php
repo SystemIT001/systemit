@@ -33,6 +33,13 @@ try {
     // Column already exists, ignore
 }
 
+// Ensure clientToken column exists
+try {
+    $conn->exec("ALTER TABLE quotes ADD COLUMN clientToken VARCHAR(255)");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
 // Ensure unused columns are dropped if they exist (MySQL)
 try {
     $conn->exec("ALTER TABLE quotes DROP COLUMN invoices");
