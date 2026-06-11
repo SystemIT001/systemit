@@ -9,6 +9,7 @@ const Settings: React.FC = () => {
   const [subtitle, setSubtitle] = useState('');
   const [docType, setDocType] = useState('');
   const [footerText, setFooterText] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState('');
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<'empresa' | 'basedatos' | 'usuarios'>('empresa');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -31,12 +32,13 @@ const Settings: React.FC = () => {
       setSubtitle(settings.subtitle);
       setDocType(settings.docType);
       setFooterText(settings.footerText);
+      setWebhookUrl(settings.webhookUrl || '');
     }
   }, [settings, settingsLoading]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveSettings({ companyName, subtitle, docType, footerText });
+    await saveSettings({ companyName, subtitle, docType, footerText, webhookUrl });
     
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -262,6 +264,16 @@ const Settings: React.FC = () => {
                 onChange={e => setFooterText(e.target.value)}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)', minHeight: '100px', resize: 'vertical' }}
                 placeholder="Nota de agradecimiento o validez..."
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>URL de Webhook (Automatizaciones WhatsApp/Email)</label>
+              <input 
+                value={webhookUrl}
+                onChange={e => setWebhookUrl(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
+                placeholder="Ej: https://hook.eu2.make.com/..."
               />
             </div>
 

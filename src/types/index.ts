@@ -114,6 +114,7 @@ export interface Project {
   tasks?: ProjectTask[];
   images?: ProjectImage[];
   lastUpdated?: number;
+  clientToken?: string;
 }
 
 export interface PurchaseItem {

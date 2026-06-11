@@ -83,6 +83,7 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $labor = json_encode($data['labor'] ?? []);
     $expenses = json_encode($data['expenses'] ?? []);
     $tasks = json_encode($data['tasks'] ?? []);
+    $clientToken = $data['clientToken'] ?? bin2hex(random_bytes(16));
 
     $currentLastUpdated = round(microtime(true) * 1000);
     
@@ -103,11 +104,11 @@ elseif ($method === 'POST' || $method === 'PUT') {
     }
 
     // Intentar insertar o actualizar si el ID ya existe (UPSERT)
-    $sql = "INSERT INTO quotes (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, expenses, tasks, lastUpdated) 
-            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :expenses, :tasks, :lastUpdated)
+    $sql = "INSERT INTO quotes (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, expenses, tasks, lastUpdated, clientToken) 
+            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :expenses, :tasks, :lastUpdated, :clientToken)
             ON DUPLICATE KEY UPDATE 
             clientId=:clientId, clientName=:clientName, projectName=:projectName, projectCode=:projectCode, date=:date, status=:status, 
-            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, expenses=:expenses, tasks=:tasks, lastUpdated=:lastUpdated";
+            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, expenses=:expenses, tasks=:tasks, lastUpdated=:lastUpdated, clientToken=:clientToken";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([
@@ -124,7 +125,8 @@ elseif ($method === 'POST' || $method === 'PUT') {
         ':labor' => $labor,
         ':expenses' => $expenses,
         ':tasks' => $tasks,
-        ':lastUpdated' => $currentLastUpdated
+        ':lastUpdated' => $currentLastUpdated,
+        ':clientToken' => $clientToken
     ]);
 
     echo json_encode(["success" => true, "message" => "Project saved successfully", "lastUpdated" => $currentLastUpdated]);

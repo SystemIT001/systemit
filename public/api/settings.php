@@ -9,7 +9,8 @@ try {
         companyName VARCHAR(255),
         subtitle VARCHAR(255),
         docType VARCHAR(100),
-        footerText TEXT
+        footerText TEXT,
+        webhookUrl TEXT
     )");
 
     $method = $_SERVER['REQUEST_METHOD'];
@@ -25,25 +26,27 @@ try {
                 "companyName" => "Mi Empresa IT",
                 "subtitle" => "Reporte de Servicios y Equipos",
                 "docType" => "COTIZACIÓN",
-                "footerText" => "Gracias por su preferencia. Este documento es válido como cotización o nota de servicio."
+                "footerText" => "Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.",
+                "webhookUrl" => ""
             ]);
         }
     }
     elseif ($method === 'POST' || $method === 'PUT') {
         $data = json_decode(file_get_contents("php://input"), true);
         
-        $sql = "INSERT INTO settings (id, companyName, subtitle, docType, footerText) 
-                VALUES ('global', :companyName, :subtitle, :docType, :footerText)
+        $sql = "INSERT INTO settings (id, companyName, subtitle, docType, footerText, webhookUrl) 
+                VALUES ('global', :companyName, :subtitle, :docType, :footerText, :webhookUrl)
                 ON DUPLICATE KEY UPDATE 
                 companyName=VALUES(companyName), subtitle=VALUES(subtitle), 
-                docType=VALUES(docType), footerText=VALUES(footerText)";
+                docType=VALUES(docType), footerText=VALUES(footerText), webhookUrl=VALUES(webhookUrl)";
                 
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':companyName' => $data['companyName'] ?? 'Mi Empresa IT',
             ':subtitle' => $data['subtitle'] ?? 'Reporte de Servicios y Equipos',
             ':docType' => $data['docType'] ?? 'COTIZACIÓN',
-            ':footerText' => $data['footerText'] ?? 'Gracias por su preferencia...'
+            ':footerText' => $data['footerText'] ?? 'Gracias por su preferencia...',
+            ':webhookUrl' => $data['webhookUrl'] ?? ''
         ]);
 
         echo json_encode(["success" => true]);

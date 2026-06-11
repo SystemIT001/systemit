@@ -100,6 +100,31 @@ const ProjectDetail: React.FC = () => {
     window.location.href = `/views/factura.html?id=${project.id}${type === 'resumida' ? '&type=resumida' : ''}${isQuote ? '&isQuote=true' : ''}`;
   };
 
+  const handleCopyPortalLink = async () => {
+    if (!project) return;
+    
+    // Auto-save first to ensure clientToken is saved
+    await targetUpdateProject(project);
+
+    // Get the base URL
+    const baseUrl = window.location.origin;
+    const token = project.clientToken;
+
+    if (!token) {
+      alert("Error: No se encontró el token de cliente. Guarde el proyecto e intente nuevamente.");
+      return;
+    }
+
+    const portalUrl = `${baseUrl}/views/portal.html?token=${token}`;
+    
+    try {
+      await navigator.clipboard.writeText(portalUrl);
+      alert('¡Enlace del Portal copiado al portapapeles!');
+    } catch (err) {
+      alert('Error al copiar el enlace: ' + portalUrl);
+    }
+  };
+
   const handleLinkNewClient = () => {
     if (!project || !project.clientName) return;
     
@@ -739,6 +764,10 @@ const ProjectDetail: React.FC = () => {
           <button className="btn-secondary" onClick={() => handleOpenPDF('resumida')}>
             <FileText size={20} />
             {isQuote ? 'Cotización Resumida' : 'Factura Resumida'}
+          </button>
+          <button className="btn-secondary" onClick={handleCopyPortalLink} style={{ backgroundColor: 'var(--primary-color)', color: 'white', border: 'none' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            Enlace de Cliente
           </button>
           <button className="btn-primary" onClick={handleSave}>
             <Save size={20} />

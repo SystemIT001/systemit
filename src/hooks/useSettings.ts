@@ -1,12 +1,13 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { apiFetch } from '../utils/api';
 
 export const useSettings = () => {
   const [settings, setSettings] = useState({
     companyName: 'Mi Empresa IT',
     subtitle: 'Reporte de Servicios y Equipos',
-    docType: 'COTIZACIÃ“N',
-    footerText: 'Gracias por su preferencia. Este documento es vÃ¡lido como cotizaciÃ³n o nota de servicio.'
+    docType: 'COTIZACIÓN',
+    footerText: 'Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.',
+    webhookUrl: ''
   });
   const [loading, setLoading] = useState(true);
 
@@ -19,8 +20,9 @@ export const useSettings = () => {
         setSettings({
           companyName: data.companyName || 'Mi Empresa IT',
           subtitle: data.subtitle || 'Reporte de Servicios y Equipos',
-          docType: data.docType || 'COTIZACIÃ“N',
-          footerText: data.footerText || 'Gracias por su preferencia. Este documento es vÃ¡lido como cotizaciÃ³n o nota de servicio.'
+          docType: data.docType || 'COTIZACIÓN',
+          footerText: data.footerText || 'Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.',
+          webhookUrl: data.webhookUrl || ''
         });
       }
     } catch (error) {
