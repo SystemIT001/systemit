@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X, FileText, LifeBuoy, PieChart } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, X, FileText, LifeBuoy, PieChart, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../hooks/useSettings';
@@ -75,7 +75,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
           {/* Close button inside sidebar for mobile */}
           <button 
-            className="mobile-menu-btn" 
+            className="sidebar-close-btn" 
             onClick={() => setIsMobileMenuOpen(false)}
             style={{ marginLeft: 'auto' }}
           >
@@ -163,10 +163,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <main className="main-content">
         <header className="topbar no-print">
           <button 
-            className="mobile-menu-btn" 
-            onClick={() => setIsMobileMenuOpen(true)}
+            className="topbar-menu-btn" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <Menu size={24} />
+            {isMobileMenuOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
           </button>
           <h1 style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getPageTitle()}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>

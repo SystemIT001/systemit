@@ -25,7 +25,17 @@
   z-index: 40;
 }
 
-.mobile-menu-btn {
+.sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar-menu-btn {
   display: none;
   background: transparent;
   border: none;
@@ -52,7 +62,7 @@
     display: none !important;
   }
 
-  .layout-container.desktop-collapsed .mobile-menu-btn {
+  .layout-container.desktop-collapsed .topbar-menu-btn {
     display: flex;
   }
 }
@@ -161,7 +171,11 @@
     display: block;
   }
 
-  .mobile-menu-btn {
+  .sidebar-close-btn {
+    display: flex;
+  }
+
+  .topbar-menu-btn {
     display: flex;
   }
 
