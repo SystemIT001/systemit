@@ -111,7 +111,31 @@ elseif ($method === 'POST') {
         $delStmt = $conn->prepare("DELETE FROM quotes WHERE id = :id");
         $delStmt->execute([':id' => $quote['id']]);
 
-        // Opcional: Podríamos disparar un Webhook interno aquí mismo si queremos
+        // Send Webhook notification
+        $stmtSettings = $conn->query("SELECT webhookUrl FROM settings WHERE id = 'global'");
+        $settings = $stmtSettings->fetch(PDO::FETCH_ASSOC);
+        $webhookUrl = $settings['webhookUrl'] ?? '';
+        if (!empty($webhookUrl)) {
+            $webhookData = [
+                "event" => "quote_approved",
+                "timestamp" => date('c'),
+                "data" => [
+                    "clientName" => $quote['clientName'],
+                    "projectName" => $quote['projectName'],
+                    "projectId" => $quote['id'],
+                    "projectCode" => $nextCode
+                ]
+            ];
+            $ch = curl_init($webhookUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($webhookData));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_exec($ch);
+            curl_close($ch);
+        }
+
         echo json_encode(["success" => true, "message" => "Quote approved and converted to project"]);
     } 
     elseif ($action === 'ticket') {
@@ -160,6 +184,32 @@ elseif ($method === 'POST') {
             $date,
             time() * 1000
         ]);
+
+        // Send Webhook notification
+        $stmtSettings = $conn->query("SELECT webhookUrl FROM settings WHERE id = 'global'");
+        $settings = $stmtSettings->fetch(PDO::FETCH_ASSOC);
+        $webhookUrl = $settings['webhookUrl'] ?? '';
+        if (!empty($webhookUrl)) {
+            $webhookData = [
+                "event" => "ticket_created",
+                "timestamp" => date('c'),
+                "data" => [
+                    "clientName" => $entity['clientName'] ?? 'Cliente',
+                    "projectName" => $entity['projectName'] ?? '',
+                    "ticketId" => $ticketId,
+                    "title" => $title,
+                    "description" => $desc
+                ]
+            ];
+            $ch = curl_init($webhookUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($webhookData));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_exec($ch);
+            curl_close($ch);
+        }
 
         echo json_encode(["success" => true, "message" => "Ticket created successfully"]);
     }
