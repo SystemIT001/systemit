@@ -1,5 +1,5 @@
-import React from 'react';
-import { Plus, Trash2, Printer, FileText, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Trash2, Printer, FileText, ArrowRight, Search } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { useQuotes } from '../hooks/useQuotes';
 import { generateId, formatCurrency, calculateProjectTotalsDual } from '../utils';
@@ -7,6 +7,7 @@ import { generateId, formatCurrency, calculateProjectTotalsDual } from '../utils
 const QuoteList: React.FC = () => {
   const { quotes, addQuote, deleteQuote } = useQuotes();
   const { projects, addProject } = useProjects();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleCreateQuote = async () => {
     const quoteProjects = quotes;
@@ -48,6 +49,13 @@ const QuoteList: React.FC = () => {
     }
   };
 
+  const filteredQuotes = quotes.filter(quote => {
+    const query = searchQuery.toLowerCase();
+    return (quote.projectName?.toLowerCase() || '').includes(query) || 
+           (quote.clientName?.toLowerCase() || '').includes(query) ||
+           (quote.projectCode?.toString() || '').includes(query);
+  });
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -55,19 +63,32 @@ const QuoteList: React.FC = () => {
           <h2>Cotizaciones y Prospectos</h2>
           <p style={{ color: 'var(--text-muted)' }}>Documentos presupuestarios que aún no son proyectos iniciados.</p>
         </div>
-        <button className="btn-primary" onClick={handleCreateQuote}>
-          <Plus size={20} />
-          Nueva Cotización
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input 
+              type="text" 
+              placeholder="Buscar cotización o cliente..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input"
+              style={{ paddingLeft: '35px', width: '250px' }}
+            />
+          </div>
+          <button className="btn-primary" onClick={handleCreateQuote}>
+            <Plus size={20} />
+            Nueva Cotización
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-        {quotes.length === 0 ? (
+        {filteredQuotes.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-            <p style={{ color: 'var(--text-muted)' }}>No hay cotizaciones pendientes.</p>
+            <p style={{ color: 'var(--text-muted)' }}>No hay cotizaciones encontradas.</p>
           </div>
         ) : (
-          quotes.map(project => (
+          filteredQuotes.map(project => (
             <div key={project.id} className="card project-card">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>

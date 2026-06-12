@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-import { Plus, Trash2, Printer, FolderKanban } from 'lucide-react';
+import { Plus, Trash2, Printer, FolderKanban, Search } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { generateId, formatCurrency, calculateProjectTotalsDual } from '../utils';
 
 const ProjectList: React.FC = () => {
   const { projects, addProject, deleteProject } = useProjects();
-
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleCreateProject = async () => {
     const actualProjects = projects.filter(p => p.status !== 'quote');
@@ -31,23 +31,43 @@ const ProjectList: React.FC = () => {
     }
   };
 
+  const filteredProjects = projects.filter(p => p.status !== 'quote').filter(project => {
+    const query = searchQuery.toLowerCase();
+    return (project.projectName?.toLowerCase() || '').includes(query) || 
+           (project.clientName?.toLowerCase() || '').includes(query) ||
+           (project.projectCode?.toString() || '').includes(query);
+  });
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2>Tus Proyectos</h2>
-        <button className="btn-primary" onClick={handleCreateProject}>
-          <Plus size={20} />
-          Nuevo Proyecto
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input 
+              type="text" 
+              placeholder="Buscar proyecto o cliente..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input"
+              style={{ paddingLeft: '35px', width: '250px' }}
+            />
+          </div>
+          <button className="btn-primary" onClick={handleCreateProject}>
+            <Plus size={20} />
+            Nuevo Proyecto
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-        {projects.filter(p => p.status !== 'quote').length === 0 ? (
+        {filteredProjects.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-            <p style={{ color: 'var(--text-muted)' }}>No hay proyectos creados todavía.</p>
+            <p style={{ color: 'var(--text-muted)' }}>No hay proyectos encontrados.</p>
           </div>
         ) : (
-          projects.filter(p => p.status !== 'quote').map(project => (
+          filteredProjects.map(project => (
             <div key={project.id} className="card project-card">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
