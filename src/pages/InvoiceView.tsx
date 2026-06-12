@@ -295,15 +295,17 @@ const InvoiceView: React.FC = () => {
         {/* Header de Factura */}
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: '#0f1117', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
               {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt="Logo" style={{ width: 'auto', height: '100px', maxWidth: '250px', objectFit: 'contain' }} />
+                <img src={settings.logoUrl} alt="Logo" style={{ width: 'auto', height: '80px', maxWidth: '200px', objectFit: 'contain' }} />
               ) : (
-                <Building2 size={32} />
+                <Building2 size={40} style={{ color: '#0f1117' }} />
               )}
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{companyName}</h1>
+              <div>
+                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: '#0f1117' }}>{companyName}</h1>
+                <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>{subtitle}</p>
+              </div>
             </div>
-            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>{subtitle}</p>
           </div>
           <div style={{ textAlign: 'right', width: '300px' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f1117', textTransform: 'uppercase' }}>{docType}</h2>
