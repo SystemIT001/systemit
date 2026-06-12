@@ -37,19 +37,6 @@
 
 .topbar-menu-btn {
   display: flex;
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-}
-
-.sidebar-toggle-btn {
-  display: none;
-  position: absolute;
-  top: 1.5rem;
-  right: -16px;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -59,12 +46,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 60;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
+  margin-right: 4px;
 }
 
-.sidebar-toggle-btn:hover {
+.topbar-menu-btn:hover {
   background-color: var(--surface-hover);
 }
 
@@ -83,24 +70,6 @@
 
   .layout-container.desktop-collapsed .mobile-overlay.open {
     display: none !important;
-  }
-
-  .topbar-menu-btn {
-    display: none !important;
-  }
-
-  .sidebar-toggle-btn {
-    display: flex !important;
-  }
-
-  /* When sidebar is closed, push the button fully into the screen so it's not cut off */
-  .layout-container.desktop-collapsed .sidebar:not(.open) .sidebar-toggle-btn {
-    transform: translateX(16px);
-  }
-
-  /* Push the topbar title so it aligns perfectly with the main content title and clears the toggle button */
-  .topbar-title {
-    margin-left: 36px !important;
   }
 }
 

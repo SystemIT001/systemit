@@ -78,12 +78,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Sidebar */}
       <aside className={`sidebar no-print ${isMobileMenuOpen ? 'open' : ''}`}>
-        <button 
-          className="sidebar-toggle-btn"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-        </button>
         <div className="brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {settings?.logoUrl ? (
@@ -178,7 +172,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             className="topbar-menu-btn" 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMobileMenuOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
+            {isMobileMenuOpen ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
           </button>
           <h1 className="topbar-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getPageTitle()}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
