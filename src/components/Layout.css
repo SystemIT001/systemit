@@ -97,6 +97,11 @@
   .layout-container.desktop-collapsed .sidebar:not(.open) .sidebar-toggle-btn {
     transform: translateX(16px);
   }
+
+  /* Prevent the topbar text from overlapping with the toggle button when closed */
+  .layout-container.desktop-collapsed .sidebar:not(.open) + .main-content .topbar {
+    padding-left: 4rem;
+  }
 }
 
 .brand {
