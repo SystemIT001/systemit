@@ -157,21 +157,50 @@ export const calculateExpensesDual = (expenses: any[] = [], exchangeRate: number
   return { totalUSD, totalNIO };
 };
   
-export const downloadFileFromUrl = async (url: string, defaultFileName: string) => {  
+export const downloadFileFromUrl = async (url: string, defaultFileName: string) => {
+  if (!url || url === 'undefined') {
+    alert("El archivo no está disponible o la URL es inválida.");
+    return;
+  }
+
+  // Manejo directo para archivos antiguos guardados como Base64
+  if (url.startsWith('data:')) {
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = defaultFileName || 'documento';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return;
+    } catch (e) {
+      console.error('Error procesando Base64', e);
+    }
+  }
+
   try {  
     const res = await fetch(url);  
-    if (!res.ok) throw new Error('Network response failed');  
+    if (!res.ok) throw new Error(`El archivo no se pudo encontrar en el servidor (HTTP ${res.status}).`);  
     const blob = await res.blob();  
     const objectUrl = window.URL.createObjectURL(blob);  
     const a = document.createElement('a');  
     a.href = objectUrl;  
-    a.download = defaultFileName;  
+    a.download = defaultFileName || 'archivo';  
     document.body.appendChild(a);  
     a.click();  
     document.body.removeChild(a);  
     setTimeout(() => window.URL.revokeObjectURL(objectUrl), 10000);  
-  } catch (error) {  
-    console.error('Download failed, falling back to new tab', error);  
-    window.open(url, '_blank');  
+  } catch (error: any) {  
+    console.error('Download failed', error);  
+    alert(error.message || "Error de red al intentar descargar el documento.");
+    
+    // Fallback: forzar navegación en la misma pestaña si el fetch falla (ej. problemas de CORS)
+    // para evitar que el bloqueador de popups abra 'about:blank'
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = defaultFileName || 'archivo';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }  
-}; 
+};
