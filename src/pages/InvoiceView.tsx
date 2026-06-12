@@ -59,9 +59,20 @@ const InvoiceView: React.FC = () => {
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      let finalWidth = pdfWidth;
+      let finalHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      if (finalHeight > pageHeight) {
+        const ratio = pageHeight / finalHeight;
+        finalHeight = pageHeight;
+        finalWidth = finalWidth * ratio;
+      }
+
+      const marginX = (pdfWidth - finalWidth) / 2;
+
+      pdf.addImage(imgData, 'PNG', marginX, 0, finalWidth, finalHeight);
       pdf.save(`${docType}_${project.status === 'quote' ? 'CTZ-' : 'PRJ-'}${String(project.projectCode || 0).padStart(3, '0')}_${project.clientName || 'Cliente'}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
