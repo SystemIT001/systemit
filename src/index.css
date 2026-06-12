@@ -191,6 +191,14 @@ input, select, textarea {
     box-shadow: none !important;
     padding: 0 !important;
   }
+  .invoice-container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .invoice-paper {
+    padding: 0 !important;
+  }
   .layout-container, .main-content {
     display: block !important;
     height: auto !important;
@@ -203,6 +211,12 @@ input, select, textarea {
   .sidebar, .topbar {
     display: none !important;
   }
+}
+
+.invoice-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
 }
 
 /* Responsive Form Grid */
