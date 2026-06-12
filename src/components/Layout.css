@@ -98,9 +98,9 @@
     transform: translateX(16px);
   }
 
-  /* Prevent the topbar text from overlapping with the toggle button when closed */
-  .layout-container.desktop-collapsed .sidebar:not(.open) + .main-content .topbar {
-    padding-left: 4rem;
+  /* Push the topbar title so it aligns perfectly with the main content title and clears the toggle button */
+  .topbar-title {
+    margin-left: 36px !important;
   }
 }
 

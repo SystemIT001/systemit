@@ -180,7 +180,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             {isMobileMenuOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
           </button>
-          <h1 style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getPageTitle()}</h1>
+          <h1 className="topbar-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getPageTitle()}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
             <div style={{ position: 'relative' }}>
               <button 
