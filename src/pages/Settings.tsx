@@ -3,6 +3,7 @@ import { Save, Settings as SettingsIcon, Building2, Database, Download, Upload, 
 import { useUsers } from '../hooks/useUsers';
 import { useAuth } from '../hooks/useAuth';
 import { useSettings } from '../hooks/useSettings';
+import { apiFetch } from '../utils/api';
 
 const Settings: React.FC = () => {
   const [companyName, setCompanyName] = useState('');
@@ -58,10 +59,9 @@ const Settings: React.FC = () => {
       formData.append('type', 'logo');
       formData.append('file', file);
 
-      const response = await fetch('/api/upload.php', {
+      const response = await apiFetch('/api/upload.php', {
         method: 'POST',
-        body: formData,
-        credentials: 'same-origin'
+        body: formData
       });
 
       if (!response.ok) throw new Error('Error al subir el logo');
