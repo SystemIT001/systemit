@@ -92,6 +92,11 @@
   .sidebar-toggle-btn {
     display: flex !important;
   }
+
+  /* When sidebar is closed, push the button fully into the screen so it's not cut off */
+  .layout-container.desktop-collapsed .sidebar:not(.open) .sidebar-toggle-btn {
+    transform: translateX(16px);
+  }
 }
 
 .brand {
