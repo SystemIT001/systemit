@@ -64,13 +64,24 @@ const Settings: React.FC = () => {
         body: formData
       });
 
-      if (!response.ok) throw new Error('Error al subir el logo');
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Error desconocido al subir el logo');
+      }
       
       const data = await response.json();
       setLogoUrl(data.url);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Hubo un problema al subir el logo.');
+      
+      // Intentar parsear el mensaje de error por si es JSON
+      let errorMsg = err.message || 'Hubo un problema al subir el logo.';
+      try {
+        const parsed = JSON.parse(errorMsg);
+        if (parsed.error) errorMsg = parsed.error;
+      } catch (e) {}
+      
+      alert(`Error al subir el logo:\n\n${errorMsg}`);
     } finally {
       setIsUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = '';
