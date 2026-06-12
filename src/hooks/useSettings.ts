@@ -7,7 +7,8 @@ export const useSettings = () => {
     subtitle: 'Reporte de Servicios y Equipos',
     docType: 'COTIZACIÓN',
     footerText: 'Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.',
-    webhookUrl: ''
+    webhookUrl: '',
+    logoUrl: ''
   });
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +23,8 @@ export const useSettings = () => {
           subtitle: data.subtitle || 'Reporte de Servicios y Equipos',
           docType: data.docType || 'COTIZACIÓN',
           footerText: data.footerText || 'Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.',
-          webhookUrl: data.webhookUrl || ''
+          webhookUrl: data.webhookUrl || '',
+          logoUrl: data.logoUrl || ''
         });
       }
     } catch (error) {

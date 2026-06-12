@@ -296,8 +296,12 @@ const InvoiceView: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f1117', marginBottom: '0.5rem' }}>
-              <Building2 size={32} />
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{companyName}</h1>
+              {settings.logoUrl ? (
+                <img src={settings.logoUrl} alt="Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', marginRight: '0.5rem' }} />
+              ) : (
+                <Building2 size={32} />
+              )}
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{companyName}</h1>
             </div>
             <p style={{ color: '#64748b', fontSize: '0.875rem' }}>{subtitle}</p>
           </div>

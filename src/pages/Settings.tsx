@@ -10,6 +10,9 @@ const Settings: React.FC = () => {
   const [docType, setDocType] = useState('');
   const [footerText, setFooterText] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<'empresa' | 'basedatos' | 'usuarios'>('empresa');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,15 +36,45 @@ const Settings: React.FC = () => {
       setDocType(settings.docType);
       setFooterText(settings.footerText);
       setWebhookUrl(settings.webhookUrl || '');
+      setLogoUrl(settings.logoUrl || '');
     }
   }, [settings, settingsLoading]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveSettings({ companyName, subtitle, docType, footerText, webhookUrl });
+    await saveSettings({ companyName, subtitle, docType, footerText, webhookUrl, logoUrl });
     
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('type', 'logo');
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload.php', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+      });
+
+      if (!response.ok) throw new Error('Error al subir el logo');
+      
+      const data = await response.json();
+      setLogoUrl(data.url);
+    } catch (err) {
+      console.error(err);
+      alert('Hubo un problema al subir el logo.');
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
   };
 
   const handleBackup = () => {
@@ -218,11 +251,12 @@ const Settings: React.FC = () => {
       </div>
 
       {activeTab === 'empresa' ? (
-        <div className="card" style={{ maxWidth: '800px' }}>
-          <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Building2 size={20} />
-            Datos de la Empresa y Facturación
-          </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', alignItems: 'start' }}>
+          <div className="card">
+            <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Building2 size={20} />
+              Datos de la Empresa y Facturación
+            </h3>
           
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -286,6 +320,66 @@ const Settings: React.FC = () => {
             </div>
           </form>
         </div>
+
+        {/* LOGO SECTION */}
+        <div className="card">
+          <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Building2 size={20} />
+            Logo de la Empresa
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
+            <div style={{ 
+              width: '200px', 
+              height: '200px', 
+              border: '2px dashed var(--border-color)', 
+              borderRadius: '8px', 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              overflow: 'hidden',
+              backgroundColor: 'var(--bg-color)'
+            }}>
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+              ) : (
+                <span style={{ color: 'var(--text-muted)' }}>Sin Logo</span>
+              )}
+            </div>
+            
+            <input 
+              type="file" 
+              ref={logoInputRef}
+              style={{ display: 'none' }}
+              accept="image/*"
+              onChange={handleLogoUpload}
+            />
+            
+            <button 
+              className="btn-secondary" 
+              onClick={() => logoInputRef.current?.click()}
+              disabled={isUploadingLogo}
+            >
+              <Upload size={16} />
+              {isUploadingLogo ? 'Subiendo...' : (logoUrl ? 'Cambiar Logo' : 'Subir Logo')}
+            </button>
+            
+            {logoUrl && (
+              <button 
+                className="btn-secondary" 
+                onClick={() => setLogoUrl('')}
+                style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+              >
+                <Trash2 size={16} />
+                Quitar Logo
+              </button>
+            )}
+            
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '1rem' }}>
+              El logo aparecerá en el menú principal y en las cotizaciones y reportes.
+            </p>
+          </div>
+        </div>
+      </div>
       ) : activeTab === 'basedatos' ? (
         <div className="card" style={{ maxWidth: '800px' }}>
           <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

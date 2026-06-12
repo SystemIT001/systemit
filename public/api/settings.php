@@ -10,14 +10,12 @@ try {
         subtitle VARCHAR(255),
         docType VARCHAR(100),
         footerText TEXT,
-        webhookUrl TEXT
+        webhookUrl TEXT,
+        logoUrl TEXT
     )");
 
-    try {
-        $conn->exec("ALTER TABLE settings ADD COLUMN webhookUrl TEXT");
-    } catch(Exception $e) {
-        // Column already exists, ignore
-    }
+    try { $conn->exec("ALTER TABLE settings ADD COLUMN webhookUrl TEXT"); } catch(Exception $e) {}
+    try { $conn->exec("ALTER TABLE settings ADD COLUMN logoUrl TEXT"); } catch(Exception $e) {}
 
     $method = $_SERVER['REQUEST_METHOD'];
 
@@ -33,18 +31,19 @@ try {
                 "subtitle" => "Reporte de Servicios y Equipos",
                 "docType" => "COTIZACIÓN",
                 "footerText" => "Gracias por su preferencia. Este documento es válido como cotización o nota de servicio.",
-                "webhookUrl" => ""
+                "webhookUrl" => "",
+                "logoUrl" => ""
             ]);
         }
     }
     elseif ($method === 'POST' || $method === 'PUT') {
         $data = json_decode(file_get_contents("php://input"), true);
         
-        $sql = "INSERT INTO settings (id, companyName, subtitle, docType, footerText, webhookUrl) 
-                VALUES ('global', :companyName, :subtitle, :docType, :footerText, :webhookUrl)
+        $sql = "INSERT INTO settings (id, companyName, subtitle, docType, footerText, webhookUrl, logoUrl) 
+                VALUES ('global', :companyName, :subtitle, :docType, :footerText, :webhookUrl, :logoUrl)
                 ON DUPLICATE KEY UPDATE 
                 companyName=VALUES(companyName), subtitle=VALUES(subtitle), 
-                docType=VALUES(docType), footerText=VALUES(footerText), webhookUrl=VALUES(webhookUrl)";
+                docType=VALUES(docType), footerText=VALUES(footerText), webhookUrl=VALUES(webhookUrl), logoUrl=VALUES(logoUrl)";
                 
         $stmt = $conn->prepare($sql);
         $stmt->execute([
@@ -52,7 +51,8 @@ try {
             ':subtitle' => $data['subtitle'] ?? 'Reporte de Servicios y Equipos',
             ':docType' => $data['docType'] ?? 'COTIZACIÓN',
             ':footerText' => $data['footerText'] ?? 'Gracias por su preferencia...',
-            ':webhookUrl' => $data['webhookUrl'] ?? ''
+            ':webhookUrl' => $data['webhookUrl'] ?? '',
+            ':logoUrl' => $data['logoUrl'] ?? ''
         ]);
 
         echo json_encode(["success" => true]);

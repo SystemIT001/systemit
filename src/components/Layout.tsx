@@ -80,7 +80,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <aside className={`sidebar no-print ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <ReceiptText className="brand-icon" size={28} />
+            {settings?.logoUrl ? (
+              <img src={settings.logoUrl} alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+            ) : (
+              <ReceiptText className="brand-icon" size={28} />
+            )}
             <span>{settings?.companyName || 'SystemIT'}</span>
           </div>
         </div>
