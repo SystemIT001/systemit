@@ -3,7 +3,7 @@ import { ShoppingCart, Plus, FileText, ArrowLeft, Trash2, Download, Eye } from '
 import { InvoiceImporter } from '../components/InvoiceImporter';
 import { useInventory } from '../hooks/useInventory';
 import { usePurchases } from '../hooks/usePurchases';
-import { generateId, formatCurrency } from '../utils';
+import { generateId, formatCurrency, downloadFileFromUrl } from '../utils';
 
 const Purchases: React.FC = () => {
   const { inventory, addInventoryItem, updateInventoryItem } = useInventory();
@@ -121,16 +121,8 @@ const Purchases: React.FC = () => {
       alert('El archivo PDF no está disponible.');
       return;
     }
-    const link = document.createElement('a');
-    link.href = purchase.invoiceFile.dataUrl;
-    
-    // Extraer la extensión original del archivo o asumir pdf por defecto
     const extension = purchase.invoiceFile.fileName?.split('.').pop() || 'pdf';
-    link.download = `Factura_${purchase.invoiceNumber}.${extension}`;
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadFileFromUrl(purchase.invoiceFile.dataUrl, `Factura_${purchase.invoiceNumber}.${extension}`);
   };
 
   const handleViewFile = (dataUrl: string | undefined) => {

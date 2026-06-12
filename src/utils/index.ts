@@ -156,3 +156,22 @@ export const calculateExpensesDual = (expenses: any[] = [], exchangeRate: number
   });
   return { totalUSD, totalNIO };
 };
+  
+export const downloadFileFromUrl = async (url: string, defaultFileName: string) => {  
+  try {  
+    const res = await fetch(url);  
+    if (!res.ok) throw new Error('Network response failed');  
+    const blob = await res.blob();  
+    const objectUrl = window.URL.createObjectURL(blob);  
+    const a = document.createElement('a');  
+    a.href = objectUrl;  
+    a.download = defaultFileName;  
+    document.body.appendChild(a);  
+    a.click();  
+    document.body.removeChild(a);  
+    setTimeout(() => window.URL.revokeObjectURL(objectUrl), 10000);  
+  } catch (error) {  
+    console.error('Download failed, falling back to new tab', error);  
+    window.open(url, '_blank');  
+  }  
+}; 

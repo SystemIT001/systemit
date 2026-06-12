@@ -7,7 +7,7 @@ import { useInventory } from '../hooks/useInventory';
 import { useClients } from '../hooks/useClients';
 import { useAuth } from '../hooks/useAuth';
 import type { Project, MaterialItem, EquipmentItem, LaborItem, InvoiceFile } from '../types';
-import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateExpensesDual, calculateProjectRealRevenueDual } from '../utils';
+import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateExpensesDual, calculateProjectRealRevenueDual, downloadFileFromUrl } from '../utils';
 import { InvoiceImporter } from '../components/InvoiceImporter';
 
 type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_control' | 'labor' | 'planificacion' | 'payments' | 'invoices' | 'expenses' | 'gallery' | 'profit';
@@ -1586,9 +1586,9 @@ const ProjectDetail: React.FC = () => {
                         >
                           <Eye size={16} /> Ver
                         </button>
-                        <a href={inv.dataUrl} download={inv.fileName} className="btn-secondary" style={{ padding: '0.5rem 1rem' }}>
+                        <button onClick={() => downloadFileFromUrl(inv.dataUrl, inv.fileName)} className="btn-secondary" style={{ padding: '0.5rem 1rem' }}>
                           <FileDown size={16} /> Descargar
-                        </a>
+                        </button>
                         <button 
                           className="btn-secondary" 
                           onClick={() => handleDeleteInvoice(idx)}
