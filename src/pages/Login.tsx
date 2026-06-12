@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Building2, Lock, User, LogIn, Sun, Moon } from 'lucide-react';
+import { Building2, Lock, User, LogIn, Palette } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../hooks/useSettings';
 
@@ -11,8 +11,9 @@ const Login: React.FC = () => {
   
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { settings } = useSettings();
+  const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,13 +42,40 @@ const Login: React.FC = () => {
       backgroundColor: 'var(--bg-color)',
       position: 'relative'
     }}>
-      <button 
-        onClick={toggleTheme} 
-        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--surface-color)', boxShadow: 'var(--shadow-sm)' }}
-        title="Cambiar Tema"
-      >
-        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-      </button>
+      <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 100 }}>
+        <button 
+          onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)} 
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--surface-color)', boxShadow: 'var(--shadow-sm)' }}
+          title="Cambiar Paleta de Colores"
+        >
+          <Palette size={20} />
+        </button>
+        {isThemeDropdownOpen && (
+          <div style={{ position: 'absolute', top: '120%', right: 0, backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-md)', padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: '180px' }}>
+            <button 
+              type="button"
+              onClick={() => { setTheme('cyberpunk'); setIsThemeDropdownOpen(false); }}
+              style={{ textAlign: 'left', padding: '0.5rem', borderRadius: '4px', backgroundColor: theme === 'cyberpunk' ? 'var(--surface-hover)' : 'transparent', color: 'var(--text-main)', border: 'none', cursor: 'pointer' }}
+            >
+              🚀 Cyberpunk Neon
+            </button>
+            <button 
+              type="button"
+              onClick={() => { setTheme('light'); setIsThemeDropdownOpen(false); }}
+              style={{ textAlign: 'left', padding: '0.5rem', borderRadius: '4px', backgroundColor: theme === 'light' ? 'var(--surface-hover)' : 'transparent', color: 'var(--text-main)', border: 'none', cursor: 'pointer' }}
+            >
+              ☀️ Claro Minimalista
+            </button>
+            <button 
+              type="button"
+              onClick={() => { setTheme('sunset'); setIsThemeDropdownOpen(false); }}
+              style={{ textAlign: 'left', padding: '0.5rem', borderRadius: '4px', backgroundColor: theme === 'sunset' ? 'var(--surface-hover)' : 'transparent', color: 'var(--text-main)', border: 'none', cursor: 'pointer' }}
+            >
+              🌅 Sunset Blaze
+            </button>
+          </div>
+        )}
+      </div>
       
       <div className="card" style={{
         width: '100%',

@@ -46,6 +46,27 @@
   --topbar-bg: rgba(244, 245, 248, 0.8);
 }
 
+:root.sunset-theme {
+  /* Colors - Sunset Blaze Dark Theme */
+  --bg-color: #120b15;
+  --surface-color: #1c1122;
+  --surface-hover: #26172d;
+  --primary-color: #ff5e3a; /* Vibrant Orange */
+  --primary-hover: #ff3b12;
+  --text-main: #ffffff;
+  --text-muted: #a694b0;
+  --border-color: #382442;
+  
+  --success-color: #ff007f; /* Magenta */
+  --danger-color: #ff2a55;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 15px rgba(255, 94, 58, 0.4);
+
+  --topbar-bg: rgba(18, 11, 21, 0.8);
+}
+
 * {
   margin: 0;
   padding: 0;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Sun, Moon, Menu, FileText, LifeBuoy, PieChart, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Palette, Menu, FileText, LifeBuoy, PieChart, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../hooks/useSettings';
@@ -12,9 +12,10 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const path = window.location.pathname;
   const { user, loading, logout, checkAuth } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { settings } = useSettings();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   // Close sidebar when path changes on mobile
   useEffect(() => {
@@ -171,13 +172,37 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
           <h1 style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getPageTitle()}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
-            <button 
-              onClick={toggleTheme} 
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--surface-color)', boxShadow: 'var(--shadow-sm)' }}
-              title="Cambiar Tema"
-            >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button 
+                onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)} 
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--surface-color)', boxShadow: 'var(--shadow-sm)' }}
+                title="Cambiar Paleta de Colores"
+              >
+                <Palette size={20} />
+              </button>
+              {isThemeDropdownOpen && (
+                <div style={{ position: 'absolute', top: '120%', right: 0, backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-md)', padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', zIndex: 100, minWidth: '180px' }}>
+                  <button 
+                    onClick={() => { setTheme('cyberpunk'); setIsThemeDropdownOpen(false); }}
+                    style={{ textAlign: 'left', padding: '0.5rem', borderRadius: '4px', backgroundColor: theme === 'cyberpunk' ? 'var(--surface-hover)' : 'transparent', color: 'var(--text-main)' }}
+                  >
+                    🚀 Cyberpunk Neon
+                  </button>
+                  <button 
+                    onClick={() => { setTheme('light'); setIsThemeDropdownOpen(false); }}
+                    style={{ textAlign: 'left', padding: '0.5rem', borderRadius: '4px', backgroundColor: theme === 'light' ? 'var(--surface-hover)' : 'transparent', color: 'var(--text-main)' }}
+                  >
+                    ☀️ Claro Minimalista
+                  </button>
+                  <button 
+                    onClick={() => { setTheme('sunset'); setIsThemeDropdownOpen(false); }}
+                    style={{ textAlign: 'left', padding: '0.5rem', borderRadius: '4px', backgroundColor: theme === 'sunset' ? 'var(--surface-hover)' : 'transparent', color: 'var(--text-main)' }}
+                  >
+                    🌅 Sunset Blaze
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
         <div className="content-wrapper">
