@@ -155,7 +155,7 @@ const ClientList: React.FC = () => {
           clients.map(client => (
             <div key={client.id} className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.125rem', color: 'var(--primary-color)', margin: 0 }}>{client.name}</h3>
+                <h3 style={{ fontSize: '1.125rem', color: 'var(--text-main)', margin: 0 }}>{client.name}</h3>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button style={{ color: 'var(--text-color)', backgroundColor: 'transparent', padding: '4px' }} onClick={() => handleOpenForm(client)}>
                     <Edit size={16} />
