@@ -46,25 +46,25 @@
   --topbar-bg: rgba(244, 245, 248, 0.8);
 }
 
-:root.sunset-theme {
-  /* Colors - Sunset Blaze Dark Theme */
-  --bg-color: #120b15;
-  --surface-color: #1c1122;
-  --surface-hover: #26172d;
-  --primary-color: #ff5e3a; /* Vibrant Orange */
-  --primary-hover: #ff3b12;
-  --text-main: #ffffff;
-  --text-muted: #a694b0;
-  --border-color: #382442;
+:root.oceanic-theme {
+  /* Colors - Oceanic Deep (Easy on the eyes) */
+  --bg-color: #0f172a; /* Slate 900 */
+  --surface-color: #1e293b; /* Slate 800 */
+  --surface-hover: #334155; /* Slate 700 */
+  --primary-color: #38bdf8; /* Light Blue / Cyan */
+  --primary-hover: #0ea5e9;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
   
-  --success-color: #ff007f; /* Magenta */
-  --danger-color: #ff2a55;
+  --success-color: #10b981; /* Emerald */
+  --danger-color: #ef4444; /* Red */
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-glow: 0 0 15px rgba(255, 94, 58, 0.4);
+  --shadow-glow: 0 0 15px rgba(56, 189, 248, 0.2);
 
-  --topbar-bg: rgba(18, 11, 21, 0.8);
+  --topbar-bg: rgba(15, 23, 42, 0.8);
 }
 
 * {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type ThemeType = 'cyberpunk' | 'light' | 'sunset';
+export type ThemeType = 'cyberpunk' | 'light' | 'oceanic';
 
 export function useTheme() {
   const [theme, setTheme] = useState<ThemeType>(
@@ -9,12 +9,12 @@ export function useTheme() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('light-theme', 'sunset-theme', 'cyberpunk-theme');
+    root.classList.remove('light-theme', 'oceanic-theme', 'cyberpunk-theme');
     
     if (theme === 'light') {
       root.classList.add('light-theme');
-    } else if (theme === 'sunset') {
-      root.classList.add('sunset-theme');
+    } else if (theme === 'oceanic') {
+      root.classList.add('oceanic-theme');
     } else {
       root.classList.add('cyberpunk-theme');
     }

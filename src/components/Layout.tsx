@@ -195,10 +195,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     ☀️ Claro Minimalista
                   </button>
                   <button 
-                    onClick={() => { setTheme('sunset'); setIsThemeDropdownOpen(false); }}
-                    style={{ textAlign: 'left', padding: '0.5rem', borderRadius: '4px', backgroundColor: theme === 'sunset' ? 'var(--surface-hover)' : 'transparent', color: 'var(--text-main)' }}
+                    onClick={() => { setTheme('oceanic'); setIsThemeDropdownOpen(false); }}
+                    style={{ textAlign: 'left', padding: '0.5rem', borderRadius: '4px', backgroundColor: theme === 'oceanic' ? 'var(--surface-hover)' : 'transparent', color: 'var(--text-main)' }}
                   >
-                    🌅 Sunset Blaze
+                    🌊 Azul Profundo
                   </button>
                 </div>
               )}
