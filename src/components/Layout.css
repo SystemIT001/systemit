@@ -36,13 +36,36 @@
 }
 
 .topbar-menu-btn {
-  display: none;
+  display: flex;
   background: transparent;
   border: none;
   color: var(--text-main);
   cursor: pointer;
   align-items: center;
   justify-content: center;
+}
+
+.sidebar-toggle-btn {
+  display: none;
+  position: absolute;
+  top: 1.5rem;
+  right: -16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 60;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: var(--surface-hover);
 }
 
 /* Desktop collapsed mode (Project Details) */
@@ -62,8 +85,12 @@
     display: none !important;
   }
 
-  .layout-container.desktop-collapsed .topbar-menu-btn {
-    display: flex;
+  .topbar-menu-btn {
+    display: none !important;
+  }
+
+  .sidebar-toggle-btn {
+    display: flex !important;
   }
 }
 

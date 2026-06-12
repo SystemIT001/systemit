@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Palette, Menu, FileText, LifeBuoy, PieChart, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Palette, Menu, FileText, LifeBuoy, PieChart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../hooks/useSettings';
@@ -78,6 +78,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Sidebar */}
       <aside className={`sidebar no-print ${isMobileMenuOpen ? 'open' : ''}`}>
+        <button 
+          className="sidebar-toggle-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+        </button>
         <div className="brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {settings?.logoUrl ? (
