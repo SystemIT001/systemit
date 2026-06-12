@@ -295,9 +295,9 @@ const InvoiceView: React.FC = () => {
         {/* Header de Factura */}
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f1117', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: '#0f1117', marginBottom: '0.5rem' }}>
               {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt="Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', marginRight: '0.5rem' }} />
+                <img src={settings.logoUrl} alt="Logo" style={{ width: 'auto', height: '100px', maxWidth: '250px', objectFit: 'contain' }} />
               ) : (
                 <Building2 size={32} />
               )}
