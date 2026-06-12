@@ -68,7 +68,7 @@ export const extractItemsFromPDF = async (fileUrl: string | ArrayBuffer): Promis
       if (!isNaN(q) && !isNaN(p1) && !isNaN(p2) && q > 0 && p1 >= 0) {
         // Verifica si la matemática cuadra (con un pequeño margen de error por redondeos)
         if (Math.abs((q * p1) - p2) < 0.05) {
-          let nameParts = [];
+          const nameParts = [];
           let index = j - 1;
           while (index >= 0 && isNaN(Number(strings[index]))) {
              if (strings[index] !== '') nameParts.unshift(strings[index]);

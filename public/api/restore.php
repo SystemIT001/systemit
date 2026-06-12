@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 require_once 'db.php';
+verifyAuth();
 
 if (!isset($_FILES['file'])) {
     http_response_code(400);

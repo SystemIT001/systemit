@@ -10,6 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
+require_once 'db.php';
+verifyAuth();
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_FILES['file']) || $_FILES['file']['error'] != 0) {
         http_response_code(400);
@@ -29,7 +32,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     $originalName = $file['name'];
-    $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+    $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    
+    // Security: Block execution of php scripts
+    $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'csv', 'xlsx', 'xls', 'doc', 'docx'];
+    if (!in_array($extension, $allowed_extensions)) {
+        http_response_code(403);
+        echo json_encode(["error" => "Tipo de archivo no permitido."]);
+        exit();
+    }
     
     $baseName = 'archivo';
     if (isset($_POST['customName']) && !empty(trim($_POST['customName']))) {

@@ -43,7 +43,7 @@ const QuoteList: React.FC = () => {
       const res = await addProject(newProject);
       if (res.success) {
         await deleteQuote(quote.id);
-        window.location.href = `/views/proyectos.html`;
+        window.location.assign(`/views/proyectos.html`);
       }
     }
   };

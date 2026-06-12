@@ -6,10 +6,6 @@ export function useClients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadClients();
-  }, []);
-
   const loadClients = async () => {
     try {
       setLoading(true);
@@ -28,6 +24,10 @@ export function useClients() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadClients();
+  }, []);
 
   const addClient = async (client: Client) => {
     try {
