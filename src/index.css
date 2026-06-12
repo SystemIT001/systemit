@@ -1,16 +1,16 @@
 :root {
-  /* Colors - Modern Dark Theme */
-  --bg-color: #0f1117;
-  --surface-color: #1a1d24;
-  --surface-hover: #232730;
-  --primary-color: #6366f1; /* Indigo */
-  --primary-hover: #4f46e5;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-color: #2e3340;
+  /* Colors - Cyberpunk Neon Dark Theme */
+  --bg-color: #050508; /* Extremely dark, almost black */
+  --surface-color: #10121b; /* Deep blue-tinted dark grey */
+  --surface-hover: #181b28;
+  --primary-color: #ff007f; /* Neon Pink */
+  --primary-hover: #e60073;
+  --text-main: #ffffff;
+  --text-muted: #8a99b5;
+  --border-color: #232738;
   
-  --success-color: #10b981;
-  --danger-color: #ef4444;
+  --success-color: #00f0ff; /* Electric Blue / Cyan */
+  --danger-color: #ff2a55;
 
   /* Typography */
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -18,31 +18,32 @@
   /* Radii & Shadows */
   --radius-md: 8px;
   --radius-lg: 12px;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-glow: 0 0 15px rgba(99, 102, 241, 0.3);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 15px rgba(255, 0, 127, 0.4);
 
-  --topbar-bg: rgba(15, 17, 23, 0.8);
+  --topbar-bg: rgba(5, 5, 8, 0.8);
 }
 
 :root.light-theme {
-  --bg-color: #f8fafc;
+  /* Colors - Cyberpunk Neon Light Theme */
+  --bg-color: #f4f5f8;
   --surface-color: #ffffff;
-  --surface-hover: #f1f5f9;
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
-  --text-main: #0f1117;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
+  --surface-hover: #f8f9fc;
+  --primary-color: #e60073; /* Neon Pink */
+  --primary-hover: #cc0066;
+  --text-main: #0a0b10;
+  --text-muted: #5e6a82;
+  --border-color: #d1d5e0;
   
-  --success-color: #059669;
-  --danger-color: #dc2626;
+  --success-color: #00bcd4; /* Bright Cyan */
+  --danger-color: #e6194b;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-glow: 0 0 15px rgba(79, 70, 229, 0.3);
+  --shadow-glow: 0 0 15px rgba(230, 0, 115, 0.3);
 
-  --topbar-bg: rgba(248, 250, 252, 0.8);
+  --topbar-bg: rgba(244, 245, 248, 0.8);
 }
 
 * {
