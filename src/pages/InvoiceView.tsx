@@ -55,7 +55,7 @@ const InvoiceView: React.FC = () => {
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'letter'
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -291,7 +291,7 @@ const InvoiceView: React.FC = () => {
         </div>
       </div>
 
-      <div id="invoice-paper" className="card invoice-paper" style={{ backgroundColor: 'white', color: 'black', padding: '3rem 4rem' }}>
+      <div id="invoice-paper" className="card invoice-paper" style={{ backgroundColor: 'white', color: 'black', padding: '2rem 2.5rem' }}>
         {/* Header de Factura */}
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem' }}>
           <div>

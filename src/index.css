@@ -175,6 +175,10 @@ input, select, textarea {
 
 /* Print Styles */
 @media print {
+  @page {
+    size: letter portrait;
+    margin: 1cm;
+  }
   body {
     background-color: white !important;
     color: black !important;
