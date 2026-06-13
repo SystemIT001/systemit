@@ -16,7 +16,7 @@ export function useAuth() {
       setUser(JSON.parse(storedAuth));
       // Si estamos en login y ya hay sesiÃ³n, redirigir
       if (isLoginPage) {
-        window.location.href = '/views/proyectos.html';
+        window.location.href = '/views/index.html';
       }
     } else if (!isLoginPage) {
       // Guardar la URL actual para retornar despuÃ©s de login
