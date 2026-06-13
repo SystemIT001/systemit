@@ -845,8 +845,8 @@ const ProjectDetail: React.FC = () => {
           <div style={{ flex: 1, padding: '2rem', overflowY: 'auto', backgroundColor: 'transparent' }}>
           {activeTab === 'info' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '600px' }}>
-              <div style={{ display: 'flex', gap: '1.5rem' }}>
-                <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 250px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Nombre del Proyecto</label>
                   <input 
                     type="text" 
@@ -855,7 +855,7 @@ const ProjectDetail: React.FC = () => {
                     style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
                   />
                 </div>
-                <div style={{ width: '150px' }}>
+                <div style={{ flex: '1 1 150px', maxWidth: '200px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Código (Auto)</label>
                   <input 
                     type="text" 
