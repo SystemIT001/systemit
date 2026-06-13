@@ -109,11 +109,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               }}>C&C</span>
               <span style={{ 
                 fontWeight: 300, 
-                letterSpacing: '2px',
+                letterSpacing: '1px',
                 color: 'var(--text-main)',
                 marginLeft: '6px',
-                fontSize: '1.25rem'
-              }}>SYSTEM</span>
+                fontSize: '0.95rem'
+              }}>System</span>
             </div>
           </div>
         </div>

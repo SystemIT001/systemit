@@ -96,11 +96,11 @@ const Login: React.FC = () => {
           }}>C&C</span>
           <span style={{ 
             fontWeight: 300, 
-            letterSpacing: '2px',
+            letterSpacing: '1px',
             color: 'var(--text-main)',
             marginLeft: '8px',
-            fontSize: '1.75rem'
-          }}>SYSTEM</span>
+            fontSize: '1.25rem'
+          }}>System</span>
         </div>
         <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Inicia sesión para continuar</p>
 
