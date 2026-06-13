@@ -87,27 +87,23 @@ const Login: React.FC = () => {
           <Building2 size={48} />
         </div>
         
-        {settings?.companyName ? (
-          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>{settings.companyName}</h1>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>
-            <span style={{ 
-              fontWeight: 900, 
-              background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%)', 
-              WebkitBackgroundClip: 'text', 
-              WebkitTextFillColor: 'transparent',
-              display: 'inline-block',
-              fontSize: '1.75rem'
-            }}>C&C</span>
-            <span style={{ 
-              fontWeight: 300, 
-              letterSpacing: '2px',
-              color: 'var(--text-main)',
-              marginLeft: '8px',
-              fontSize: '1.75rem'
-            }}>SYSTEM</span>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>
+          <span style={{ 
+            fontWeight: 900, 
+            background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%)', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent',
+            display: 'inline-block',
+            fontSize: '1.75rem'
+          }}>C&C</span>
+          <span style={{ 
+            fontWeight: 300, 
+            letterSpacing: '2px',
+            color: 'var(--text-main)',
+            marginLeft: '8px',
+            fontSize: '1.75rem'
+          }}>SYSTEM</span>
+        </div>
         <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Inicia sesión para continuar</p>
 
         {error && (
