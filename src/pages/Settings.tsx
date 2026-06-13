@@ -79,7 +79,7 @@ const Settings: React.FC = () => {
       try {
         const parsed = JSON.parse(errorMsg);
         if (parsed.error) errorMsg = parsed.error;
-      } catch (e) {}
+      } catch (e) { /* ignorar error de parseo */ }
       
       alert(`Error al subir el logo:\n\n${errorMsg}`);
     } finally {

@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
            <button className="btn-primary" onClick={() => window.location.href = '/views/proyectos.html'}>
              <Plus size={18} /> Nuevo Proyecto
            </button>
-           <button className="btn-secondary" onClick={() => window.location.href = '/views/agenda.html'}>
+           <button className="btn-secondary" onClick={() => window.location.href = '/views/calendario.html'}>
              <Calendar size={18} /> Agendar Visita
            </button>
         </div>
@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
               <Calendar size={20} color="var(--primary-color)" />
               <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Citas de Hoy</h2>
             </div>
-            <a href="/views/agenda.html" style={{ fontSize: '0.875rem', color: 'var(--primary-color)' }}>Abrir agenda</a>
+            <a href="/views/calendario.html" style={{ fontSize: '0.875rem', color: 'var(--primary-color)' }}>Abrir agenda</a>
           </div>
 
           {todaysVisits.length === 0 ? (
@@ -139,7 +139,7 @@ const Dashboard: React.FC = () => {
               <AlertCircle size={20} color="var(--danger-color)" />
               <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Tickets Pendientes</h2>
             </div>
-            <a href="/views/soporte.html" style={{ fontSize: '0.875rem', color: 'var(--primary-color)' }}>Ver todos</a>
+            <a href="/views/tickets.html" style={{ fontSize: '0.875rem', color: 'var(--primary-color)' }}>Ver todos</a>
           </div>
 
           {pendingTickets.length === 0 ? (
