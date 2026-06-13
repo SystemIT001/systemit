@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Building2, Lock, User, LogIn, Palette } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
-import { useSettings } from '../hooks/useSettings';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -12,7 +11,6 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const { theme, setTheme } = useTheme();
-  const { settings } = useSettings();
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
