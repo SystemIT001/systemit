@@ -12,7 +12,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
     <div className="modal-overlay">
       <div className="modal-content" style={{ maxWidth: '400px', width: '90%' }}>
         <div className="modal-header">
-          <h2>Escanear Código</h2>
+          <h2>Escanear Código de Barras</h2>
           <button className="btn-icon" onClick={onClose}><X size={20} /></button>
         </div>
         
@@ -26,12 +26,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
             onError={(error: any) => {
               console.error("Scanner Error:", error);
             }}
-            formats={['qr_code', 'code_128', 'code_39', 'ean_13', 'upc_a']}
+            formats={['code_128', 'code_39', 'ean_13', 'upc_a']}
           />
         </div>
         
         <p style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--text-muted)' }}>
-          Apunta la cámara al código QR o de barras para capturarlo automáticamente.
+          Apunta la cámara al código de barras para capturarlo automáticamente.
         </p>
       </div>
     </div>
