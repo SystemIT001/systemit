@@ -91,30 +91,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         className={`sidebar no-print ${(isMobileMenuOpen || isHoveringSidebar) ? 'open' : ''}`}
         onMouseLeave={() => setIsHoveringSidebar(false)}
       >
-        <div className="brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="brand" style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '1rem 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {settings?.logoUrl ? (
-              <img src={settings.logoUrl} alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+              <img src={settings.logoUrl} alt="Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
             ) : (
-              <ReceiptText className="brand-icon" size={28} />
+              <ReceiptText className="brand-icon" size={48} />
             )}
-            <div style={{ display: 'flex', alignItems: 'center', letterSpacing: '-0.5px' }}>
-              <span style={{ 
-                fontWeight: 900, 
-                background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%)', 
-                WebkitBackgroundClip: 'text', 
-                WebkitTextFillColor: 'transparent',
-                display: 'inline-block',
-                fontSize: '1.25rem'
-              }}>C&C</span>
-              <span style={{ 
-                fontWeight: 300, 
-                letterSpacing: '1px',
-                color: 'var(--text-main)',
-                marginLeft: '6px',
-                fontSize: '0.95rem'
-              }}>System</span>
-            </div>
           </div>
         </div>
 
