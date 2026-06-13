@@ -250,6 +250,7 @@ input, select, textarea {
 .action-buttons {
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 /* Modal Styles */
@@ -335,7 +336,7 @@ input, select, textarea {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .responsive-form-grid {
     grid-template-columns: 1fr !important;
   }
@@ -347,6 +348,7 @@ input, select, textarea {
   .action-buttons {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
   
   .action-buttons > * {
