@@ -113,6 +113,18 @@ input, select, textarea {
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
+/* Fix for invisible date/time picker icons on dark backgrounds */
+::-webkit-calendar-picker-indicator {
+  background-color: white;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.9;
+}
+::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 /* Utilities */
 .container {
   max-width: 1200px;
