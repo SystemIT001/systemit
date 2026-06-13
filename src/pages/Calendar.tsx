@@ -12,7 +12,8 @@ export default function Calendar() {
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDateStr, setSelectedDateStr] = useState<string>('');
+  const [selectedTimeStr, setSelectedTimeStr] = useState<string>('09:00');
   const [editingVisit, setEditingVisit] = useState<Visit | null>(null);
 
   const [formData, setFormData] = useState<Partial<Visit>>({
@@ -47,8 +48,9 @@ export default function Calendar() {
   };
 
   const handleDayClick = (day: number) => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day, 9, 0);
-    setSelectedDate(newDate);
+    const targetDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    setSelectedDateStr(targetDateStr);
+    setSelectedTimeStr('09:00');
     setEditingVisit(null);
     setFormData({
       title: '',
@@ -64,7 +66,12 @@ export default function Calendar() {
   const handleVisitClick = (e: React.MouseEvent, visit: Visit) => {
     e.stopPropagation();
     setEditingVisit(visit);
-    setSelectedDate(new Date(visit.date));
+    
+    // visit.date format is YYYY-MM-DDTHH:MM
+    const [d, t] = visit.date.split('T');
+    setSelectedDateStr(d || '');
+    setSelectedTimeStr(t || '09:00');
+
     setFormData({
       title: visit.title,
       clientId: visit.clientId || '',
@@ -78,10 +85,16 @@ export default function Calendar() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate) return;
+    if (!selectedDateStr || !selectedTimeStr) return;
 
-    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}T${String(selectedDate.getHours()).padStart(2, '0')}:${String(selectedDate.getMinutes()).padStart(2, '0')}`;
-    const endDateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}T${String(selectedDate.getHours() + 1).padStart(2, '0')}:${String(selectedDate.getMinutes()).padStart(2, '0')}`;
+    // selectedDateStr: YYYY-MM-DD
+    // selectedTimeStr: HH:MM
+    const dateStr = `${selectedDateStr}T${selectedTimeStr}`;
+    
+    // Calculate end time (assume 1 hour later)
+    const [h, m] = selectedTimeStr.split(':').map(Number);
+    const endH = String((h + 1) % 24).padStart(2, '0');
+    const endDateStr = `${selectedDateStr}T${endH}:${String(m).padStart(2, '0')}`;
 
     const newVisit: Visit = {
       id: editingVisit ? editingVisit.id : crypto.randomUUID(),
@@ -241,27 +254,38 @@ export default function Calendar() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label className="form-label">Fecha y Hora</label>
+                  <label className="form-label">Fecha</label>
                   <input 
-                    type="datetime-local" 
+                    type="date" 
                     className="form-control" 
                     required
-                    value={selectedDate ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}T${String(selectedDate.getHours()).padStart(2, '0')}:${String(selectedDate.getMinutes()).padStart(2, '0')}` : ''}
-                    onChange={e => setSelectedDate(new Date(e.target.value))}
+                    value={selectedDateStr}
+                    onChange={e => setSelectedDateStr(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="form-label">Estado</label>
-                  <select 
-                    className="form-control"
-                    value={formData.status}
-                    onChange={e => setFormData({...formData, status: e.target.value as any})}
-                  >
-                    <option value="pending">Pendiente</option>
-                    <option value="completed">Completado</option>
-                    <option value="cancelled">Cancelado</option>
-                  </select>
+                  <label className="form-label">Hora</label>
+                  <input 
+                    type="time" 
+                    className="form-control" 
+                    required
+                    value={selectedTimeStr}
+                    onChange={e => setSelectedTimeStr(e.target.value)}
+                  />
                 </div>
+              </div>
+
+              <div>
+                <label className="form-label">Estado</label>
+                <select 
+                  className="form-control"
+                  value={formData.status}
+                  onChange={e => setFormData({...formData, status: e.target.value as any})}
+                >
+                  <option value="pending">Pendiente</option>
+                  <option value="completed">Completado</option>
+                  <option value="cancelled">Cancelado</option>
+                </select>
               </div>
 
               <div>
