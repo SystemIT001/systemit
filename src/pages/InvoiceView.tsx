@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { ArrowLeft, Printer, Building2, Download } from 'lucide-react';
+import { ArrowLeft, Printer, Building2, Download, MessageCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { useProjects } from '../hooks/useProjects';
@@ -291,6 +291,17 @@ const InvoiceView: React.FC = () => {
           {isQuote ? 'Volver a la Cotización' : 'Volver al Proyecto'}
         </a>
         <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            className="btn-primary" 
+            style={{ backgroundColor: '#25D366', color: 'white', borderColor: '#25D366' }}
+            onClick={() => {
+              const text = `Hola ${project.clientName || ''}, adjunto te envío la ${isQuote ? 'Cotización' : 'Factura'} correspondiente al proyecto: ${project.projectName}. ¡Saludos!`;
+              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            }}
+          >
+            <MessageCircle size={20} />
+            WhatsApp
+          </button>
           <button className="btn-secondary" onClick={() => window.print()}>
             <Printer size={20} />
             Imprimir
