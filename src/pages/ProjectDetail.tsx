@@ -957,7 +957,7 @@ const ProjectDetail: React.FC = () => {
             <div>
               <form onSubmit={handleAddItem} className="responsive-form-grid" style={{ display: 'grid', gridTemplateColumns: activeTab !== 'labor' ? (profitMargin === 'manual' ? '2fr 1fr 1fr 1fr 1fr auto auto' : '2fr 1fr 1fr 1fr auto auto') : '2fr 1fr 1fr auto auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 {activeTab === 'additionals' && (
-                  <div className="full-width-mobile" style={{ gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
+                  <div style={{ gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Tipo de Adicional</label>
                     <select 
                       value={additionalType} 
@@ -969,7 +969,7 @@ const ProjectDetail: React.FC = () => {
                     </select>
                   </div>
                 )}
-                <div className="full-width-mobile" style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Descripción</label>
                   <input 
                     type="text" 
