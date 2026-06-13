@@ -57,16 +57,22 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
               zIndex: 10
             }}>
               {/* Laser line effect */}
+              <style>{`
+                @keyframes scanLine {
+                  0% { top: 5%; }
+                  50% { top: 95%; }
+                  100% { top: 5%; }
+                }
+              `}</style>
               <div style={{
                 width: '100%',
                 height: '2px',
                 backgroundColor: 'red',
                 position: 'absolute',
-                top: '50%',
                 left: 0,
-                transform: 'translateY(-50%)',
                 boxShadow: '0 0 4px red',
-                opacity: 0.7
+                opacity: 0.7,
+                animation: 'scanLine 2s infinite linear'
               }} />
             </div>
           </Scanner>
