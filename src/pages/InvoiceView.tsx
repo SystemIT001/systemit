@@ -315,42 +315,21 @@ const InvoiceView: React.FC = () => {
 
       <div id="invoice-paper" className="card invoice-paper" style={{ backgroundColor: 'white', color: 'black', padding: '2rem 2.5rem' }}>
         {/* Header de Factura */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
-              {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt="Logo" style={{ width: 'auto', height: '80px', maxWidth: '200px', objectFit: 'contain' }} />
-              ) : (
-                <Building2 size={40} style={{ color: '#0f1117' }} />
-              )}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', letterSpacing: '-0.5px' }}>
-                  <span style={{ 
-                    fontWeight: 900, 
-                    background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%)', 
-                    WebkitBackgroundClip: 'text', 
-                    WebkitTextFillColor: 'transparent',
-                    display: 'inline-block',
-                    fontSize: '1.75rem',
-                    WebkitPrintColorAdjust: 'exact',
-                    printColorAdjust: 'exact'
-                  }}>C&C</span>
-                  <span style={{ 
-                    fontWeight: 300, 
-                    letterSpacing: '1px',
-                    color: '#0f1117',
-                    marginLeft: '8px',
-                    fontSize: '1.25rem'
-                  }}>System</span>
-                </div>
-                <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>{subtitle}</p>
-              </div>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem', position: 'relative' }}>
+          <div style={{ width: '300px' }}>
+            {settings.logoUrl ? (
+              <img src={settings.logoUrl} alt="Logo" style={{ width: 'auto', height: '140px', maxWidth: '300px', objectFit: 'contain' }} />
+            ) : (
+              <Building2 size={80} style={{ color: '#0f1117' }} />
+            )}
+          </div>
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', width: '400px' }}>
+            <p style={{ color: '#64748b', fontSize: '1.1rem', margin: 0, fontWeight: 500, letterSpacing: '0.05em' }}>{subtitle}</p>
           </div>
           <div style={{ textAlign: 'right', width: '300px' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f1117', textTransform: 'uppercase' }}>{docType}</h2>
-            <p style={{ color: '#64748b', marginTop: '0.5rem' }}><strong>Ref:</strong> {project.status === 'quote' ? 'CTZ-' : 'PRJ-'}{String(project.projectCode || 0).padStart(3, '0')}</p>
-            <p style={{ color: '#64748b' }}><strong>Fecha:</strong> {new Date(project.date).toLocaleDateString()}</p>
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f1117', textTransform: 'uppercase', margin: 0 }}>{docType}</h2>
+            <p style={{ color: '#64748b', marginTop: '0.5rem', marginBottom: '0.25rem' }}><strong>Ref:</strong> {project.status === 'quote' ? 'CTZ-' : 'PRJ-'}{String(project.projectCode || 0).padStart(3, '0')}</p>
+            <p style={{ color: '#64748b', margin: 0 }}><strong>Fecha:</strong> {new Date(project.date).toLocaleDateString()}</p>
           </div>
         </div>
 
