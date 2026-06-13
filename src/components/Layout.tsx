@@ -61,7 +61,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     if (path.includes('clientes')) return 'Directorio de Clientes';
     if (path.includes('cotizaciones')) return 'Cotizaciones';
     if (path.includes('tickets')) return 'Tickets de Soporte';
-    return 'SystemIT';
+    return 'C&C System';
   };
 
   const isActive = (matchPath: string) => {
@@ -98,7 +98,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             ) : (
               <ReceiptText className="brand-icon" size={28} />
             )}
-            <span>{settings?.companyName || 'SystemIT'}</span>
+            {settings?.companyName ? (
+              <span>{settings.companyName}</span>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', letterSpacing: '-0.5px' }}>
+                <span style={{ 
+                  fontWeight: 900, 
+                  background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%)', 
+                  WebkitBackgroundClip: 'text', 
+                  WebkitTextFillColor: 'transparent',
+                  display: 'inline-block',
+                  fontSize: '1.25rem'
+                }}>C&C</span>
+                <span style={{ 
+                  fontWeight: 300, 
+                  letterSpacing: '2px',
+                  color: 'var(--text-main)',
+                  marginLeft: '6px',
+                  fontSize: '1.25rem'
+                }}>SYSTEM</span>
+              </div>
+            )}
           </div>
         </div>
 
