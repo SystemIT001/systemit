@@ -24,7 +24,7 @@ const InvoiceView: React.FC = () => {
   const isQuote = project?.status === 'quote';
 
   const { settings, loading: settingsLoading } = useSettings();
-  const { companyName, subtitle, docType, footerText } = settings;
+  const { subtitle, docType, footerText } = settings;
 
   useEffect(() => {
     if (id && !loading) {
