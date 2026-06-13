@@ -243,7 +243,7 @@ export default function Calendar() {
                       }}
                       title={visit.title}
                     >
-                      {formatTimeAMPM(visit.date)} {visit.title}
+                      {formatTimeAMPM(visit.date)}
                     </div>
                   ))}
                 </div>
