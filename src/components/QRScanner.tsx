@@ -27,7 +27,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
               console.error("Scanner Error:", error);
             }}
             components={{
-              tracker: true,
               finder: false,
               torch: true,
               zoom: true,
