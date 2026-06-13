@@ -323,14 +323,14 @@ const InvoiceView: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem' }}>
           <div style={{ width: '300px' }}>
             {settings.logoUrl ? (
-              <img src={settings.logoUrl} alt="Logo" style={{ width: 'auto', height: '140px', maxWidth: '300px', objectFit: 'contain' }} />
+              <img src={settings.logoUrl} alt="Logo" style={{ width: 'auto', height: '140px', maxWidth: '300px', objectFit: 'contain', objectPosition: 'left top' }} />
             ) : (
               <Building2 size={80} style={{ color: '#0f1117' }} />
             )}
           </div>
           <div style={{ textAlign: 'right', width: '300px' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f1117', textTransform: 'uppercase', margin: 0 }}>{docType}</h2>
-            <p style={{ color: '#64748b', marginTop: '0.5rem', marginBottom: '0.25rem' }}><strong>Ref:</strong> {project.status === 'quote' ? 'CTZ-' : 'PRJ-'}{String(project.projectCode || 0).padStart(3, '0')}</p>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f1117', textTransform: 'uppercase', margin: 0, lineHeight: 1 }}>{docType}</h2>
+            <p style={{ color: '#64748b', marginTop: '0.75rem', marginBottom: '0.25rem' }}><strong>Ref:</strong> {project.status === 'quote' ? 'CTZ-' : 'PRJ-'}{String(project.projectCode || 0).padStart(3, '0')}</p>
             <p style={{ color: '#64748b', margin: 0 }}><strong>Fecha:</strong> {new Date(project.date).toLocaleDateString()}</p>
           </div>
         </div>
