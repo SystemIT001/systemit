@@ -1,13 +1,48 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Edit, Save, X, Users } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Plus, Trash2, Edit, Save, X, Users, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useClients } from '../hooks/useClients';
 import type { Client } from '../types';
-import { generateId } from '../utils';
+import { generateId, exportToCSV } from '../utils';
 
 const ClientList: React.FC = () => {
   const { clients, addClient, updateClient, deleteClient } = useClients();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  const filteredClients = useMemo(() => {
+    return clients.filter(client => 
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.documentId && client.documentId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.phone && client.phone.includes(searchTerm)) ||
+      (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [clients, searchTerm]);
+
+  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const currentItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredClients.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredClients, currentPage]);
+
+  const handleExport = () => {
+    const dataToExport = filteredClients.map(client => ({
+      ID: client.id,
+      Nombre: client.name,
+      'Documento/RUC': client.documentId || 'N/A',
+      Teléfono: client.phone || 'N/A',
+      Email: client.email || 'N/A',
+      Dirección: client.address || 'N/A'
+    }));
+    exportToCSV(dataToExport, 'Clientes_CC_System');
+  };
+
+  // Reset page when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -65,16 +100,36 @@ const ClientList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Users size={28} color="var(--primary-color)" />
           <h2>Directorio de Clientes</h2>
         </div>
-        {!isFormOpen && (
-          <button className="btn-primary" onClick={() => handleOpenForm()}>
-            <Plus size={20} /> Nuevo Cliente
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <button className="btn-secondary" onClick={handleExport} title="Exportar a Excel (CSV)">
+            <Download size={20} />
+            Exportar
           </button>
-        )}
+          {!isFormOpen && (
+            <button className="btn-primary" onClick={() => handleOpenForm()}>
+              <Plus size={20} /> Nuevo Cliente
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre, RUC, teléfono o email..." 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="form-input"
+            style={{ width: '100%', paddingLeft: '3rem' }}
+          />
+        </div>
       </div>
 
       {isFormOpen && (
@@ -145,14 +200,14 @@ const ClientList: React.FC = () => {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-        {clients.length === 0 ? (
+        {filteredClients.length === 0 ? (
           <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 2rem' }}>
             <Users size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem', opacity: 0.5 }} />
-            <h3 style={{ marginBottom: '0.5rem' }}>No hay clientes registrados</h3>
-            <p style={{ color: 'var(--text-muted)' }}>Agrega tu primer cliente para usarlo en tus proyectos.</p>
+            <h3 style={{ marginBottom: '0.5rem' }}>No hay clientes encontrados</h3>
+            <p style={{ color: 'var(--text-muted)' }}>Intenta con otra búsqueda o agrega un nuevo cliente.</p>
           </div>
         ) : (
-          clients.map(client => (
+          currentItems.map(client => (
             <div key={client.id} className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 <h3 style={{ fontSize: '1.125rem', color: 'var(--text-main)', margin: 0 }}>{client.name}</h3>
@@ -177,6 +232,36 @@ const ClientList: React.FC = () => {
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', marginTop: '2rem', backgroundColor: 'var(--surface-color)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+            Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredClients.length)} de {filteredClients.length} clientes
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button 
+              className="btn-secondary" 
+              style={{ padding: '0.5rem' }} 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span style={{ display: 'flex', alignItems: 'center', padding: '0 0.5rem', fontSize: '0.875rem' }}>
+              Página {currentPage} de {totalPages}
+            </span>
+            <button 
+              className="btn-secondary" 
+              style={{ padding: '0.5rem' }} 
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

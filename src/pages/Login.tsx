@@ -21,7 +21,7 @@ const Login: React.FC = () => {
     const result = await login(username, password);
     if (result.success) {
       const urlParams = new URLSearchParams(window.location.search);
-      const returnUrl = urlParams.get('returnUrl') || '/views/proyectos.html';
+      const returnUrl = urlParams.get('returnUrl') || '/views/index.html';
       if (!window.location.pathname.includes(returnUrl)) {
         window.location.href = returnUrl;
       }

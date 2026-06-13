@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
-import { Plus, Trash2, Printer, FolderKanban, Search } from 'lucide-react';
+import { Plus, Trash2, Printer, FolderKanban, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { generateId, formatCurrency, calculateProjectTotalsDual } from '../utils';
 
 const ProjectList: React.FC = () => {
   const { projects, addProject, deleteProject } = useProjects();
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const handleCreateProject = async () => {
     const actualProjects = projects.filter(p => p.status !== 'quote');
@@ -31,19 +34,37 @@ const ProjectList: React.FC = () => {
     }
   };
 
-  const filteredProjects = projects.filter(p => p.status !== 'quote').filter(project => {
-    const query = searchQuery.toLowerCase();
-    return (project.projectName?.toLowerCase() || '').includes(query) || 
-           (project.clientName?.toLowerCase() || '').includes(query) ||
-           (project.projectCode?.toString() || '').includes(query);
-  });
+  const filteredProjects = useMemo(() => {
+    return projects.filter(p => p.status !== 'quote').filter(project => {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = (project.projectName?.toLowerCase() || '').includes(query) || 
+                            (project.clientName?.toLowerCase() || '').includes(query) ||
+                            (project.projectCode?.toString() || '').includes(query);
+      
+      const pStatus = project.status || 'not_started';
+      const matchesStatus = statusFilter === 'all' || pStatus === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [projects, searchQuery, statusFilter]);
+
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+  const currentItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredProjects.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProjects, currentPage]);
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2>Tus Proyectos</h2>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', flex: '1 1 200px' }}>
             <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input 
               type="text" 
@@ -51,9 +72,19 @@ const ProjectList: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="form-input"
-              style={{ paddingLeft: '35px', width: '250px' }}
+              style={{ paddingLeft: '35px', width: '100%' }}
             />
           </div>
+          <select 
+            className="form-input" 
+            value={statusFilter} 
+            onChange={e => setStatusFilter(e.target.value)}
+          >
+            <option value="all">Todos los estados</option>
+            <option value="not_started">No Iniciado</option>
+            <option value="draft">En Proceso</option>
+            <option value="completed">Completado</option>
+          </select>
           <button className="btn-primary" onClick={handleCreateProject}>
             <Plus size={20} />
             Nuevo Proyecto
@@ -67,7 +98,7 @@ const ProjectList: React.FC = () => {
             <p style={{ color: 'var(--text-muted)' }}>No hay proyectos encontrados.</p>
           </div>
         ) : (
-          filteredProjects.map(project => (
+          currentItems.map(project => (
             <div key={project.id} className="card project-card">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
@@ -118,6 +149,36 @@ const ProjectList: React.FC = () => {
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', marginTop: '2rem', backgroundColor: 'var(--surface-color)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+            Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredProjects.length)} de {filteredProjects.length} proyectos
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button 
+              className="btn-secondary" 
+              style={{ padding: '0.5rem' }} 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span style={{ display: 'flex', alignItems: 'center', padding: '0 0.5rem', fontSize: '0.875rem' }}>
+              Página {currentPage} de {totalPages}
+            </span>
+            <button 
+              className="btn-secondary" 
+              style={{ padding: '0.5rem' }} 
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Edit, Save, X, PackageSearch, QrCode } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Plus, Trash2, Edit, Save, X, PackageSearch, QrCode, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useInventory } from '../hooks/useInventory';
 import type { InventoryItem } from '../types';
-import { generateId, formatCurrency } from '../utils';
+import { generateId, formatCurrency, exportToCSV } from '../utils';
 import QRScanner from '../components/QRScanner';
 
 const InventoryList: React.FC = () => {
@@ -13,11 +13,45 @@ const InventoryList: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isScanningSearch, setIsScanningSearch] = useState(false);
   const [isScanningItem, setIsScanningItem] = useState(false);
+  
+  // Pagination & Filters
+  const [currentPage, setCurrentPage] = useState(1);
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const itemsPerPage = 10;
 
-  const filteredInventory = inventory.filter(item => 
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (item.barcode && item.barcode.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredInventory = useMemo(() => {
+    return inventory.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (item.barcode && item.barcode.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [inventory, searchTerm, categoryFilter]);
+
+  const totalPages = Math.ceil(filteredInventory.length / itemsPerPage);
+  const currentItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredInventory.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredInventory, currentPage]);
+
+  const handleExport = () => {
+    const dataToExport = filteredInventory.map(item => ({
+      ID: item.id,
+      Nombre: item.name,
+      'Código de Barras/QR': item.barcode || 'N/A',
+      Categoría: item.category === 'equipments' ? 'Equipo' : 'Material',
+      Moneda: item.currency || 'USD',
+      'Costo Unitario': item.unitCost,
+      'Stock Disponible': item.stockQuantity,
+      'Última Actualización': new Date(item.lastUpdated).toLocaleDateString()
+    }));
+    exportToCSV(dataToExport, 'Inventario_CC_System');
+  };
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter]);
 
   const handleStartAdd = () => {
     setIsAdding(true);
@@ -58,16 +92,22 @@ const InventoryList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2>Bodega / Inventario</h2>
-        <button className="btn-primary" onClick={handleStartAdd} disabled={isAdding}>
-          <Plus size={20} />
-          Nuevo Artículo
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <button className="btn-secondary" onClick={handleExport} title="Exportar a Excel (CSV)">
+            <Download size={20} />
+            Exportar
+          </button>
+          <button className="btn-primary" onClick={handleStartAdd} disabled={isAdding}>
+            <Plus size={20} />
+            Nuevo Artículo
+          </button>
+        </div>
       </div>
 
-      <div className="card" style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
-        <div style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'var(--bg-color)', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+      <div className="card" style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 300px', display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'var(--bg-color)', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
           <PackageSearch size={20} color="var(--text-muted)" />
           <input 
             type="text" 
@@ -81,6 +121,16 @@ const InventoryList: React.FC = () => {
           <QrCode size={20} />
           Escanear
         </button>
+        <select 
+          className="form-input" 
+          value={categoryFilter} 
+          onChange={e => setCategoryFilter(e.target.value)}
+          style={{ padding: '0.5rem 1rem' }}
+        >
+          <option value="all">Todas las Categorías</option>
+          <option value="equipments">Equipos</option>
+          <option value="materials">Materiales</option>
+        </select>
       </div>
 
       <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
@@ -137,13 +187,13 @@ const InventoryList: React.FC = () => {
 
             {filteredInventory.length === 0 && !isAdding && (
               <tr>
-                <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                   No se encontraron productos en bodega.
                 </td>
               </tr>
             )}
 
-            {filteredInventory.map(item => {
+            {currentItems.map(item => {
               const isEditing = editingId === item.id;
               return (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
@@ -224,6 +274,36 @@ const InventoryList: React.FC = () => {
             })}
           </tbody>
         </table>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+              Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredInventory.length)} de {filteredInventory.length} artículos
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                className="btn-secondary" 
+                style={{ padding: '0.5rem' }} 
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span style={{ display: 'flex', alignItems: 'center', padding: '0 0.5rem', fontSize: '0.875rem' }}>
+                Página {currentPage} de {totalPages}
+              </span>
+              <button 
+                className="btn-secondary" 
+                style={{ padding: '0.5rem' }} 
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {isScanningSearch && (
