@@ -316,7 +316,7 @@ const InvoiceView: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', letterSpacing: '-0.5px' }}>
                   <span style={{ 
                     fontWeight: 900, 
-                    background: 'linear-gradient(135deg, #e60073 0%, #00bcd4 100%)', 
+                    background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%)', 
                     WebkitBackgroundClip: 'text', 
                     WebkitTextFillColor: 'transparent',
                     display: 'inline-block',
