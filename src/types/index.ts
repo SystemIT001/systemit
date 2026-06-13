@@ -135,3 +135,15 @@ export interface SupplierPurchase {
   totalAmount: number;
   invoiceFile?: InvoiceFile;
 }
+
+export interface Visit {
+  id: string;
+  title: string;
+  clientId?: string;
+  projectId?: string;
+  date: string;
+  endDate: string;
+  description: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  technician?: string;
+}

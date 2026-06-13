@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Palette, FileText, LifeBuoy, PieChart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Palette, FileText, LifeBuoy, PieChart, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../hooks/useSettings';
@@ -129,6 +129,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <FolderKanban size={20} />
             Proyectos Activos
+          </a>
+          <a 
+            href="/views/calendario.html" 
+            className={`nav-item ${isActive('/views/calendario.html') ? 'active' : ''}`}
+          >
+            <CalendarDays size={20} />
+            Agenda de Visitas
           </a>
           <a 
             href="/views/cotizaciones.html" 

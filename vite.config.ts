@@ -28,6 +28,7 @@ export default defineConfig({
         factura: resolve(__dirname, 'views/factura.html'),
         clientes: resolve(__dirname, 'views/clientes.html'),
         cotizaciones: resolve(__dirname, 'views/cotizaciones.html'),
+        calendario: resolve(__dirname, 'views/calendario.html'),
         tickets: resolve(__dirname, 'views/tickets.html'),
         reportes: resolve(__dirname, 'views/reportes.html'),
         portal: resolve(__dirname, 'views/portal.html')
