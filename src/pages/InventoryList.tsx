@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit, Save, X, PackageSearch } from 'lucide-react';
+import { Plus, Trash2, Edit, Save, X, PackageSearch, QrCode } from 'lucide-react';
 import { useInventory } from '../hooks/useInventory';
 import type { InventoryItem } from '../types';
 import { generateId, formatCurrency } from '../utils';
+import QRScanner from '../components/QRScanner';
 
 const InventoryList: React.FC = () => {
   const { inventory, addInventoryItem, updateInventoryItem, deleteInventoryItem } = useInventory();
@@ -10,8 +11,13 @@ const InventoryList: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<InventoryItem>>({});
   const [isAdding, setIsAdding] = useState(false);
+  const [isScanningSearch, setIsScanningSearch] = useState(false);
+  const [isScanningItem, setIsScanningItem] = useState(false);
 
-  const filteredInventory = inventory.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredInventory = inventory.filter(item => 
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (item.barcode && item.barcode.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const handleStartAdd = () => {
     setIsAdding(true);
@@ -34,6 +40,7 @@ const InventoryList: React.FC = () => {
         stockQuantity: Number(editForm.stockQuantity),
         category: editForm.category as 'materials' | 'equipments',
         currency: editForm.currency as 'USD' | 'NIO',
+        barcode: editForm.barcode,
         lastUpdated: new Date().toISOString()
       });
       setIsAdding(false);
@@ -59,17 +66,21 @@ const InventoryList: React.FC = () => {
         </button>
       </div>
 
-      <div className="card" style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'var(--bg-color)', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+      <div className="card" style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
+        <div style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'var(--bg-color)', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
           <PackageSearch size={20} color="var(--text-muted)" />
           <input 
             type="text" 
-            placeholder="Buscar por nombre..." 
+            placeholder="Buscar por nombre o código QR/Barras..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', color: 'var(--text-main)' }}
           />
         </div>
+        <button className="btn-secondary" onClick={() => setIsScanningSearch(true)} title="Buscar con QR">
+          <QrCode size={20} />
+          Escanear
+        </button>
       </div>
 
       <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
@@ -77,6 +88,7 @@ const InventoryList: React.FC = () => {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', textAlign: 'left' }}>
               <th style={{ padding: '1rem' }}>Nombre del Artículo</th>
+              <th style={{ padding: '1rem' }}>Código/QR</th>
               <th style={{ padding: '1rem' }}>Categoría</th>
               <th style={{ padding: '1rem' }}>Moneda</th>
               <th style={{ padding: '1rem' }}>Costo Unitario</th>
@@ -89,6 +101,12 @@ const InventoryList: React.FC = () => {
               <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(99, 102, 241, 0.1)' }}>
                 <td style={{ padding: '1rem' }}>
                   <input autoFocus type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} placeholder="Ej: Cable UTP" />
+                </td>
+                <td style={{ padding: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input type="text" value={editForm.barcode || ''} onChange={e => setEditForm({...editForm, barcode: e.target.value})} style={{ width: '100px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }} placeholder="Opcional" />
+                    <button className="btn-secondary" style={{ padding: '0.5rem' }} onClick={() => setIsScanningItem(true)} title="Escanear QR"><QrCode size={16} /></button>
+                  </div>
                 </td>
                 <td style={{ padding: '1rem' }}>
                   <select value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value as any})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
@@ -134,6 +152,16 @@ const InventoryList: React.FC = () => {
                       <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} />
                     ) : (
                       item.name
+                    )}
+                  </td>
+                  <td style={{ padding: '1rem' }}>
+                    {isEditing ? (
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input type="text" value={editForm.barcode || ''} onChange={e => setEditForm({...editForm, barcode: e.target.value})} style={{ width: '100px', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }} placeholder="Opcional" />
+                        <button className="btn-secondary" style={{ padding: '0.5rem' }} onClick={() => setIsScanningItem(true)} title="Escanear QR"><QrCode size={16} /></button>
+                      </div>
+                    ) : (
+                      item.barcode ? <span style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{item.barcode}</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>
                     )}
                   </td>
                   <td style={{ padding: '1rem' }}>
@@ -197,6 +225,26 @@ const InventoryList: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {isScanningSearch && (
+        <QRScanner 
+          onScan={(text) => {
+            setSearchTerm(text);
+            setIsScanningSearch(false);
+          }}
+          onClose={() => setIsScanningSearch(false)}
+        />
+      )}
+
+      {isScanningItem && (
+        <QRScanner 
+          onScan={(text) => {
+            setEditForm({...editForm, barcode: text});
+            setIsScanningItem(false);
+          }}
+          onClose={() => setIsScanningItem(false)}
+        />
+      )}
     </div>
   );
 };

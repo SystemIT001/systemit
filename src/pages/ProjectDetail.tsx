@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye, QrCode } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { useQuotes } from '../hooks/useQuotes';
 import { useInventory } from '../hooks/useInventory';
@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/useAuth';
 import type { Project, MaterialItem, EquipmentItem, LaborItem, InvoiceFile } from '../types';
 import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateExpensesDual, calculateProjectRealRevenueDual, downloadFileFromUrl } from '../utils';
 import { InvoiceImporter } from '../components/InvoiceImporter';
+import QRScanner from '../components/QRScanner';
 
 type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_control' | 'labor' | 'planificacion' | 'payments' | 'invoices' | 'expenses' | 'gallery' | 'profit';
 
@@ -40,6 +41,7 @@ const ProjectDetail: React.FC = () => {
   const [profitMargin, setProfitMargin] = useState<number | 'manual'>(0);
   const [manualPrice, setManualPrice] = useState<number>(0);
   const [serialNumber, setSerialNumber] = useState<string>('');
+  const [isScanningSerial, setIsScanningSerial] = useState(false);
   const [clientProvides, setClientProvides] = useState<boolean>(false);
   
   // Payment states
@@ -1068,13 +1070,24 @@ const ProjectDetail: React.FC = () => {
                 {activeTab === 'equipments' && (
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Nº Serie (Opcional)</label>
-                    <input 
-                      type="text" 
-                      value={serialNumber} 
-                      onChange={e => setSerialNumber(e.target.value)}
-                      placeholder="Ej. SN-123"
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
-                    />
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input 
+                        type="text" 
+                        value={serialNumber} 
+                        onChange={e => setSerialNumber(e.target.value)}
+                        placeholder="Ej. SN-123"
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
+                      />
+                      <button 
+                        type="button" 
+                        className="btn-secondary" 
+                        style={{ padding: '0.75rem' }} 
+                        onClick={() => setIsScanningSerial(true)} 
+                        title="Escanear Serie con QR"
+                      >
+                        <QrCode size={20} />
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -1696,6 +1709,15 @@ const ProjectDetail: React.FC = () => {
             </h3>
           )}
         </div>
+      )}
+      {isScanningSerial && (
+        <QRScanner 
+          onScan={(text) => {
+            setSerialNumber(text);
+            setIsScanningSerial(false);
+          }}
+          onClose={() => setIsScanningSerial(false)}
+        />
       )}
     </div>
   );

@@ -34,6 +34,7 @@ export interface InventoryItem {
   stockQuantity: number;
   category: 'materials' | 'equipments';
   currency?: 'NIO' | 'USD';
+  barcode?: string;
   lastUpdated: string;
 }
 
