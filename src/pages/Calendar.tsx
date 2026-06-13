@@ -124,6 +124,29 @@ export default function Calendar() {
     return day === todayDate.getDate() && currentDate.getMonth() === todayDate.getMonth() && currentDate.getFullYear() === todayDate.getFullYear();
   };
 
+  const formatTimeAMPM = (dateString: string) => {
+    if (!dateString) return '';
+    const timePart = dateString.split('T')[1];
+    if (!timePart) return '';
+    const [hours, minutes] = timePart.split(':');
+    const h = parseInt(hours, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${String(h12).padStart(2, '0')}:${minutes} ${ampm}`;
+  };
+
+  const formatFriendlyDate = (dateString: string) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    // Adjusting for timezone offset to show correct local day
+    const localDate = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+    return localDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+
+  const upcomingVisits = visits
+    .filter(v => new Date(v.date).getTime() >= new Date().setHours(0, 0, 0, 0))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   return (
     <div className="calendar-container" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -137,7 +160,9 @@ export default function Calendar() {
         </button>
       </div>
 
-      <div className="card" style={{ padding: '1.5rem', backgroundColor: 'var(--card-bg)' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
+        {/* Main Calendar Area */}
+        <div className="card" style={{ flex: '1 1 600px', padding: '1.5rem', backgroundColor: 'var(--card-bg)' }}>
         {/* Calendar Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
@@ -218,13 +243,55 @@ export default function Calendar() {
                       }}
                       title={visit.title}
                     >
-                      {visit.date.substring(11, 16)} {visit.title}
+                      {formatTimeAMPM(visit.date)} {visit.title}
                     </div>
                   ))}
                 </div>
               </div>
             );
           })}
+        </div>
+        </div>
+
+        {/* Sidebar: Upcoming Visits */}
+        <div className="card" style={{ flex: '1 1 300px', minWidth: '300px', padding: '1.5rem', backgroundColor: 'var(--card-bg)', display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '800px', overflowY: 'auto' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+            Próximas Visitas
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {upcomingVisits.length > 0 ? (
+              upcomingVisits.map(visit => (
+                <div 
+                  key={visit.id} 
+                  onClick={(e) => handleVisitClick(e, visit)}
+                  style={{ 
+                    padding: '1rem', 
+                    borderRadius: '8px', 
+                    borderLeft: `4px solid ${visit.status === 'completed' ? '#16a34a' : '#2563eb'}`, 
+                    backgroundColor: 'var(--bg-main)',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--surface-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--bg-main)'}
+                >
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '0.25rem' }}>{visit.title}</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                    {formatFriendlyDate(visit.date)} • {formatTimeAMPM(visit.date)}
+                  </div>
+                  {visit.description && (
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {visit.description}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center', padding: '2rem 0' }}>
+                No hay visitas programadas.
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
