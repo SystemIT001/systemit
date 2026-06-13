@@ -337,7 +337,11 @@ input, select, textarea {
 
 @media (max-width: 768px) {
   .responsive-form-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+  
+  .full-width-mobile {
+    grid-column: 1 / -1 !important;
   }
   
   .action-header {
