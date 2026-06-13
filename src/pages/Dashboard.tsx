@@ -152,7 +152,7 @@ const Dashboard: React.FC = () => {
                     <strong style={{ color: 'var(--text-main)' }}>{ticket.title}</strong>
                     <span style={{ fontSize: '0.75rem', color: 'var(--danger-color)' }}>{ticket.priority === 'high' ? 'Alta' : 'Normal'}</span>
                   </div>
-                  <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Cliente ID: {ticket.clientId}</span>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Cliente: {ticket.clientName}</span>
                 </div>
               ))}
             </div>
