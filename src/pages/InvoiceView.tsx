@@ -313,7 +313,25 @@ const InvoiceView: React.FC = () => {
                 <Building2 size={40} style={{ color: '#0f1117' }} />
               )}
               <div>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: '#0f1117' }}>{companyName}</h1>
+                <div style={{ display: 'flex', alignItems: 'center', letterSpacing: '-0.5px' }}>
+                  <span style={{ 
+                    fontWeight: 900, 
+                    background: 'linear-gradient(135deg, #e60073 0%, #00bcd4 100%)', 
+                    WebkitBackgroundClip: 'text', 
+                    WebkitTextFillColor: 'transparent',
+                    display: 'inline-block',
+                    fontSize: '1.75rem',
+                    WebkitPrintColorAdjust: 'exact',
+                    printColorAdjust: 'exact'
+                  }}>C&C</span>
+                  <span style={{ 
+                    fontWeight: 300, 
+                    letterSpacing: '1px',
+                    color: '#0f1117',
+                    marginLeft: '8px',
+                    fontSize: '1.25rem'
+                  }}>System</span>
+                </div>
                 <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>{subtitle}</p>
               </div>
             </div>
