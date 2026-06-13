@@ -16,7 +16,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
           <button className="btn-icon" onClick={onClose}><X size={20} /></button>
         </div>
         
-        <div style={{ marginTop: '1rem', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ marginTop: '1rem', borderRadius: '8px', overflow: 'hidden' }}>
           <Scanner 
             onScan={(result) => {
               if (result && result.length > 0) {
@@ -26,49 +26,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
             onError={(error: any) => {
               console.error("Scanner Error:", error);
             }}
-            components={{
-              finder: false,
-              torch: true,
-              zoom: true,
-              onOff: true
-            }}
             formats={['code_128', 'code_39', 'ean_13', 'upc_a']}
-            styles={{
-              container: { width: '100%', aspectRatio: '4/3' }
-            }}
-          >
-            {/* Custom Barcode Rectangle Finder Overlay */}
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '80%',
-              height: '30%',
-              border: '2px solid rgba(255, 255, 255, 0.5)',
-              borderRadius: '8px',
-              boxShadow: '0 0 0 4000px rgba(0, 0, 0, 0.4)',
-              pointerEvents: 'none',
-              zIndex: 10
-            }}>
-              {/* Laser line effect */}
-              <div style={{
-                width: '100%',
-                height: '2px',
-                backgroundColor: 'red',
-                position: 'absolute',
-                top: '50%',
-                left: 0,
-                transform: 'translateY(-50%)',
-                boxShadow: '0 0 4px red',
-                opacity: 0.7
-              }} />
-            </div>
-          </Scanner>
+          />
         </div>
         
         <p style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--text-muted)' }}>
-          Apunta la cámara al código de barras. Usa el botón de linterna en pantalla si estás en un lugar oscuro.
+          Apunta la cámara al código de barras para capturarlo automáticamente.
         </p>
       </div>
     </div>
