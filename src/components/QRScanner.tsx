@@ -33,6 +33,10 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
               onOff: true
             }}
             formats={['code_128', 'code_39', 'ean_13', 'upc_a']}
+            constraints={{
+              facingMode: 'environment',
+              advanced: [{ zoom: 2.0 } as any]
+            }}
             styles={{
               container: { width: '100%', aspectRatio: '4/3' }
             }}
