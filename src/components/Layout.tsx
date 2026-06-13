@@ -124,18 +124,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             Dashboard
           </a>
           <a 
-            href="/views/proyectos.html" 
-            className={`nav-item ${isActive('/views/proyectos.html') || (isActive('/views/proyecto-detalle.html') && !window.location.search.includes('type=quote')) ? 'active' : ''}`}
-          >
-            <FolderKanban size={20} />
-            Proyectos Activos
-          </a>
-          <a 
             href="/views/calendario.html" 
             className={`nav-item ${isActive('/views/calendario.html') ? 'active' : ''}`}
           >
             <CalendarDays size={20} />
             Agenda de Visitas
+          </a>
+          <a 
+            href="/views/proyectos.html" 
+            className={`nav-item ${isActive('/views/proyectos.html') || (isActive('/views/proyecto-detalle.html') && !window.location.search.includes('type=quote')) ? 'active' : ''}`}
+          >
+            <FolderKanban size={20} />
+            Proyectos Activos
           </a>
           <a 
             href="/views/cotizaciones.html" 
