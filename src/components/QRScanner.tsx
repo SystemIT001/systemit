@@ -27,6 +27,10 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
               console.error("Scanner Error:", error);
             }}
             formats={['code_128', 'code_39', 'ean_13', 'upc_a']}
+            constraints={{
+              facingMode: 'environment',
+              advanced: [{ zoom: 2.0 } as any]
+            }}
           />
         </div>
         
