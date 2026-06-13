@@ -55,6 +55,10 @@
   background-color: var(--surface-hover);
 }
 
+.sidebar-hover-trigger {
+  display: none;
+}
+
 /* Desktop collapsed mode (Project Details) */
 @media (min-width: 769px) {
   .layout-container.desktop-collapsed .sidebar {
@@ -66,6 +70,18 @@
   .layout-container.desktop-collapsed .sidebar.open {
     margin-left: 0;
     transform: none;
+  }
+
+  /* Invisible trigger area for hover expansion */
+  .layout-container.desktop-collapsed .sidebar-hover-trigger {
+    display: block;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 20px;
+    z-index: 45; /* Below the sidebar (z-index: 50) but above everything else */
+    cursor: pointer;
   }
 
   .layout-container.desktop-collapsed .mobile-overlay.open {

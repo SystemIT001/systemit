@@ -15,6 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { theme, setTheme } = useTheme();
   const { settings } = useSettings();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   // Close sidebar when path changes on mobile
@@ -72,12 +73,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className={`layout-container desktop-collapsed`}>
       {/* Mobile Overlay */}
       <div 
-        className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''} no-print`} 
-        onClick={() => setIsMobileMenuOpen(false)}
+        className={`mobile-overlay ${(isMobileMenuOpen || isHoveringSidebar) ? 'open' : ''} no-print`} 
+        onClick={() => {
+          setIsMobileMenuOpen(false);
+          setIsHoveringSidebar(false);
+        }}
+      />
+
+      {/* Hover trigger for collapsed desktop sidebar */}
+      <div 
+        className="sidebar-hover-trigger no-print"
+        onMouseEnter={() => setIsHoveringSidebar(true)}
       />
 
       {/* Sidebar */}
-      <aside className={`sidebar no-print ${isMobileMenuOpen ? 'open' : ''}`}>
+      <aside 
+        className={`sidebar no-print ${(isMobileMenuOpen || isHoveringSidebar) ? 'open' : ''}`}
+        onMouseLeave={() => setIsHoveringSidebar(false)}
+      >
         <div className="brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {settings?.logoUrl ? (
@@ -171,8 +184,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <button 
             className="topbar-menu-btn" 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onMouseEnter={() => setIsHoveringSidebar(true)}
           >
-            {isMobileMenuOpen ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
+            {isMobileMenuOpen || isHoveringSidebar ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
           </button>
           <h1 className="topbar-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getPageTitle()}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
