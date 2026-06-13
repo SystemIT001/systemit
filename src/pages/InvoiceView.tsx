@@ -314,17 +314,19 @@ const InvoiceView: React.FC = () => {
       </div>
 
       <div id="invoice-paper" className="card invoice-paper" style={{ backgroundColor: 'white', color: 'black', padding: '2rem 2.5rem' }}>
+        {/* Subtítulo como encabezado superior */}
+        <div style={{ textAlign: 'center', width: '100%', marginBottom: '2rem' }}>
+          <h1 style={{ color: '#475569', fontSize: '1.25rem', margin: 0, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{subtitle}</h1>
+        </div>
+
         {/* Header de Factura */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem', position: 'relative' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #e2e8f0', paddingBottom: '2rem', marginBottom: '2rem' }}>
           <div style={{ width: '300px' }}>
             {settings.logoUrl ? (
               <img src={settings.logoUrl} alt="Logo" style={{ width: 'auto', height: '140px', maxWidth: '300px', objectFit: 'contain' }} />
             ) : (
               <Building2 size={80} style={{ color: '#0f1117' }} />
             )}
-          </div>
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', width: '400px' }}>
-            <p style={{ color: '#64748b', fontSize: '1.1rem', margin: 0, fontWeight: 500, letterSpacing: '0.05em' }}>{subtitle}</p>
           </div>
           <div style={{ textAlign: 'right', width: '300px' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f1117', textTransform: 'uppercase', margin: 0 }}>{docType}</h2>
