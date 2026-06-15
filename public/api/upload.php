@@ -23,6 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $file = $_FILES['file'];
     $type = isset($_POST['type']) && !empty($_POST['type']) ? $_POST['type'] : 'facturas';
     
+    // Security: Sanitize $type to prevent Path Traversal (e.g. ../../)
+    $type = preg_replace('/[^a-zA-Z0-9_\-]/', '', $type);
+    if (empty($type)) $type = 'facturas';
+    
     // Directorio de destino: subimos un nivel desde 'api' y entramos a 'uploads'
     $targetDir = "../uploads/" . $type . "/";
     

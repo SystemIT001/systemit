@@ -26,3 +26,4 @@ dist-ssr
 # Archivos de la Aplicacion que NO deben subirse
 database.sqlite
 uploads/
+public/api/config.php

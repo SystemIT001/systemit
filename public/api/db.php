@@ -14,12 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-// Configuración de la base de datos
-// Cambia esto con los datos de tu cuenta de InfinityFree
-$servername = "sql201.infinityfree.com";
-$username = "if0_42140719";
-$password = "URMNff0lvES9f0I";
-$dbname = "if0_42140719_systemit";
+// Configuración de la base de datos importada de forma segura
+$config = require __DIR__ . '/config.php';
+$servername = $config['servername'];
+$username = $config['username'];
+$password = $config['password'];
+$dbname = $config['dbname'];
 
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);

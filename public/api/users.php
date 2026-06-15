@@ -72,6 +72,14 @@ try {
             exit();
         }
         
+        if ($action === 'logout') {
+            $user = verifyAuth(); // Requires a valid token to logout
+            $updateToken = $conn->prepare("UPDATE users SET token = NULL WHERE id = :id");
+            $updateToken->execute([':id' => $user['id']]);
+            echo json_encode(["success" => true]);
+            exit();
+        }
+        
         verifyAuth();
         
         if (!isset($data['id']) || !isset($data['username']) || !isset($data['clave'])) {

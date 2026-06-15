@@ -54,7 +54,23 @@ export function useAuth() {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const storedAuth = localStorage.getItem('systemit_auth');
+    if (storedAuth) {
+      try {
+        const userData = JSON.parse(storedAuth);
+        await fetch('/api/users.php?action=logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userData.token}`
+          }
+        });
+      } catch (e) {
+        // Ignore errors on logout
+      }
+    }
+    
     localStorage.removeItem('systemit_auth');
     setUser(null);
     window.location.href = '/views/login.html';
