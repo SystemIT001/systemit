@@ -45,7 +45,7 @@ const ProjectDetail: React.FC = () => {
   const [serialNumber, setSerialNumber] = useState<string>('');
   const [isScanningSerial, setIsScanningSerial] = useState(false);
   const [clientProvides, setClientProvides] = useState<boolean>(false);
-  const [isPureProfit, setIsPureProfit] = useState<boolean>(false);
+  const [pureProfitModal, setPureProfitModal] = useState<{ isOpen: boolean; tab: 'materials'|'equipments'; itemId: string; totalQuantity: number; pureQuantity: number } | null>(null);
   
   // Payment states
   const [paymentAmount, setPaymentAmount] = useState<number | ''>('');
@@ -81,7 +81,6 @@ const ProjectDetail: React.FC = () => {
     setManualPrice(0);
     setSerialNumber('');
     setClientProvides(false);
-    setIsPureProfit(false);
     setPaymentAmount('');
     setPaymentDesc('');
     setExpenseAmount('');
@@ -181,8 +180,7 @@ const ProjectDetail: React.FC = () => {
       quantity: Number(quantity),
       unitCost: Number(unitCost),
       currency: itemCurrency,
-      serialNumber: activeTab === 'equipments' ? serialNumber : undefined,
-      isPureProfit
+      serialNumber: activeTab === 'equipments' ? serialNumber : undefined
     };
 
     const updatedProject = { ...project };
@@ -227,7 +225,6 @@ const ProjectDetail: React.FC = () => {
     setManualPrice(0);
     setSerialNumber('');
     setClientProvides(false);
-    setIsPureProfit(false);
     setAdditionalType('materials');
   };
 
@@ -298,14 +295,45 @@ const ProjectDetail: React.FC = () => {
 
   const handleTogglePureProfit = (tab: 'materials'|'equipments', itemId: string, newValue: boolean) => {
     if (!project) return;
+    const items = project[tab] as any[];
+    const item = items.find(i => i.id === itemId);
+    if (!item) return;
+
+    if (newValue) {
+      setPureProfitModal({
+        isOpen: true,
+        tab,
+        itemId,
+        totalQuantity: item.quantity,
+        pureQuantity: item.pureProfitQuantity !== undefined ? item.pureProfitQuantity : item.quantity
+      });
+    } else {
+      const updatedProject = { ...project };
+      const updatedItems = updatedProject[tab] as any[];
+      const idx = updatedItems.findIndex(i => i.id === itemId);
+      if (idx !== -1) {
+        updatedItems[idx] = { ...updatedItems[idx], isPureProfit: false, pureProfitQuantity: 0 };
+        setProject(updatedProject);
+        targetUpdateProject(updatedProject);
+      }
+    }
+  };
+
+  const handleSavePureProfitModal = () => {
+    if (!project || !pureProfitModal) return;
     const updatedProject = { ...project };
-    const items = updatedProject[tab] as any[];
-    const idx = items.findIndex(i => i.id === itemId);
+    const items = updatedProject[pureProfitModal.tab] as any[];
+    const idx = items.findIndex(i => i.id === pureProfitModal.itemId);
     if (idx !== -1) {
-      items[idx] = { ...items[idx], isPureProfit: newValue };
+      items[idx] = { 
+        ...items[idx], 
+        isPureProfit: pureProfitModal.pureQuantity > 0, 
+        pureProfitQuantity: pureProfitModal.pureQuantity 
+      };
       setProject(updatedProject);
       targetUpdateProject(updatedProject);
     }
+    setPureProfitModal(null);
   };
 
   const handleSaveEdit = () => {
@@ -663,7 +691,7 @@ const ProjectDetail: React.FC = () => {
                     )}
                     {item.isPureProfit && (
                       <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', padding: '0.1rem 0.3rem', backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid var(--success-color)', color: 'var(--success-color)', borderRadius: '4px', whiteSpace: 'nowrap' }}>
-                        100% Ganancia
+                        Ganancia 100% ({item.pureProfitQuantity}/{item.quantity})
                       </span>
                     )}
                   </td>
@@ -1539,14 +1567,16 @@ const ProjectDetail: React.FC = () => {
 
                   (project.materials || []).forEach((item: any) => {
                     const itemTotal = calculateItemTotal(item);
-                    const itemCost = item.isPureProfit ? 0 : (item.unitCost * item.quantity);
+                    const pureProfitQty = item.pureProfitQuantity !== undefined ? item.pureProfitQuantity : (item.isPureProfit ? item.quantity : 0);
+                    const itemCost = Math.max(0, item.quantity - pureProfitQty) * item.unitCost;
                     const profit = itemTotal - itemCost;
                     materialsProfitUSD += (item.currency === 'NIO' ? profit / exchangeRate : profit);
                   });
 
                   (project.equipments || []).forEach((item: any) => {
                     const itemTotal = calculateItemTotal(item);
-                    const itemCost = item.isPureProfit ? 0 : (item.unitCost * item.quantity);
+                    const pureProfitQty = item.pureProfitQuantity !== undefined ? item.pureProfitQuantity : (item.isPureProfit ? item.quantity : 0);
+                    const itemCost = Math.max(0, item.quantity - pureProfitQty) * item.unitCost;
                     const profit = itemTotal - itemCost;
                     equipmentsProfitUSD += (item.currency === 'NIO' ? profit / exchangeRate : profit);
                   });
@@ -1955,6 +1985,61 @@ const ProjectDetail: React.FC = () => {
           onClose={() => setIsScanningSerial(false)}
         />
       )}
+    {/* Modal 100% Ganancia */}
+      {pureProfitModal && pureProfitModal.isOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '1.5rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginBottom: '1rem' }}>Cantidad del Inventario (100% Ganancia)</h3>
+            <p style={{ marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+              Especifica cuántas unidades ya tienes y no necesitas comprar. Estas unidades pasarán directamente a la ganancia neta.
+            </p>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                <span>Cantidad Total Requerida:</span>
+                <strong>{pureProfitModal.totalQuantity}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--success-color)' }}>
+                <span>Cantidad a comprar:</span>
+                <strong>{Math.max(0, pureProfitModal.totalQuantity - pureProfitModal.pureQuantity)}</strong>
+              </div>
+              
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Cantidad ya en Stock</label>
+              <input 
+                type="number" 
+                min="0" 
+                max={pureProfitModal.totalQuantity}
+                value={pureProfitModal.pureQuantity} 
+                onChange={(e) => {
+                  let val = parseInt(e.target.value) || 0;
+                  if (val > pureProfitModal.totalQuantity) val = pureProfitModal.totalQuantity;
+                  if (val < 0) val = 0;
+                  setPureProfitModal({ ...pureProfitModal, pureQuantity: val });
+                }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button 
+                className="btn-secondary" 
+                onClick={() => setPureProfitModal(null)}
+                style={{ padding: '0.75rem 1.5rem' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="btn-primary" 
+                onClick={handleSavePureProfitModal}
+                style={{ padding: '0.75rem 1.5rem' }}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
