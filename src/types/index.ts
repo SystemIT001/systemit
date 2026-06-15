@@ -7,6 +7,7 @@ export interface BaseItem {
   purchasedQuantity?: number;
   isAdditional?: boolean;
   clientProvides?: boolean;
+  isPureProfit?: boolean;
 }
 
 export interface MaterialItem extends BaseItem {}

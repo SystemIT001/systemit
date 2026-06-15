@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye, QrCode } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye, QrCode, Pencil } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { useQuotes } from '../hooks/useQuotes';
 import { useInventory } from '../hooks/useInventory';
@@ -45,6 +45,7 @@ const ProjectDetail: React.FC = () => {
   const [serialNumber, setSerialNumber] = useState<string>('');
   const [isScanningSerial, setIsScanningSerial] = useState(false);
   const [clientProvides, setClientProvides] = useState<boolean>(false);
+  const [isPureProfit, setIsPureProfit] = useState<boolean>(false);
   
   // Payment states
   const [paymentAmount, setPaymentAmount] = useState<number | ''>('');
@@ -80,6 +81,7 @@ const ProjectDetail: React.FC = () => {
     setManualPrice(0);
     setSerialNumber('');
     setClientProvides(false);
+    setIsPureProfit(false);
     setPaymentAmount('');
     setPaymentDesc('');
     setExpenseAmount('');
@@ -179,7 +181,8 @@ const ProjectDetail: React.FC = () => {
       quantity: Number(quantity),
       unitCost: Number(unitCost),
       currency: itemCurrency,
-      serialNumber: activeTab === 'equipments' ? serialNumber : undefined
+      serialNumber: activeTab === 'equipments' ? serialNumber : undefined,
+      isPureProfit
     };
 
     const updatedProject = { ...project };
@@ -224,6 +227,7 @@ const ProjectDetail: React.FC = () => {
     setManualPrice(0);
     setSerialNumber('');
     setClientProvides(false);
+    setIsPureProfit(false);
     setAdditionalType('materials');
   };
 
@@ -290,6 +294,18 @@ const ProjectDetail: React.FC = () => {
     updatedProject[tab] = updatedProject[tab].filter((item: any) => item.id !== itemId) as any;
     setProject(updatedProject);
     targetUpdateProject(updatedProject);
+  };
+
+  const handleTogglePureProfit = (tab: 'materials'|'equipments', itemId: string, newValue: boolean) => {
+    if (!project) return;
+    const updatedProject = { ...project };
+    const items = updatedProject[tab] as any[];
+    const idx = items.findIndex(i => i.id === itemId);
+    if (idx !== -1) {
+      items[idx] = { ...items[idx], isPureProfit: newValue };
+      setProject(updatedProject);
+      targetUpdateProject(updatedProject);
+    }
   };
 
   const handleSaveEdit = () => {
@@ -645,6 +661,11 @@ const ProjectDetail: React.FC = () => {
                         Cliente compra
                       </span>
                     )}
+                    {item.isPureProfit && (
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', padding: '0.1rem 0.3rem', backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid var(--success-color)', color: 'var(--success-color)', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                        100% Ganancia
+                      </span>
+                    )}
                   </td>
                   <td style={{ padding: '0.75rem' }}>{item.quantity}</td>
                   <td style={{ padding: '0.75rem' }}>
@@ -667,13 +688,24 @@ const ProjectDetail: React.FC = () => {
                       formatCurrency(calculateItemTotal(item), item.currency)
                     )}
                   </td>
-                  <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                    <button style={{ color: 'var(--primary-color)', marginRight: '1rem' }} onClick={() => setEditingItem({ id: item.id, type, data: { ...item } })}>
-                      Editar
+                  <td style={{ padding: '0.75rem', textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                    <button style={{ color: 'var(--primary-color)' }} onClick={() => setEditingItem({ id: item.id, type, data: { ...item } })} title="Editar">
+                      <Pencil size={16} />
                     </button>
-                    <button style={{ color: 'var(--danger-color)' }} onClick={() => handleDeleteItem(type, item.id)}>
+                    <button style={{ color: 'var(--danger-color)' }} onClick={() => handleDeleteItem(type, item.id)} title="Eliminar">
                       <Trash2 size={16} />
                     </button>
+                    {(type === 'materials' || type === 'equipments') && (
+                      <label title="100% Ganancia" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                        <input 
+                          type="checkbox" 
+                          title="100% Ganancia"
+                          checked={item.isPureProfit || false} 
+                          onChange={(e) => handleTogglePureProfit(type, item.id, e.target.checked)} 
+                          style={{ accentColor: 'var(--success-color)', width: '1.2rem', height: '1.2rem' }}
+                        />
+                      </label>
+                    )}
                   </td>
                 </tr>
               );
@@ -1150,7 +1182,7 @@ const ProjectDetail: React.FC = () => {
                   </div>
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', height: '100%', paddingBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', height: '100%', paddingBottom: '0.75rem', gap: '1rem', flexWrap: 'wrap' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                     <input type="checkbox" checked={clientProvides} onChange={e => setClientProvides(e.target.checked)} style={{ width: '1rem', height: '1rem', accentColor: 'var(--primary-color)' }} />
                     El cliente comprará
@@ -1507,14 +1539,14 @@ const ProjectDetail: React.FC = () => {
 
                   (project.materials || []).forEach((item: any) => {
                     const itemTotal = calculateItemTotal(item);
-                    const itemCost = item.unitCost * item.quantity;
+                    const itemCost = item.isPureProfit ? 0 : (item.unitCost * item.quantity);
                     const profit = itemTotal - itemCost;
                     materialsProfitUSD += (item.currency === 'NIO' ? profit / exchangeRate : profit);
                   });
 
                   (project.equipments || []).forEach((item: any) => {
                     const itemTotal = calculateItemTotal(item);
-                    const itemCost = item.unitCost * item.quantity;
+                    const itemCost = item.isPureProfit ? 0 : (item.unitCost * item.quantity);
                     const profit = itemTotal - itemCost;
                     equipmentsProfitUSD += (item.currency === 'NIO' ? profit / exchangeRate : profit);
                   });
