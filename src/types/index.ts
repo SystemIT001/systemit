@@ -63,6 +63,15 @@ export interface ExpenseItem {
   receiptImage?: string;
 }
 
+export interface AdvanceItem {
+  id: string;
+  userId: string;
+  amount: number;
+  date: string;
+  description: string;
+  currency: 'NIO' | 'USD';
+}
+
 export interface ProjectTask {
   id: string;
   description: string;
@@ -114,6 +123,8 @@ export interface Project {
   expenses?: ExpenseItem[];
   tasks?: ProjectTask[];
   images?: ProjectImage[];
+  advances?: AdvanceItem[];
+  profitUsers?: string[];
   lastUpdated?: number;
   clientToken?: string;
   validUntil?: string;

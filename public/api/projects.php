@@ -18,6 +18,20 @@ try {
     // Column already exists, ignore
 }
 
+// Ensure advances column exists
+try {
+    $conn->exec("ALTER TABLE projects ADD COLUMN advances LONGTEXT");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
+// Ensure profitUsers column exists
+try {
+    $conn->exec("ALTER TABLE projects ADD COLUMN profitUsers LONGTEXT");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
 if ($method === 'GET') {
     // Obtener todos los proyectos
     $stmt = $conn->query("SELECT * FROM projects");
@@ -32,6 +46,8 @@ if ($method === 'GET') {
         $row['expenses'] = json_decode($row['expenses'] ?? '[]', true) ?: [];
         $row['tasks'] = json_decode($row['tasks'] ?? '[]', true) ?: [];
         $row['images'] = json_decode($row['images'] ?? '[]', true) ?: [];
+        $row['advances'] = json_decode($row['advances'] ?? '[]', true) ?: [];
+        $row['profitUsers'] = json_decode($row['profitUsers'] ?? '[]', true) ?: [];
         $row['exchangeRate'] = floatval($row['exchangeRate']);
         $projects[] = $row;
     }
@@ -65,6 +81,8 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $expenses = json_encode($data['expenses'] ?? []);
     $tasks = json_encode($data['tasks'] ?? []);
     $images = json_encode($data['images'] ?? []);
+    $advances = json_encode($data['advances'] ?? []);
+    $profitUsers = json_encode($data['profitUsers'] ?? []);
     $clientToken = $data['clientToken'] ?? bin2hex(random_bytes(16));
 
     $currentLastUpdated = round(microtime(true) * 1000);
@@ -87,11 +105,11 @@ elseif ($method === 'POST' || $method === 'PUT') {
     }
 
     // Intentar insertar o actualizar si el ID ya existe (UPSERT)
-    $sql = "INSERT INTO projects (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, invoices, payments, expenses, tasks, images, lastUpdated, clientToken) 
-            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :invoices, :payments, :expenses, :tasks, :images, :lastUpdated, :clientToken)
+    $sql = "INSERT INTO projects (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, invoices, payments, expenses, tasks, images, advances, profitUsers, lastUpdated, clientToken) 
+            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :invoices, :payments, :expenses, :tasks, :images, :advances, :profitUsers, :lastUpdated, :clientToken)
             ON DUPLICATE KEY UPDATE 
             clientId=:clientId, clientName=:clientName, projectName=:projectName, projectCode=:projectCode, date=:date, status=:status, 
-            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, invoices=:invoices, payments=:payments, expenses=:expenses, tasks=:tasks, images=:images, lastUpdated=:lastUpdated, clientToken=:clientToken";
+            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, invoices=:invoices, payments=:payments, expenses=:expenses, tasks=:tasks, images=:images, advances=:advances, profitUsers=:profitUsers, lastUpdated=:lastUpdated, clientToken=:clientToken";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([
@@ -111,6 +129,8 @@ elseif ($method === 'POST' || $method === 'PUT') {
         ':expenses' => $expenses,
         ':tasks' => $tasks,
         ':images' => $images,
+        ':advances' => $advances,
+        ':profitUsers' => $profitUsers,
         ':lastUpdated' => $currentLastUpdated,
         ':clientToken' => $clientToken
     ]);

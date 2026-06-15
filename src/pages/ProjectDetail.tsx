@@ -6,7 +6,8 @@ import { useQuotes } from '../hooks/useQuotes';
 import { useInventory } from '../hooks/useInventory';
 import { useClients } from '../hooks/useClients';
 import { useAuth } from '../hooks/useAuth';
-import type { Project, MaterialItem, EquipmentItem, LaborItem, InvoiceFile } from '../types';
+import { useUsers } from '../hooks/useUsers';
+import type { Project, MaterialItem, EquipmentItem, LaborItem, InvoiceFile, AdvanceItem } from '../types';
 import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateExpensesDual, calculateProjectRealRevenueDual, downloadFileFromUrl } from '../utils';
 import { InvoiceImporter } from '../components/InvoiceImporter';
 import QRScanner from '../components/QRScanner';
@@ -25,6 +26,7 @@ const ProjectDetail: React.FC = () => {
   const { inventory, addInventoryItem, updateInventoryItem } = useInventory();
   const { clients, addClient } = useClients();
   const { user } = useAuth();
+  const { users } = useUsers();
   const [project, setProject] = useState<Project | null>(null);
 
   const isQuoteUrl = window.location.search.includes('type=quote');
@@ -61,6 +63,13 @@ const ProjectDetail: React.FC = () => {
   const [additionalType, setAdditionalType] = useState<'materials'|'equipments'>('materials');
   const [taskDesc, setTaskDesc] = useState('');
   
+  // Advance states
+  const [advanceUserId, setAdvanceUserId] = useState('');
+  const [advanceAmount, setAdvanceAmount] = useState<number | ''>('');
+  const [advanceCurrency, setAdvanceCurrency] = useState<'USD' | 'NIO'>('USD');
+  const [advanceDate, setAdvanceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [advanceDesc, setAdvanceDesc] = useState('');
+
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
     setItemName('');
@@ -76,6 +85,9 @@ const ProjectDetail: React.FC = () => {
     setExpenseAmount('');
     setExpenseDesc('');
     setTaskDesc('');
+    setAdvanceAmount('');
+    setAdvanceDesc('');
+    setAdvanceUserId('');
   };
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -681,6 +693,53 @@ const ProjectDetail: React.FC = () => {
       setProject(updatedProject);
       targetUpdateProject(updatedProject);
     }
+  };
+
+  const handleToggleProfitUser = (userId: string) => {
+    if (!project) return;
+    const currentUsers = project.profitUsers || [];
+    const newUsers = currentUsers.includes(userId) 
+      ? currentUsers.filter(id => id !== userId)
+      : [...currentUsers, userId];
+    
+    const updatedProject = { ...project, profitUsers: newUsers };
+    setProject(updatedProject);
+    targetUpdateProject(updatedProject);
+  };
+
+  const handleAddAdvance = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!project || advanceAmount === '' || !advanceUserId) return;
+
+    const newAdvance: AdvanceItem = {
+      id: generateId(),
+      userId: advanceUserId,
+      amount: Number(advanceAmount),
+      date: advanceDate,
+      description: advanceDesc,
+      currency: advanceCurrency
+    };
+
+    const updatedProject = {
+      ...project,
+      advances: [...(project.advances || []), newAdvance]
+    };
+
+    setProject(updatedProject);
+    targetUpdateProject(updatedProject);
+    
+    setAdvanceAmount('');
+    setAdvanceDesc('');
+  };
+
+  const handleDeleteAdvance = (advanceId: string) => {
+    if (!project || !window.confirm('¿Eliminar este adelanto?')) return;
+    const updatedProject = {
+      ...project,
+      advances: (project.advances || []).filter(a => a.id !== advanceId)
+    };
+    setProject(updatedProject);
+    targetUpdateProject(updatedProject);
   };
 
   const renderPurchasingTable = (items: any[], type: 'materials'|'equipments', title: string) => {
@@ -1493,6 +1552,151 @@ const ProjectDetail: React.FC = () => {
                         <strong style={{ fontSize: '2rem', color: 'var(--success-color)' }}>
                           {formatCurrency(totalProfitUSD, 'USD')}
                         </strong>
+                      </div>
+
+                      {/* Distribution Section */}
+                      <div style={{ gridColumn: '1 / -1', marginTop: '2rem' }}>
+                        <h3 style={{ marginBottom: '1.5rem' }}>Distribución de Ganancias a Usuarios</h3>
+                        
+                        <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+                          <h4 style={{ marginBottom: '1rem' }}>Seleccionar Participantes</h4>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                            {users.map(u => (
+                              <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem 1rem', backgroundColor: 'var(--surface-color)', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={(project.profitUsers || []).includes(u.id)} 
+                                  onChange={() => handleToggleProfitUser(u.id)}
+                                  style={{ accentColor: 'var(--primary-color)' }}
+                                />
+                                {u.name || u.username}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+                          <h4 style={{ marginBottom: '1rem' }}>Registrar Adelanto de Ganancia</h4>
+                          <form onSubmit={handleAddAdvance} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', alignItems: 'end' }}>
+                            <div>
+                              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Usuario</label>
+                              <select 
+                                value={advanceUserId} 
+                                onChange={e => setAdvanceUserId(e.target.value)} 
+                                required
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
+                              >
+                                <option value="">Seleccionar...</option>
+                                {(project.profitUsers || []).map(uid => {
+                                  const u = users.find(x => x.id === uid);
+                                  return u ? <option key={u.id} value={u.id}>{u.name || u.username}</option> : null;
+                                })}
+                              </select>
+                            </div>
+                            <div>
+                              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Fecha</label>
+                              <input type="date" required value={advanceDate} onChange={e => setAdvanceDate(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }} />
+                            </div>
+                            <div>
+                              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Monto</label>
+                              <div style={{ display: 'flex', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', overflow: 'hidden' }}>
+                                <input type="number" required min="0" step="0.01" value={advanceAmount} onChange={e => setAdvanceAmount(e.target.value === '' ? '' : Number(e.target.value))} style={{ flex: 1, padding: '0.75rem', border: 'none', backgroundColor: 'transparent', outline: 'none', color: 'inherit', width: '100%' }} />
+                                <select value={advanceCurrency} onChange={e => setAdvanceCurrency(e.target.value as 'USD'|'NIO')} style={{ padding: '0 0.5rem', border: 'none', borderLeft: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', color: 'inherit', outline: 'none', cursor: 'pointer' }}>
+                                  <option value="USD">USD</option>
+                                  <option value="NIO">NIO</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div>
+                              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Descripción</label>
+                              <input type="text" required value={advanceDesc} onChange={e => setAdvanceDesc(e.target.value)} placeholder="Ej. Adelanto en efectivo" style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }} />
+                            </div>
+                            <button type="submit" className="btn-primary" style={{ padding: '0.75rem 1rem' }}>
+                              <Plus size={20} /> Agregar
+                            </button>
+                          </form>
+                        </div>
+
+                        {/* Distribution Table */}
+                        {(() => {
+                          const profitUsers = project.profitUsers || [];
+                          if (profitUsers.length === 0) {
+                            return <p style={{ color: 'var(--text-muted)' }}>Selecciona participantes para calcular la distribución de la ganancia.</p>;
+                          }
+                          
+                          const baseProfitPerUser = totalProfitUSD / profitUsers.length;
+
+                          return (
+                            <div className="card" style={{ padding: '1.5rem', overflowX: 'auto' }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                <thead>
+                                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <th style={{ padding: '0.75rem' }}>Usuario</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>% Ganancia Base</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Adelantos Registrados</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Neto a Recibir (USD)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {profitUsers.map(uid => {
+                                    const u = users.find(x => x.id === uid);
+                                    if (!u) return null;
+
+                                    const userAdvances = (project.advances || []).filter(a => a.userId === uid);
+                                    let totalAdvanceUSD = 0;
+                                    userAdvances.forEach(adv => {
+                                      totalAdvanceUSD += adv.currency === 'NIO' ? adv.amount / exchangeRate : adv.amount;
+                                    });
+
+                                    const netProfit = baseProfitPerUser - totalAdvanceUSD;
+
+                                    return (
+                                      <React.Fragment key={u.id}>
+                                        <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                          <td style={{ padding: '0.75rem', fontWeight: 600 }}>{u.name || u.username}</td>
+                                          <td style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--success-color)' }}>
+                                            {formatCurrency(baseProfitPerUser, 'USD')}
+                                          </td>
+                                          <td style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--danger-color)' }}>
+                                            {formatCurrency(totalAdvanceUSD, 'USD')}
+                                          </td>
+                                          <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 700, fontSize: '1.1rem', color: netProfit < 0 ? 'var(--danger-color)' : 'var(--text-color)' }}>
+                                            {formatCurrency(netProfit, 'USD')}
+                                          </td>
+                                        </tr>
+                                        {userAdvances.length > 0 && (
+                                          <tr>
+                                            <td colSpan={4} style={{ padding: '0 0.75rem 1rem 0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                                              <div style={{ backgroundColor: 'var(--surface-hover)', padding: '1rem', borderRadius: '4px', fontSize: '0.875rem' }}>
+                                                <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Detalle de Adelantos:</div>
+                                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                                  <tbody>
+                                                    {userAdvances.map(adv => (
+                                                      <tr key={adv.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                                                        <td style={{ padding: '0.25rem 0' }}>{adv.date}</td>
+                                                        <td style={{ padding: '0.25rem 0' }}>{adv.description}</td>
+                                                        <td style={{ padding: '0.25rem 0', textAlign: 'right', color: 'var(--danger-color)' }}>{formatCurrency(adv.amount, adv.currency)}</td>
+                                                        <td style={{ padding: '0.25rem 0', textAlign: 'right', width: '40px' }}>
+                                                          <button onClick={() => handleDeleteAdvance(adv.id)} style={{ color: 'var(--danger-color)', padding: '0.2rem' }} title="Eliminar Adelanto">
+                                                            <Trash2 size={14} />
+                                                          </button>
+                                                        </td>
+                                                      </tr>
+                                                    ))}
+                                                  </tbody>
+                                                </table>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </>
                   );
