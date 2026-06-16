@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useProjects } from '../hooks/useProjects';
 import { useQuotes } from '../hooks/useQuotes';
 import { useUsers } from '../hooks/useUsers';
+import { useInventory } from '../hooks/useInventory';
 import { calculateProjectTotalsDual, calculateProjectRealRevenueDual, formatCurrency } from '../utils';
 import { Printer, FolderKanban, FileText, PackageSearch, TrendingUp, ArrowLeft, Calendar, Users } from 'lucide-react';
 
@@ -16,6 +17,7 @@ const Reports: React.FC = () => {
   const [activeView, setActiveView] = useState<ReportView>('menu');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [selectedReportUser, setSelectedReportUser] = useState('');
 
   // Helpers
   const isWithinDateRange = (dateStr?: string) => {
@@ -100,10 +102,11 @@ const Reports: React.FC = () => {
     </div>
   );
 
-  const renderPrintHeader = (title: string) => (
+  const renderPrintHeader = (title: string, subtitle?: string) => (
     <div className="print-header" style={{ display: 'none', marginBottom: '2rem', textAlign: 'center' }}>
       <h1 style={{ fontSize: '24px', margin: 0 }}>{title}</h1>
-      <p style={{ color: '#666', margin: '4px 0 0 0' }}>
+      {subtitle && <h2 style={{ fontSize: '18px', margin: '8px 0 0 0', color: '#444' }}>{subtitle}</h2>}
+      <p style={{ color: '#666', margin: '8px 0 0 0' }}>
         Generado el: {new Date().toLocaleDateString()}
         {(startDate || endDate) && ` | Período: ${startDate || 'Inicio'} al ${endDate || 'Final'}`}
       </p>
@@ -291,7 +294,7 @@ const Reports: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {inventory.map(i => (
+                {inventory.map((i: any) => (
                   <tr key={i.id} style={{ borderBottom: '1px solid var(--border-color)', color: i.stockQuantity <= 5 ? 'var(--danger-color)' : 'inherit' }}>
                     <td style={{ padding: '0.75rem' }}>{i.name} {i.stockQuantity <= 5 && '⚠️'}</td>
                     <td style={{ padding: '0.75rem' }}>{i.category === 'materials' ? 'Material' : 'Equipo'}</td>
@@ -389,10 +392,6 @@ const Reports: React.FC = () => {
   if (activeView === 'users') {
     const filteredProjects = projects.filter(p => isWithinDateRange(p.date) && p.status === 'completed');
     
-    // Calcular totales globales para el encabezado
-    let totalProfitsUSD = 0;
-    let totalAdvancesUSD = 0;
-
     const userStats = users.map(user => {
       let profitUSD = 0;
       let profitNIO = 0;
@@ -409,7 +408,6 @@ const Reports: React.FC = () => {
           const shareNIO = rev.totalNIO / project.profitUsers.length;
           profitUSD += shareUSD;
           profitNIO += shareNIO;
-          totalProfitsUSD += shareUSD;
         }
 
         // 2. Calcular Adelantos en este Proyecto
@@ -423,7 +421,6 @@ const Reports: React.FC = () => {
                 advancesUSD += adv.amount;
                 advancesNIO += adv.amount * exchangeRate;
               }
-              totalAdvancesUSD += (adv.currency === 'USD' ? adv.amount : adv.amount / exchangeRate);
             }
           });
         }
@@ -440,32 +437,60 @@ const Reports: React.FC = () => {
       };
     });
 
-    const activeUserStats = userStats.filter(u => u.profitUSD > 0 || u.advancesUSD > 0);
+    const finalUserStats = selectedReportUser 
+      ? userStats.filter(u => u.id === selectedReportUser)
+      : userStats.filter(u => u.profitUSD > 0 || u.advancesUSD > 0);
+
+    const displayTotalProfits = finalUserStats.reduce((acc, u) => acc + u.profitUSD, 0);
+    const displayTotalAdvances = finalUserStats.reduce((acc, u) => acc + u.advancesUSD, 0);
+    const displayTotalBalance = displayTotalProfits - displayTotalAdvances;
+
+    const selectedUserName = selectedReportUser ? users.find(u => u.id === selectedReportUser)?.name : undefined;
 
     return (
       <div className="report-container">
         {renderHeader('Reporte de Ganancias por Usuario', 'Balance de rendimientos netos y adelantos (Solo proyectos completados)')}
         {renderDateFilters()}
-        {renderPrintHeader('Reporte de Ganancias por Usuario')}
+        
+        {/* Filtro de Usuario Adicional */}
+        <div className="no-print" style={{ display: 'flex', gap: '1rem', alignItems: 'center', backgroundColor: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Users size={18} color="var(--text-muted)" />
+            <span style={{ fontWeight: 500 }}>Filtrar por Trabajador:</span>
+          </div>
+          <select 
+            value={selectedReportUser} 
+            onChange={(e) => setSelectedReportUser(e.target.value)} 
+            className="form-control" 
+            style={{ width: 'auto', padding: '0.4rem', minWidth: '200px' }}
+          >
+            <option value="">Todos los Trabajadores</option>
+            {users.map(u => (
+              <option key={u.id} value={u.id}>{u.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {renderPrintHeader('Reporte de Ganancias', selectedUserName ? `Trabajador: ${selectedUserName}` : 'Todos los Trabajadores')}
 
         <div className="card" style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
             <div style={{ padding: '2rem', backgroundColor: 'rgba(99, 102, 241, 0.05)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Fondo Total a Repartir</p>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>{selectedReportUser ? 'Ganancia Total Generada' : 'Fondo Total a Repartir'}</p>
               <p style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>
-                {formatCurrency(totalProfitsUSD, 'USD')}
+                {formatCurrency(displayTotalProfits, 'USD')}
               </p>
             </div>
             <div style={{ padding: '2rem', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
               <p style={{ margin: 0, color: 'var(--text-muted)' }}>Adelantos Entregados</p>
               <p style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--danger-color)' }}>
-                {formatCurrency(totalAdvancesUSD, 'USD')}
+                {formatCurrency(displayTotalAdvances, 'USD')}
               </p>
             </div>
             <div style={{ padding: '2rem', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
               <p style={{ margin: 0, color: 'var(--text-muted)' }}>Saldo Pendiente de Pago</p>
               <p style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--success-color)' }}>
-                {formatCurrency(totalProfitsUSD - totalAdvancesUSD, 'USD')}
+                {formatCurrency(displayTotalBalance, 'USD')}
               </p>
             </div>
           </div>
@@ -484,7 +509,7 @@ const Reports: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {activeUserStats.map(u => (
+                {finalUserStats.map(u => (
                   <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>{u.name} <span style={{color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '0.875rem'}}>({u.username})</span></td>
                     <td style={{ padding: '0.75rem' }}>
@@ -505,7 +530,7 @@ const Reports: React.FC = () => {
                     </td>
                   </tr>
                 ))}
-                {activeUserStats.length === 0 && (
+                {finalUserStats.length === 0 && (
                   <tr><td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>No hay ganancias ni adelantos registrados en este período</td></tr>
                 )}
               </tbody>
