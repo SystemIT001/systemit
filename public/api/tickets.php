@@ -18,16 +18,16 @@ verifyAuth();
 if ($method === 'GET') {
     try {
         try {
-            $pdo->exec("ALTER TABLE tickets ADD COLUMN technicianId VARCHAR(50)");
+            $conn->exec("ALTER TABLE tickets ADD COLUMN technicianId VARCHAR(50)");
         } catch (PDOException $e) { /* ignore */ }
 
-        $stmt = $pdo->query("SELECT * FROM tickets");
+        $stmt = $conn->query("SELECT * FROM tickets");
         $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($tickets);
     } catch (PDOException $e) {
         // Create table if it doesn't exist and retry
         if (strpos($e->getMessage(), "Base table or view not found") !== false) {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS tickets (
+            $conn->exec("CREATE TABLE IF NOT EXISTS tickets (
                 id VARCHAR(255) PRIMARY KEY,
                 title VARCHAR(255),
                 description TEXT,
@@ -67,7 +67,7 @@ if ($method === 'GET') {
     $lastUpdated = time() * 1000;
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO tickets (id, title, description, clientName, date, status, priority, cost, currency, technicianId, lastUpdated) 
+        $stmt = $conn->prepare("INSERT INTO tickets (id, title, description, clientName, date, status, priority, cost, currency, technicianId, lastUpdated) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
             ON DUPLICATE KEY UPDATE 
             title = VALUES(title), description = VALUES(description), clientName = VALUES(clientName),
@@ -90,7 +90,7 @@ if ($method === 'GET') {
     }
 
     try {
-        $stmt = $pdo->prepare("DELETE FROM tickets WHERE id = ?");
+        $stmt = $conn->prepare("DELETE FROM tickets WHERE id = ?");
         $stmt->execute([$id]);
         echo json_encode(['success' => true]);
     } catch (PDOException $e) {

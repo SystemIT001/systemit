@@ -112,6 +112,18 @@ export const calculateProjectRealRevenueDual = (project: any) => {
     }
   });
 
+  const expenses = project.expenses || [];
+  expenses.forEach((exp: any) => {
+    const expAmount = Number(exp.amount) || 0;
+    if (exp.currency === 'NIO') {
+      totalNIO -= expAmount;
+      totalUSD -= expAmount / exchangeRate;
+    } else {
+      totalUSD -= expAmount;
+      totalNIO -= expAmount * exchangeRate;
+    }
+  });
+
   return { totalUSD, totalNIO };
 };
 

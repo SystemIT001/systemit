@@ -39,6 +39,13 @@ try {
     // Column already exists, ignore
 }
 
+// Ensure validUntil column exists
+try {
+    $conn->exec("ALTER TABLE projects ADD COLUMN validUntil VARCHAR(255)");
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
 if ($method === 'GET') {
     // Obtener todos los proyectos
     $stmt = $conn->query("SELECT * FROM projects");
@@ -93,6 +100,7 @@ elseif ($method === 'POST' || $method === 'PUT') {
     $profitUsers = json_encode($data['profitUsers'] ?? []);
     $clientToken = $data['clientToken'] ?? bin2hex(random_bytes(16));
     $clientSignature = $data['clientSignature'] ?? null;
+    $validUntil = $data['validUntil'] ?? null;
 
     $currentLastUpdated = round(microtime(true) * 1000);
     
@@ -114,11 +122,11 @@ elseif ($method === 'POST' || $method === 'PUT') {
     }
 
     // Intentar insertar o actualizar si el ID ya existe (UPSERT)
-    $sql = "INSERT INTO projects (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, invoices, payments, expenses, tasks, images, advances, profitUsers, lastUpdated, clientToken, clientSignature) 
-            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :invoices, :payments, :expenses, :tasks, :images, :advances, :profitUsers, :lastUpdated, :clientToken, :clientSignature)
+    $sql = "INSERT INTO projects (id, clientId, clientName, projectName, projectCode, date, status, exchangeRate, materials, equipments, labor, invoices, payments, expenses, tasks, images, advances, profitUsers, lastUpdated, clientToken, clientSignature, validUntil) 
+            VALUES (:id, :clientId, :clientName, :projectName, :projectCode, :date, :status, :exchangeRate, :materials, :equipments, :labor, :invoices, :payments, :expenses, :tasks, :images, :advances, :profitUsers, :lastUpdated, :clientToken, :clientSignature, :validUntil)
             ON DUPLICATE KEY UPDATE 
             clientId=:clientId, clientName=:clientName, projectName=:projectName, projectCode=:projectCode, date=:date, status=:status, 
-            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, invoices=:invoices, payments=:payments, expenses=:expenses, tasks=:tasks, images=:images, advances=:advances, profitUsers=:profitUsers, lastUpdated=:lastUpdated, clientToken=:clientToken, clientSignature=:clientSignature";
+            exchangeRate=:exchangeRate, materials=:materials, equipments=:equipments, labor=:labor, invoices=:invoices, payments=:payments, expenses=:expenses, tasks=:tasks, images=:images, advances=:advances, profitUsers=:profitUsers, lastUpdated=:lastUpdated, clientToken=:clientToken, clientSignature=:clientSignature, validUntil=:validUntil";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([
@@ -142,7 +150,8 @@ elseif ($method === 'POST' || $method === 'PUT') {
         ':profitUsers' => $profitUsers,
         ':lastUpdated' => $currentLastUpdated,
         ':clientToken' => $clientToken,
-        ':clientSignature' => $clientSignature
+        ':clientSignature' => $clientSignature,
+        ':validUntil' => $validUntil
     ]);
 
     echo json_encode(["success" => true, "message" => "Project saved successfully", "lastUpdated" => $currentLastUpdated, "clientToken" => $clientToken]);
