@@ -9,6 +9,19 @@ interface SignatureModalProps {
 
 const SignatureModal: React.FC<SignatureModalProps> = ({ isOpen, onClose, onSave }) => {
   const sigCanvas = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && sigCanvas.current && containerRef.current) {
+      // Ajustar dimensiones internas del canvas para evitar offset en celulares
+      const canvas = sigCanvas.current.getCanvas();
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = containerRef.current.offsetWidth * ratio;
+      canvas.height = containerRef.current.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+      sigCanvas.current.clear();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -45,11 +58,11 @@ const SignatureModal: React.FC<SignatureModalProps> = ({ isOpen, onClose, onSave
           Por favor, firme en el recuadro de abajo.
         </p>
         
-        <div style={{ border: '2px dashed var(--border-color)', borderRadius: '8px', backgroundColor: 'white', marginBottom: '1rem' }}>
+        <div ref={containerRef} style={{ border: '2px dashed var(--border-color)', borderRadius: '8px', backgroundColor: 'white', marginBottom: '1rem', width: '100%', height: '200px' }}>
           <SignatureCanvas 
             ref={sigCanvas} 
             penColor="black"
-            canvasProps={{ width: 450, height: 200, className: 'sigCanvas', style: { width: '100%', height: '200px' } }} 
+            canvasProps={{ className: 'sigCanvas', style: { width: '100%', height: '100%' } }} 
           />
         </div>
 
