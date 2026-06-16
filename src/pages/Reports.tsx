@@ -441,8 +441,28 @@ const Reports: React.FC = () => {
       ? userStats.filter(u => u.id === selectedReportUser)
       : userStats.filter(u => u.profitUSD > 0 || u.advancesUSD > 0);
 
-    const displayTotalProfits = finalUserStats.reduce((acc, u) => acc + u.profitUSD, 0);
-    const displayTotalAdvances = finalUserStats.reduce((acc, u) => acc + u.advancesUSD, 0);
+    // Calcular totales globales (todo el fondo) si no hay usuario seleccionado
+    let globalTotalProfitsUSD = 0;
+    let globalTotalAdvancesUSD = 0;
+
+    filteredProjects.forEach(p => {
+      const exchangeRate = p.exchangeRate || 36.62;
+      globalTotalProfitsUSD += calculateProjectRealRevenueDual(p).totalUSD;
+      if (p.advances) {
+        p.advances.forEach(adv => {
+          globalTotalAdvancesUSD += (adv.currency === 'USD' ? adv.amount : adv.amount / exchangeRate);
+        });
+      }
+    });
+
+    const displayTotalProfits = selectedReportUser 
+      ? finalUserStats.reduce((acc, u) => acc + u.profitUSD, 0)
+      : globalTotalProfitsUSD;
+
+    const displayTotalAdvances = selectedReportUser
+      ? finalUserStats.reduce((acc, u) => acc + u.advancesUSD, 0)
+      : globalTotalAdvancesUSD;
+
     const displayTotalBalance = displayTotalProfits - displayTotalAdvances;
 
     const selectedUserName = selectedReportUser ? users.find(u => u.id === selectedReportUser)?.name : undefined;
