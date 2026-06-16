@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useProjects } from '../hooks/useProjects';
 import { useQuotes } from '../hooks/useQuotes';
-import { useInventory } from '../hooks/useInventory';
+import { useUsers } from '../hooks/useUsers';
 import { calculateProjectTotalsDual, calculateProjectRealRevenueDual, formatCurrency } from '../utils';
-import { Printer, FolderKanban, FileText, PackageSearch, TrendingUp, ArrowLeft, Calendar } from 'lucide-react';
+import { Printer, FolderKanban, FileText, PackageSearch, TrendingUp, ArrowLeft, Calendar, Users } from 'lucide-react';
 
-type ReportView = 'menu' | 'projects' | 'quotes' | 'inventory' | 'financial';
+type ReportView = 'menu' | 'projects' | 'quotes' | 'inventory' | 'financial' | 'users';
 
 const Reports: React.FC = () => {
   const { projects } = useProjects();
   const { quotes } = useQuotes();
   const { inventory } = useInventory();
+  const { users } = useUsers();
 
   const [activeView, setActiveView] = useState<ReportView>('menu');
   const [startDate, setStartDate] = useState('');
@@ -385,6 +386,136 @@ const Reports: React.FC = () => {
     );
   }
 
+  if (activeView === 'users') {
+    const filteredProjects = projects.filter(p => isWithinDateRange(p.date) && p.status === 'completed');
+    
+    // Calcular totales globales para el encabezado
+    let totalProfitsUSD = 0;
+    let totalAdvancesUSD = 0;
+
+    const userStats = users.map(user => {
+      let profitUSD = 0;
+      let profitNIO = 0;
+      let advancesUSD = 0;
+      let advancesNIO = 0;
+
+      filteredProjects.forEach(project => {
+        const exchangeRate = project.exchangeRate || 36.62;
+        
+        // 1. Calcular Ganancia del Proyecto
+        if (project.profitUsers && project.profitUsers.includes(user.id)) {
+          const rev = calculateProjectRealRevenueDual(project);
+          const shareUSD = rev.totalUSD / project.profitUsers.length;
+          const shareNIO = rev.totalNIO / project.profitUsers.length;
+          profitUSD += shareUSD;
+          profitNIO += shareNIO;
+          totalProfitsUSD += shareUSD;
+        }
+
+        // 2. Calcular Adelantos en este Proyecto
+        if (project.advances) {
+          project.advances.forEach(adv => {
+            if (adv.userId === user.id) {
+              if (adv.currency === 'NIO') {
+                advancesNIO += adv.amount;
+                advancesUSD += adv.amount / exchangeRate;
+              } else {
+                advancesUSD += adv.amount;
+                advancesNIO += adv.amount * exchangeRate;
+              }
+              totalAdvancesUSD += (adv.currency === 'USD' ? adv.amount : adv.amount / exchangeRate);
+            }
+          });
+        }
+      });
+
+      return {
+        ...user,
+        profitUSD,
+        profitNIO,
+        advancesUSD,
+        advancesNIO,
+        balanceUSD: profitUSD - advancesUSD,
+        balanceNIO: profitNIO - advancesNIO
+      };
+    });
+
+    const activeUserStats = userStats.filter(u => u.profitUSD > 0 || u.advancesUSD > 0);
+
+    return (
+      <div className="report-container">
+        {renderHeader('Reporte de Ganancias por Usuario', 'Balance de rendimientos netos y adelantos (Solo proyectos completados)')}
+        {renderDateFilters()}
+        {renderPrintHeader('Reporte de Ganancias por Usuario')}
+
+        <div className="card" style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ padding: '2rem', backgroundColor: 'rgba(99, 102, 241, 0.05)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Fondo Total a Repartir</p>
+              <p style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>
+                {formatCurrency(totalProfitsUSD, 'USD')}
+              </p>
+            </div>
+            <div style={{ padding: '2rem', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Adelantos Entregados</p>
+              <p style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--danger-color)' }}>
+                {formatCurrency(totalAdvancesUSD, 'USD')}
+              </p>
+            </div>
+            <div style={{ padding: '2rem', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Saldo Pendiente de Pago</p>
+              <p style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--success-color)' }}>
+                {formatCurrency(totalProfitsUSD - totalAdvancesUSD, 'USD')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Desglose por Trabajador</h3>
+          <div className="table-responsive">
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
+                  <th style={{ padding: '0.75rem' }}>Usuario</th>
+                  <th style={{ padding: '0.75rem' }}>Ganancia Neta</th>
+                  <th style={{ padding: '0.75rem' }}>Adelantos</th>
+                  <th style={{ padding: '0.75rem' }}>Balance (A Pagar)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeUserStats.map(u => (
+                  <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>{u.name} <span style={{color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '0.875rem'}}>({u.username})</span></td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <div style={{ color: 'var(--primary-color)' }}>{formatCurrency(u.profitUSD, 'USD')}</div>
+                      <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>{formatCurrency(u.profitNIO, 'NIO')}</div>
+                    </td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <div style={{ color: 'var(--danger-color)' }}>{formatCurrency(u.advancesUSD, 'USD')}</div>
+                      <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>{formatCurrency(u.advancesNIO, 'NIO')}</div>
+                    </td>
+                    <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
+                      <div style={{ color: u.balanceUSD >= 0 ? 'var(--success-color)' : 'var(--danger-color)' }}>
+                        {formatCurrency(u.balanceUSD, 'USD')}
+                      </div>
+                      <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', fontWeight: 'normal' }}>
+                        {formatCurrency(u.balanceNIO, 'NIO')}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {activeUserStats.length === 0 && (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>No hay ganancias ni adelantos registrados en este período</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // --- MENU PRINCIPAL ---
 
   return (
@@ -456,10 +587,24 @@ const Reports: React.FC = () => {
           </div>
           <div>
             <h3 style={{ margin: '0 0 0.5rem 0' }}>Reporte Financiero</h3>
-            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>Cálculo de ingresos, costos operativos y ganancias netas.</p>
           </div>
         </button>
 
+        <button 
+          className="card menu-card" 
+          onClick={() => setActiveView('users')}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem', cursor: 'pointer', transition: 'transform 0.2s', border: '1px solid var(--border-color)', background: 'var(--surface-color)' }}
+          onMouseOver={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+          onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={{ padding: '1.5rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: '50%', color: '#3b82f6' }}>
+            <Users size={40} />
+          </div>
+          <div>
+            <h3 style={{ margin: '0 0 0.5rem 0' }}>Reporte por Usuario</h3>
+            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>Balance de ganancias y adelantos por trabajador.</p>
+          </div>
+        </button>
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `

@@ -15,6 +15,7 @@ export default function Calendar() {
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
   const [selectedTimeStr, setSelectedTimeStr] = useState<string>('09:00');
   const [editingVisit, setEditingVisit] = useState<Visit | null>(null);
+  const [selectedViewDate, setSelectedViewDate] = useState<number | null>(new Date().getDate());
 
   const [formData, setFormData] = useState<Partial<Visit>>({
     title: '',
@@ -48,6 +49,28 @@ export default function Calendar() {
   };
 
   const handleDayClick = (day: number) => {
+    // If double click or already selected, open modal. Otherwise just select.
+    if (selectedViewDate === day) {
+      const targetDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      setSelectedDateStr(targetDateStr);
+      setSelectedTimeStr('09:00');
+      setEditingVisit(null);
+      setFormData({
+        title: '',
+        clientId: '',
+        projectId: '',
+        description: '',
+        status: 'pending',
+        technician: ''
+      });
+      setIsModalOpen(true);
+    } else {
+      setSelectedViewDate(day);
+    }
+  };
+
+  const handleNewVisit = () => {
+    const day = selectedViewDate || new Date().getDate();
     const targetDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     setSelectedDateStr(targetDateStr);
     setSelectedTimeStr('09:00');
@@ -144,7 +167,14 @@ export default function Calendar() {
   };
 
   const upcomingVisits = visits
-    .filter(v => new Date(v.date).getTime() >= new Date().setHours(0, 0, 0, 0))
+    .filter(v => {
+      if (selectedViewDate !== null) {
+        // Show only visits for selected day
+        const targetDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(selectedViewDate).padStart(2, '0')}`;
+        return v.date.startsWith(targetDateStr);
+      }
+      return new Date(v.date).getTime() >= new Date().setHours(0, 0, 0, 0);
+    })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
@@ -152,15 +182,15 @@ export default function Calendar() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <CalendarIcon size={32} style={{ color: 'var(--primary-color)' }} />
-          Agenda de Visitas
+          Agenda
         </h1>
-        <button className="btn-primary" onClick={() => handleDayClick(new Date().getDate())}>
+        <button className="btn-primary desktop-only" onClick={handleNewVisit}>
           <Plus size={20} />
           Nueva Visita
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
+      <div className="calendar-main-layout" style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
         {/* Main Calendar Area */}
         <div className="card" style={{ flex: '1 1 600px', padding: '1.5rem', backgroundColor: 'var(--card-bg)' }}>
         {/* Calendar Header */}
@@ -198,54 +228,43 @@ export default function Calendar() {
             return (
               <div 
                 key={day} 
+                className="calendar-day"
                 onClick={() => handleDayClick(day)}
-                style={{ 
-                  backgroundColor: 'var(--card-bg)', 
-                  minHeight: '120px', 
-                  padding: '0.5rem',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s',
-                  position: 'relative'
-                }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-main)'}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--card-bg)'}
               >
-                <div style={{ 
-                  width: '28px', 
-                  height: '28px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  borderRadius: '50%',
-                  backgroundColor: isToday(day) ? 'var(--primary-color)' : 'transparent',
-                  color: isToday(day) ? 'white' : 'var(--text-main)',
-                  fontWeight: isToday(day) ? 'bold' : 'normal',
-                  marginBottom: '0.5rem'
-                }}>
+                <div className={`calendar-day-header ${isToday(day) ? 'today' : ''} ${selectedViewDate === day ? 'selected' : ''}`}>
                   {day}
                 </div>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div className="calendar-day-visits">
                   {dayVisits.map(visit => (
                     <div 
                       key={visit.id}
+                      className="calendar-day-visit-pill"
                       onClick={(e) => handleVisitClick(e, visit)}
                       style={{
-                        padding: '4px 6px',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        backgroundColor: visit.status === 'completed' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                        color: visit.status === 'completed' ? '#16a34a' : '#2563eb',
-                        borderLeft: `3px solid ${visit.status === 'completed' ? '#16a34a' : '#2563eb'}`
+                        backgroundColor: visit.status === 'completed' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255, 0, 127, 0.1)',
+                        color: visit.status === 'completed' ? '#16a34a' : 'var(--primary-color)',
+                        borderLeft: `3px solid ${visit.status === 'completed' ? '#16a34a' : 'var(--primary-color)'}`
                       }}
                       title={visit.title}
                     >
-                      {formatTimeAMPM(visit.date)}
+                      {formatTimeAMPM(visit.date)} {visit.title}
                     </div>
                   ))}
+                </div>
+
+                {/* Mobile Dots */}
+                <div className="calendar-mobile-dots">
+                  {dayVisits.slice(0, 3).map(visit => (
+                    <div 
+                      key={`dot-${visit.id}`} 
+                      className="calendar-mobile-dot"
+                      style={{ backgroundColor: visit.status === 'completed' ? '#16a34a' : 'var(--primary-color)' }}
+                    ></div>
+                  ))}
+                  {dayVisits.length > 3 && (
+                    <div className="calendar-mobile-dot" style={{ backgroundColor: 'var(--text-muted)' }}></div>
+                  )}
                 </div>
               </div>
             );
@@ -256,7 +275,7 @@ export default function Calendar() {
         {/* Sidebar: Upcoming Visits */}
         <div className="card" style={{ flex: '1 1 300px', minWidth: '300px', padding: '1.5rem', backgroundColor: 'var(--card-bg)', display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '800px', overflowY: 'auto' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-            Próximas Visitas
+            {selectedViewDate ? `Visitas - ${selectedViewDate} de ${monthNames[currentDate.getMonth()]}` : 'Próximas Visitas'}
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {upcomingVisits.length > 0 ? (
@@ -267,7 +286,7 @@ export default function Calendar() {
                   style={{ 
                     padding: '1rem', 
                     borderRadius: '8px', 
-                    borderLeft: `4px solid ${visit.status === 'completed' ? '#16a34a' : '#2563eb'}`, 
+                    borderLeft: `4px solid ${visit.status === 'completed' ? '#16a34a' : 'var(--primary-color)'}`, 
                     backgroundColor: 'var(--bg-main)',
                     cursor: 'pointer',
                     transition: 'background-color 0.2s'
@@ -294,6 +313,29 @@ export default function Calendar() {
           </div>
         </div>
       </div>
+
+      {/* Floating Action Button for Mobile */}
+      <button 
+        className="mobile-only"
+        onClick={handleNewVisit}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          backgroundColor: 'var(--primary-color)',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 12px rgba(255, 0, 127, 0.4)',
+          zIndex: 100
+        }}
+      >
+        <Plus size={24} />
+      </button>
 
       {/* Modal */}
       {isModalOpen && (
