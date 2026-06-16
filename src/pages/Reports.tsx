@@ -4,7 +4,8 @@ import { useQuotes } from '../hooks/useQuotes';
 import { useUsers } from '../hooks/useUsers';
 import { useInventory } from '../hooks/useInventory';
 import { calculateProjectTotalsDual, calculateProjectRealRevenueDual, formatCurrency } from '../utils';
-import { Printer, FolderKanban, FileText, PackageSearch, TrendingUp, ArrowLeft, Calendar, Users } from 'lucide-react';
+import { Printer, FolderKanban, FileText, PackageSearch, TrendingUp, ArrowLeft, Calendar, Users, Image as ImageIcon } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 type ReportView = 'menu' | 'projects' | 'quotes' | 'inventory' | 'financial' | 'users';
 
@@ -95,10 +96,26 @@ const Reports: React.FC = () => {
           <p style={{ margin: 0, color: 'var(--text-muted)' }}>{subtitle}</p>
         </div>
       </div>
-      <button className="btn-primary" onClick={() => window.print()}>
-        <Printer size={20} />
-        Generar PDF
-      </button>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button className="btn-secondary" onClick={() => {
+          const element = document.getElementById('report-capture-area');
+          if (element) {
+            html2canvas(element, { scale: 2, backgroundColor: '#0f172a' }).then(canvas => {
+              const link = document.createElement('a');
+              link.download = `${title.replace(/ /g, '_')}_Captura.png`;
+              link.href = canvas.toDataURL('image/png');
+              link.click();
+            });
+          }
+        }}>
+          <ImageIcon size={20} />
+          Descargar Captura
+        </button>
+        <button className="btn-primary" onClick={() => window.print()}>
+          <Printer size={20} />
+          Generar PDF
+        </button>
+      </div>
     </div>
   );
 
@@ -126,7 +143,9 @@ const Reports: React.FC = () => {
       <div className="report-container">
         {renderHeader('Reporte de Proyectos', 'Análisis operativo de proyectos por fechas')}
         {renderDateFilters()}
-        {renderPrintHeader('Reporte de Proyectos')}
+        
+        <div id="report-capture-area" style={{ padding: '1rem', backgroundColor: 'var(--bg-color)' }}>
+          {renderPrintHeader('Reporte de Proyectos')}
         
         <div className="card" style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
@@ -182,6 +201,7 @@ const Reports: React.FC = () => {
             </table>
           </div>
         </div>
+        </div>
       </div>
     );
   }
@@ -194,7 +214,9 @@ const Reports: React.FC = () => {
       <div className="report-container">
         {renderHeader('Reporte de Cotizaciones', 'Oportunidades de venta en estado de cotización')}
         {renderDateFilters()}
-        {renderPrintHeader('Reporte de Cotizaciones')}
+        
+        <div id="report-capture-area" style={{ padding: '1rem', backgroundColor: 'var(--bg-color)' }}>
+          {renderPrintHeader('Reporte de Cotizaciones')}
 
         <div className="card" style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
@@ -241,6 +263,7 @@ const Reports: React.FC = () => {
             </table>
           </div>
         </div>
+        </div>
       </div>
     );
   }
@@ -253,8 +276,10 @@ const Reports: React.FC = () => {
 
     return (
       <div className="report-container">
-        {renderHeader('Reporte de Inventario', 'Estado de valorización de la bodega (Actual)')}
-        {renderPrintHeader('Reporte de Inventario (Estado Actual)')}
+        {renderHeader('Reporte de Inventario', 'Valorización actual del stock (No requiere filtro de fecha)')}
+        
+        <div id="report-capture-area" style={{ padding: '1rem', backgroundColor: 'var(--bg-color)' }}>
+          {renderPrintHeader('Reporte de Inventario (Estado Actual)')}
 
         <div className="card" style={{ marginBottom: '2rem' }}>
           <p style={{ color: 'var(--warning-color)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
@@ -310,6 +335,7 @@ const Reports: React.FC = () => {
             </table>
           </div>
         </div>
+        </div>
       </div>
     );
   }
@@ -323,9 +349,11 @@ const Reports: React.FC = () => {
 
     return (
       <div className="report-container">
-        {renderHeader('Reporte Financiero', 'Ingresos y costos de proyectos completados')}
+        {renderHeader('Reporte Financiero', 'Ingresos, gastos y ganancias de proyectos completados')}
         {renderDateFilters()}
-        {renderPrintHeader('Reporte Financiero General')}
+        
+        <div id="report-capture-area" style={{ padding: '1rem', backgroundColor: 'var(--bg-color)' }}>
+          {renderPrintHeader('Reporte Financiero Global')}
 
         <div className="card" style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
@@ -385,12 +413,13 @@ const Reports: React.FC = () => {
             </table>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   if (activeView === 'users') {
-    const filteredProjects = projects.filter(p => isWithinDateRange(p.date) && p.status === 'completed');
+    const filteredProjects = projects.filter(p => isWithinDateRange(p.date) && (p.status === 'completed' || p.status === 'draft'));
     
     const userStats = users.map(user => {
       let profitUSD = 0;
@@ -469,7 +498,7 @@ const Reports: React.FC = () => {
 
     return (
       <div className="report-container">
-        {renderHeader('Reporte de Ganancias por Usuario', 'Balance de rendimientos netos y adelantos (Solo proyectos completados)')}
+        {renderHeader('Reporte de Ganancias por Usuario', 'Balance de rendimientos netos y adelantos (Proyectos completados y en proceso)')}
         {renderDateFilters()}
         
         {/* Filtro de Usuario Adicional */}
@@ -491,7 +520,8 @@ const Reports: React.FC = () => {
           </select>
         </div>
 
-        {renderPrintHeader('Reporte de Ganancias', selectedUserName ? `Trabajador: ${selectedUserName}` : 'Todos los Trabajadores')}
+        <div id="report-capture-area" style={{ padding: '1rem', backgroundColor: 'var(--bg-color)' }}>
+          {renderPrintHeader('Reporte de Ganancias', selectedUserName ? `Trabajador: ${selectedUserName}` : 'Todos los Trabajadores')}
 
         <div className="card" style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
@@ -556,6 +586,7 @@ const Reports: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
         </div>
       </div>
     );

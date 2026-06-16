@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Save, Edit, Search } from 'lucide-react';
+import { Plus, Trash2, Save, Edit, Search, LayoutList, KanbanSquare } from 'lucide-react';
 import { useTickets } from '../hooks/useTickets';
 import { useClients } from '../hooks/useClients';
+import { useAuth } from '../hooks/useAuth';
+import { useUsers } from '../hooks/useUsers';
 import { generateId, formatCurrency } from '../utils';
 import type { Ticket } from '../types';
+import KanbanBoard from '../components/KanbanBoard';
 
 const TicketList: React.FC = () => {
   const { tickets, addTicket, deleteTicket, loading } = useTickets();
   const { clients } = useClients();
+  const { user } = useAuth();
+  const { users } = useUsers();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
   const [formData, setFormData] = useState<Partial<Ticket>>({});
+
+  const technicians = users.filter(u => u.role === 'tecnico');
 
   const handleCreateNew = () => {
     setFormData({
@@ -46,10 +54,13 @@ const TicketList: React.FC = () => {
     setEditingId(null);
   };
 
-  const filteredTickets = tickets.filter(t => 
-    t.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.clientName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTickets = tickets.filter(t => {
+    if (user?.role === 'tecnico' && t.technicianId !== user.id) {
+      return false;
+    }
+    return t.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+           t.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
     <div>
@@ -144,6 +155,22 @@ const TicketList: React.FC = () => {
                 </select>
               </div>
             </div>
+            
+            {user?.role === 'admin' && (
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Asignar Técnico</label>
+                <select 
+                  value={formData.technicianId || ''}
+                  onChange={e => setFormData({...formData, technicianId: e.target.value})}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}
+                >
+                  <option value="">Sin Asignar</option>
+                  {technicians.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <div style={{ marginTop: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>Descripción / Notas de la visita</label>
@@ -162,8 +189,23 @@ const TicketList: React.FC = () => {
         </div>
       )}
 
-      <div className="card" style={{ marginBottom: '2rem' }}>
-        <div style={{ position: 'relative' }}>
+      <div className="card" style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', backgroundColor: 'var(--surface-color)', borderRadius: '8px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+          <button 
+            onClick={() => setViewMode('list')}
+            style={{ padding: '0.5rem 1rem', background: viewMode === 'list' ? 'var(--primary-color)' : 'transparent', color: viewMode === 'list' ? 'var(--bg-color)' : 'var(--text-main)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <LayoutList size={18} />
+          </button>
+          <button 
+            onClick={() => setViewMode('kanban')}
+            style={{ padding: '0.5rem 1rem', background: viewMode === 'kanban' ? 'var(--primary-color)' : 'transparent', color: viewMode === 'kanban' ? 'var(--bg-color)' : 'var(--text-main)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <KanbanSquare size={18} />
+          </button>
+        </div>
+
+        <div style={{ position: 'relative', flex: 1 }}>
           <Search size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input 
             type="text" 
@@ -175,6 +217,39 @@ const TicketList: React.FC = () => {
         </div>
       </div>
 
+      {viewMode === 'kanban' ? (
+        <KanbanBoard 
+          columns={[
+            { id: 'open', title: 'Abierto', items: filteredTickets.filter(t => t.status === 'open') },
+            { id: 'in_progress', title: 'En Proceso', items: filteredTickets.filter(t => t.status === 'in_progress') },
+            { id: 'resolved', title: 'Resuelto', items: filteredTickets.filter(t => t.status === 'resolved') }
+          ]}
+          onMoveItem={async (ticketId, newStatus) => {
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (ticket && ticket.status !== newStatus) {
+              await addTicket({ ...ticket, status: newStatus as any });
+            }
+          }}
+          renderCard={(item: any) => (
+            <div className="card" style={{ padding: '1rem', cursor: 'grab', marginBottom: 0, borderLeft: item.priority === 'high' ? '4px solid var(--danger-color)' : item.status === 'resolved' ? '4px solid var(--success-color)' : '4px solid var(--primary-color)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <h4 style={{ margin: 0, fontSize: '0.9rem' }}>{item.title}</h4>
+              </div>
+              <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                {item.clientName || 'Sin Cliente'}
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleEdit(item as Ticket); }}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', padding: '0.2rem' }}
+                >
+                  <Edit size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        />
+      ) : (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
         {loading ? (
           <p>Cargando tickets...</p>
@@ -240,6 +315,7 @@ const TicketList: React.FC = () => {
           ))
         )}
       </div>
+      )}
     </div>
   );
 };

@@ -10,6 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@types/react-signature-canvas": "^1.0.7",
     "@yudiel/react-qr-scanner": "^2.6.0",
     "basic-ftp": "^6.0.1",
     "cors": "^2.8.6",
@@ -22,6 +26,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.16.0",
+    "react-signature-canvas": "^1.1.0-alpha.2",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {

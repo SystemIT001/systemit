@@ -17,6 +17,10 @@ verifyAuth();
 
 if ($method === 'GET') {
     try {
+        try {
+            $pdo->exec("ALTER TABLE tickets ADD COLUMN technicianId VARCHAR(50)");
+        } catch (PDOException $e) { /* ignore */ }
+
         $stmt = $pdo->query("SELECT * FROM tickets");
         $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($tickets);
@@ -33,7 +37,8 @@ if ($method === 'GET') {
                 priority VARCHAR(50),
                 cost DECIMAL(10,2) DEFAULT 0,
                 currency VARCHAR(10) DEFAULT 'NIO',
-                lastUpdated BIGINT
+                lastUpdated BIGINT,
+                technicianId VARCHAR(50)
             )");
             echo json_encode([]);
         } else {
@@ -58,17 +63,18 @@ if ($method === 'GET') {
     $priority = $data['priority'] ?? 'normal';
     $cost = isset($data['cost']) ? (float)$data['cost'] : 0;
     $currency = $data['currency'] ?? 'NIO';
+    $technicianId = $data['technicianId'] ?? null;
     $lastUpdated = time() * 1000;
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO tickets (id, title, description, clientName, date, status, priority, cost, currency, lastUpdated) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+        $stmt = $pdo->prepare("INSERT INTO tickets (id, title, description, clientName, date, status, priority, cost, currency, technicianId, lastUpdated) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
             ON DUPLICATE KEY UPDATE 
             title = VALUES(title), description = VALUES(description), clientName = VALUES(clientName),
             date = VALUES(date), status = VALUES(status), priority = VALUES(priority), 
-            cost = VALUES(cost), currency = VALUES(currency), lastUpdated = VALUES(lastUpdated)");
+            cost = VALUES(cost), currency = VALUES(currency), technicianId = VALUES(technicianId), lastUpdated = VALUES(lastUpdated)");
         
-        $stmt->execute([$id, $title, $description, $clientName, $date, $status, $priority, $cost, $currency, $lastUpdated]);
+        $stmt->execute([$id, $title, $description, $clientName, $date, $status, $priority, $cost, $currency, $technicianId, $lastUpdated]);
         
         echo json_encode(['success' => true, 'id' => $id, 'lastUpdated' => $lastUpdated]);
     } catch (PDOException $e) {

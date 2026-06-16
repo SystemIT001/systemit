@@ -90,6 +90,7 @@ export interface Ticket {
   priority: 'low' | 'normal' | 'high';
   cost: number;
   currency: 'NIO' | 'USD';
+  technicianId?: string;
   lastUpdated?: number;
 }
 
@@ -127,6 +128,7 @@ export interface Project {
   images?: ProjectImage[];
   advances?: AdvanceItem[];
   profitUsers?: string[];
+  clientSignature?: string;
   lastUpdated?: number;
   clientToken?: string;
   validUntil?: string;

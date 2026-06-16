@@ -432,6 +432,17 @@ const InvoiceView: React.FC = () => {
           </div>
         )}
 
+        {/* Signature */}
+        {project.clientSignature && (
+          <div style={{ marginTop: '4rem', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center', width: '300px' }}>
+              <img src={project.clientSignature} alt="Firma del Cliente" style={{ width: '100%', maxHeight: '100px', objectFit: 'contain', borderBottom: '1px solid #cbd5e1', marginBottom: '0.5rem' }} />
+              <p style={{ color: '#475569', fontSize: '0.875rem', margin: 0, fontWeight: 600 }}>Firma del Cliente</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.75rem', margin: 0 }}>Aceptación de {isQuote ? 'Cotización' : 'Documento'}</p>
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         <div style={{ marginTop: '4rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
           <p>{footerText}</p>

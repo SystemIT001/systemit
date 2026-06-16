@@ -121,13 +121,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             Proyectos Activos
           </a>
           <a 
-            href="/views/cotizaciones.html" 
-            className={`nav-item ${isActive('/views/cotizaciones.html') || (isActive('/views/proyecto-detalle.html') && window.location.search.includes('type=quote')) ? 'active' : ''}`}
-          >
-            <FileText size={20} />
-            Cotizaciones
-          </a>
-          <a 
             href="/views/tickets.html" 
             className={`nav-item ${isActive('/views/tickets.html') ? 'active' : ''}`}
           >
@@ -138,12 +131,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Users size={20} />
             Clientes
           </a>
-          <a href="/views/inventario.html" className={`nav-item ${isActive('inventario') ? 'active' : ''}`}>
-            <PackageSearch size={20} />
-            Inventario / Bodega
-          </a>
+          
           {user?.role === 'admin' && (
             <>
+              <a 
+                href="/views/cotizaciones.html" 
+                className={`nav-item ${isActive('/views/cotizaciones.html') || (isActive('/views/proyecto-detalle.html') && window.location.search.includes('type=quote')) ? 'active' : ''}`}
+              >
+                <FileText size={20} />
+                Cotizaciones
+              </a>
+              <a href="/views/inventario.html" className={`nav-item ${isActive('inventario') ? 'active' : ''}`}>
+                <PackageSearch size={20} />
+                Inventario / Bodega
+              </a>
               <a href="/views/compras.html" className={`nav-item ${isActive('compras') ? 'active' : ''}`}>
                 <ShoppingCart size={20} />
                 Compras a Prov.

@@ -11,6 +11,7 @@ import type { Project, MaterialItem, EquipmentItem, LaborItem, InvoiceFile, Adva
 import { generateId, formatCurrency, calculateItemTotal, calculateProjectTotalsDual, calculateItemsTotalsDual, calculateExpensesDual, calculateProjectRealRevenueDual, downloadFileFromUrl } from '../utils';
 import { InvoiceImporter } from '../components/InvoiceImporter';
 import QRScanner from '../components/QRScanner';
+import SignatureModal from '../components/SignatureModal';
 
 type Tab = 'info' | 'materials' | 'equipments' | 'additionals' | 'purchasing_control' | 'labor' | 'planificacion' | 'payments' | 'invoices' | 'expenses' | 'gallery' | 'profit';
 
@@ -33,6 +34,7 @@ const ProjectDetail: React.FC = () => {
   const targetUpdateProject = isQuoteUrl ? updateQuote : updateProject;
 
   const [activeTab, setActiveTab] = useState<Tab>('info');
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
   // Form states
   const [itemName, setItemName] = useState('');
@@ -885,6 +887,10 @@ const ProjectDetail: React.FC = () => {
           <button className="btn-secondary" onClick={() => handleOpenPDF('resumida')}>
             <FileText size={20} />
             {isQuote ? 'Cotización Resumida' : 'Factura Resumida'}
+          </button>
+          <button className="btn-secondary" onClick={() => setIsSignatureModalOpen(true)}>
+            <Pencil size={20} />
+            Firmar Documento
           </button>
           <button className="btn-secondary" onClick={handleCopyPortalLink} style={{ backgroundColor: 'var(--primary-color)', color: 'white', border: 'none' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
@@ -2039,6 +2045,18 @@ const ProjectDetail: React.FC = () => {
           </div>
         </div>
       )}
+
+      <SignatureModal 
+        isOpen={isSignatureModalOpen} 
+        onClose={() => setIsSignatureModalOpen(false)} 
+        onSave={(dataUrl) => {
+          const updatedProject = { ...project, clientSignature: dataUrl };
+          setProject(updatedProject);
+          targetUpdateProject(updatedProject);
+          setIsSignatureModalOpen(false);
+          alert('Firma guardada correctamente. Ahora aparecerá en la factura.');
+        }} 
+      />
 
     </div>
   );
