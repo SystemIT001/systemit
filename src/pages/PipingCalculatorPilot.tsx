@@ -327,7 +327,7 @@ const BendableEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targetX, targ
         fill="var(--primary-color)"
         stroke="var(--bg-color)"
         strokeWidth={2}
-        className="bend-handle"
+        className="bend-handle nodrag nopan"
         onMouseDown={onBendMouseDown}
       />
       {/* Edge label */}
