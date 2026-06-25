@@ -40,11 +40,99 @@ const JunctionNode = () => (
   </div>
 );
 
+// Device SVG icons for network/security equipment
+const DEVICE_ICONS: Record<string, React.ReactNode> = {
+  camara_domo: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="9"/>
+      <circle cx="12" cy="12" r="4"/>
+      <line x1="12" y1="3" x2="12" y2="8"/>
+      <path d="M6 18 L12 12 L18 18"/>
+    </svg>
+  ),
+  camara_bullet: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="9" width="13" height="6" rx="2"/>
+      <polygon points="16,9 21,7 21,17 16,15"/>
+      <circle cx="7" cy="12" r="1.5" fill="currentColor"/>
+    </svg>
+  ),
+  gabinete: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <line x1="3" y1="8" x2="21" y2="8"/>
+      <line x1="3" y1="16" x2="21" y2="16"/>
+      <circle cx="18" cy="5.5" r="1" fill="currentColor"/>
+      <circle cx="18" cy="19.5" r="1" fill="currentColor"/>
+    </svg>
+  ),
+  bandeja_red: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="2" y="8" width="20" height="8" rx="1"/>
+      <line x1="6" y1="8" x2="6" y2="16"/>
+      <line x1="10" y1="8" x2="10" y2="16"/>
+      <line x1="14" y1="8" x2="14" y2="16"/>
+      <line x1="18" y1="8" x2="18" y2="16"/>
+      <path d="M6 5 L6 8 M10 5 L10 8 M14 5 L14 8 M18 5 L18 8" strokeDasharray="1 1"/>
+    </svg>
+  ),
+  dvr_nvr: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="2" y="6" width="20" height="12" rx="2"/>
+      <circle cx="17" cy="12" r="2"/>
+      <rect x="5" y="9" width="8" height="2" rx="1"/>
+      <rect x="5" y="13" width="5" height="2" rx="1"/>
+    </svg>
+  ),
+  ups: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="4" y="4" width="16" height="16" rx="2"/>
+      <path d="M12 8 L9 13 L12 13 L12 16 L15 11 L12 11 Z" fill="currentColor" stroke="none"/>
+    </svg>
+  ),
+  router: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="2" y="10" width="20" height="7" rx="2"/>
+      <circle cx="17" cy="13.5" r="1" fill="currentColor"/>
+      <line x1="7" y1="10" x2="5" y2="5"/>
+      <line x1="12" y1="10" x2="12" y2="5"/>
+      <line x1="17" y1="10" x2="19" y2="5"/>
+    </svg>
+  ),
+  switch: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="2" y="9" width="20" height="6" rx="2"/>
+      <circle cx="6" cy="12" r="1" fill="currentColor"/>
+      <circle cx="9" cy="12" r="1" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1" fill="currentColor"/>
+      <circle cx="15" cy="12" r="1" fill="currentColor"/>
+      <circle cx="18" cy="12" r="1" fill="currentColor"/>
+      <path d="M5 9 L5 6 M9 9 L9 6 M13 9 L13 6 M17 9 L17 6" />
+    </svg>
+  ),
+  patch_panel: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="2" y="7" width="20" height="10" rx="1"/>
+      <circle cx="5.5" cy="12" r="1.2" fill="currentColor"/>
+      <circle cx="9" cy="12" r="1.2" fill="currentColor"/>
+      <circle cx="12.5" cy="12" r="1.2" fill="currentColor"/>
+      <circle cx="16" cy="12" r="1.2" fill="currentColor"/>
+      <circle cx="19.5" cy="12" r="1.2" fill="currentColor"/>
+      <line x1="5.5" y1="17" x2="5.5" y2="21"/>
+      <line x1="9" y1="17" x2="9" y2="21"/>
+      <line x1="12.5" y1="17" x2="12.5" y2="21"/>
+      <line x1="16" y1="17" x2="16" y2="21"/>
+      <line x1="19.5" y1="17" x2="19.5" y2="21"/>
+    </svg>
+  ),
+};
+
 const IconNode = ({ data, selected }: any) => (
-  <div className={`icon-node ${selected ? 'selected' : ''}`}>
+  <div className={`icon-node ${selected ? 'selected' : ''}`} title={data.label}>
     <Handle type="target" position={Position.Top} style={centralHandleStyle} />
     <Handle type="source" position={Position.Bottom} style={centralHandleStyle} />
-    <span title={data.label}>{data.icon}</span>
+    {DEVICE_ICONS[data.type] || <span>{data.icon}</span>}
+    <div style={{ fontSize: '0.6rem', marginTop: '3px', color: 'var(--text-muted)', whiteSpace: 'nowrap', maxWidth: '60px', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center' }}>{data.label}</div>
   </div>
 );
 
@@ -167,7 +255,7 @@ function computeCableRoutes(nodes: Node[], edges: Edge[]) {
   });
 
   const hubs = nodes.filter(n => n.type === 'iconNode' && n.data?.type === 'gabinete').map(n => n.id);
-  const cameras = nodes.filter(n => n.type === 'iconNode' && n.data?.type === 'camara').map(n => n.id);
+  const cameras = nodes.filter(n => n.type === 'iconNode' && (n.data?.type === 'camara_domo' || n.data?.type === 'camara_bullet')).map(n => n.id);
 
   const edgeCableCount: Record<string, number> = {};
   edges.forEach(e => {
@@ -663,10 +751,15 @@ const PipingCalculatorInner = () => {
     });
 
     const elements = {
-      gabinetes: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'gabinete').length,
-      caja4x4: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'caja4x4').length,
-      caja2x4: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'caja2x4').length,
-      camaras: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'camara').length,
+      gabinete: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'gabinete').length,
+      camara_domo: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'camara_domo').length,
+      camara_bullet: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'camara_bullet').length,
+      bandeja_red: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'bandeja_red').length,
+      dvr_nvr: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'dvr_nvr').length,
+      ups: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'ups').length,
+      router: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'router').length,
+      switch: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'switch').length,
+      patch_panel: nodes.filter(n => n.type === 'iconNode' && n.data.type === 'patch_panel').length,
     };
 
     return { 
@@ -730,22 +823,29 @@ const PipingCalculatorInner = () => {
         <h3>Herramientas CAD</h3>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Arrastra elementos al plano:</p>
         <div className="dnd-sidebar">
-          <div>
-            <div className="dnd-node" draggable onDragStart={(e) => onDragStart(e, JSON.stringify({ type: 'gabinete', icon: '🏢', label: 'Gabinete' }))}>🏢</div>
-            <div className="dnd-label">Gabinete</div>
-          </div>
-          <div>
-            <div className="dnd-node" draggable onDragStart={(e) => onDragStart(e, JSON.stringify({ type: 'caja4x4', icon: '🔲', label: 'Caja 4x4' }))}>🔲</div>
-            <div className="dnd-label">Caja 4x4</div>
-          </div>
-          <div>
-            <div className="dnd-node" draggable onDragStart={(e) => onDragStart(e, JSON.stringify({ type: 'caja2x4', icon: '▯', label: 'Caja 2x4' }))}>▯</div>
-            <div className="dnd-label">Caja 2x4</div>
-          </div>
-          <div>
-            <div className="dnd-node" draggable onDragStart={(e) => onDragStart(e, JSON.stringify({ type: 'camara', icon: '📷', label: 'Cámara' }))}>📷</div>
-            <div className="dnd-label">Cámara</div>
-          </div>
+          {[
+            { type: 'camara_domo', label: 'Cám. Domo' },
+            { type: 'camara_bullet', label: 'Cám. Bullet' },
+            { type: 'gabinete', label: 'Gabinete' },
+            { type: 'bandeja_red', label: 'Bandeja Red' },
+            { type: 'dvr_nvr', label: 'DVR / NVR' },
+            { type: 'ups', label: 'UPS' },
+            { type: 'router', label: 'Router' },
+            { type: 'switch', label: 'Switch' },
+            { type: 'patch_panel', label: 'Patch Panel' },
+          ].map(({ type, label }) => (
+            <div key={type}>
+              <div
+                className="dnd-node"
+                draggable
+                onDragStart={(e) => onDragStart(e, JSON.stringify({ type, label }))}
+                style={{ color: 'var(--primary-color)' }}
+              >
+                {DEVICE_ICONS[type]}
+              </div>
+              <div className="dnd-label">{label}</div>
+            </div>
+          ))}
         </div>
 
         <hr style={{ borderColor: 'var(--border-color)', margin: '1rem 0', width: '100%' }} />
@@ -975,23 +1075,30 @@ const PipingCalculatorInner = () => {
           </div>
 
           <div className="result-card" style={{ borderLeft: '3px solid var(--success-color)' }}>
-            <h4 style={{ color: 'var(--success-color)' }}>Equipos Agregados</h4>
-            <div className="result-item">
-              <span>Gabinetes:</span>
-              <strong>{elementsCount.gabinetes}</strong>
-            </div>
-            <div className="result-item">
-              <span>Cajas 4x4:</span>
-              <strong>{elementsCount.caja4x4}</strong>
-            </div>
-            <div className="result-item">
-              <span>Cajas 2x4:</span>
-              <strong>{elementsCount.caja2x4}</strong>
-            </div>
-            <div className="result-item">
-              <span>Cámaras:</span>
-              <strong>{elementsCount.camaras}</strong>
-            </div>
+            <h4 style={{ color: 'var(--success-color)' }}>Equipos en Plano</h4>
+            {([
+              ['gabinete', 'Gabinetes'],
+              ['camara_domo', 'Cám. Domo'],
+              ['camara_bullet', 'Cám. Bullet'],
+              ['bandeja_red', 'Bandejas de Red'],
+              ['dvr_nvr', 'DVR / NVR'],
+              ['ups', 'Baterías UPS'],
+              ['router', 'Routers'],
+              ['switch', 'Switches'],
+              ['patch_panel', 'Patch Panels'],
+            ] as [keyof typeof elementsCount, string][]).map(([key, label]) => {
+              const count = elementsCount[key] || 0;
+              if (count === 0) return null;
+              return (
+                <div key={key} className="result-item">
+                  <span>{label}:</span>
+                  <strong>{count}</strong>
+                </div>
+              );
+            })}
+            {Object.values(elementsCount).every(v => v === 0) && (
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Sin equipos en el plano</div>
+            )}
           </div>
 
           {/* Reference Sizing Table */}
