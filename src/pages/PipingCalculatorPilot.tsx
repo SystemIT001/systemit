@@ -14,10 +14,8 @@ import {
   useReactFlow,
   ReactFlowProvider,
   EdgeLabelRenderer,
-  BaseEdge,
 } from '@xyflow/react';
 import type {
-  Connection,
   Edge,
   Node,
   OnNodesChange,
@@ -232,7 +230,7 @@ function computeCableRoutes(nodes: Node[], edges: Edge[]) {
     });
 
     if (closestHub && minHubDist !== Infinity) {
-      let curr = closestHub;
+      let curr: any = closestHub;
       let iterations = 0;
       const maxIterations = nodes.length;
       while (curr !== camId && iterations < maxIterations) {
@@ -369,8 +367,8 @@ const edgeTypes = {
 // --- Main Inner Component ---
 
 const PipingCalculatorInner = () => {
-  const [nodes, setNodes] = useNodesState([]);
-  const [edges, setEdges] = useEdgesState([]);
+  const [nodes, setNodes] = useNodesState<Node>([]);
+  const [edges, setEdges] = useEdgesState<Edge>([]);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [wastePercentage, setWastePercentage] = useState<number>(10);
   const [standardLength, setStandardLength] = useState<number>(6);
@@ -681,10 +679,6 @@ const PipingCalculatorInner = () => {
     };
   }, [nodes, edges, processedEdges, routingData]);
 
-  const selectedPipeName = useMemo(() => {
-    const pipe = inventory.find(i => i.id === selectedPipeId);
-    return pipe ? pipe.name : 'Tubo Genérico';
-  }, [inventory, selectedPipeId]);
 
   return (
     <div className="piping-calculator-container">
@@ -803,7 +797,7 @@ const PipingCalculatorInner = () => {
           const cableCount = (activeSelectedEdge.data?.cableCount as number) || 0;
           const pipeSize = activeSelectedEdge.data?.pipeSize as string || '1/2"';
           const splitTubes = (activeSelectedEdge.data?.splitTubes as number) || 1;
-          const horizontalLen = (activeSelectedEdge.data?.length as number) || 0;
+          const horizontalLen = ((activeSelectedEdge.data as any)?.length as number) || 0;
           const verticalLen = (activeSelectedEdge.data?.verticalMeters as number) || 0;
           const totalLen = horizontalLen + verticalLen;
           const cablesPerTube = splitTubes > 1 ? Math.ceil(cableCount / splitTubes) : cableCount;
@@ -946,15 +940,21 @@ const PipingCalculatorInner = () => {
               )}
             </div>
 
-            <div className="result-item" style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-color)', fontSize: '1rem', color: 'var(--primary-color)' }}>
-              <span>Total Tubos (Todos):</span>
-              <strong>{
-                Object.entries(pipeBreakdown).reduce((acc, [_, length]) => {
-                  const lengthWithWaste = length * (1 + wastePercentage / 100);
-                  const tubes = Math.ceil(lengthWithWaste / standardLength);
-                  return acc + tubes;
-                }, 0)
-              } tubos</strong>
+            <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Total Tubos por Medida:</span>
+              <strong style={{ fontSize: '1.05rem', color: 'var(--primary-color)', textAlign: 'right' }}>
+                {(() => {
+                  const items = Object.entries(pipeBreakdown)
+                    .map(([size, length]) => {
+                      if (length === 0) return null;
+                      const lengthWithWaste = length * (1 + wastePercentage / 100);
+                      const tubes = Math.ceil(lengthWithWaste / standardLength);
+                      return `${tubes} (${size})`;
+                    })
+                    .filter(Boolean);
+                  return items.length > 0 ? items.join(' + ') : '0 tubos';
+                })()}
+              </strong>
             </div>
           </div>
 
