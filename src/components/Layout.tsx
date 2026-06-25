@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Palette, FileText, LifeBuoy, PieChart, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ReceiptText, PackageSearch, ShoppingCart, Settings, Users, LogOut, User as UserIcon, Palette, FileText, LifeBuoy, PieChart, ChevronLeft, ChevronRight, CalendarDays, Ruler } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../hooks/useSettings';
@@ -152,6 +152,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <a href="/views/reportes.html" className={`nav-item ${isActive('reportes') ? 'active' : ''}`}>
                 <PieChart size={20} />
                 Reportes
+              </a>
+              <a href="/views/piping-calculator.html" className={`nav-item ${isActive('piping-calculator') ? 'active' : ''}`}>
+                <Ruler size={20} />
+                Calc. Tuberías
               </a>
               <a href="/views/configuraciones.html" className={`nav-item ${isActive('configuracion') ? 'active' : ''}`}>
                 <Settings size={20} />
