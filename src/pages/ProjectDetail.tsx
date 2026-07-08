@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye, QrCode, Pencil } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye, QrCode, Pencil, Ruler } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { useQuotes } from '../hooks/useQuotes';
 import { useInventory } from '../hooks/useInventory';
@@ -892,6 +892,16 @@ const ProjectDetail: React.FC = () => {
             <Pencil size={20} />
             Firmar Documento
           </button>
+          {project && (
+            <a 
+              href={`/views/piping-calculator.html?id=${project.id}&type=${isQuote ? 'quote' : 'project'}`} 
+              className="btn-secondary" 
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', backgroundColor: '#34495e', color: 'white', borderColor: '#34495e' }}
+            >
+              <Ruler size={20} />
+              Plano de Tuberías
+            </a>
+          )}
           <button className="btn-secondary" onClick={handleCopyPortalLink} style={{ backgroundColor: 'var(--primary-color)', color: 'white', border: 'none' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             Enlace de Cliente

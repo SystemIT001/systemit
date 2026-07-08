@@ -106,6 +106,14 @@ function initDB() {
         lastUpdated TEXT
       )`);
 
+      db.run(`CREATE TABLE IF NOT EXISTS piping_diagrams (
+        id TEXT PRIMARY KEY,
+        nodes TEXT,
+        edges TEXT,
+        scale REAL,
+        lastUpdated TEXT
+      )`);
+
       db.run(`CREATE TABLE IF NOT EXISTS settings (
         id TEXT PRIMARY KEY,
         companyName TEXT,
@@ -719,6 +727,35 @@ app.delete('/api/tickets/:id', (req, res) => {
   db.run('DELETE FROM tickets WHERE id = ?', [req.params.id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Ticket deleted' });
+  });
+});
+
+// --- Piping Diagrams Endpoints ---
+app.get('/api/piping-diagrams.php', (req, res) => {
+  const { id } = req.query;
+  db.get('SELECT * FROM piping_diagrams WHERE id = ?', [id], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.json(null);
+    res.json({
+      id: row.id,
+      nodes: JSON.parse(row.nodes || '[]'),
+      edges: JSON.parse(row.edges || '[]'),
+      scale: row.scale ? parseFloat(row.scale) : 20,
+      lastUpdated: row.lastUpdated
+    });
+  });
+});
+
+app.post('/api/piping-diagrams.php', (req, res) => {
+  const { id, nodes, edges, scale } = req.body;
+  const nodesStr = JSON.stringify(nodes || []);
+  const edgesStr = JSON.stringify(edges || []);
+  const currentLastUpdated = Date.now().toString();
+
+  const sql = `INSERT OR REPLACE INTO piping_diagrams (id, nodes, edges, scale, lastUpdated) VALUES (?, ?, ?, ?, ?)`;
+  db.run(sql, [id, nodesStr, edgesStr, scale || 20, currentLastUpdated], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, lastUpdated: currentLastUpdated });
   });
 });
 

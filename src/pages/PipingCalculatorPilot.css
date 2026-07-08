@@ -147,23 +147,34 @@
 
 .junction-node .react-flow__handle,
 .icon-node .react-flow__handle {
-  width: 6px;
-  height: 6px;
-  background-color: var(--primary-color);
-  border: 1px solid var(--bg-color);
+  width: 12px !important;
+  height: 12px !important;
+  background-color: var(--primary-color) !important;
+  border: 2px solid white !important;
+  border-radius: 50% !important;
   opacity: 0;
-  transition: opacity 0.2s;
+  pointer-events: none;      /* no bloquea el drag cuando están ocultos */
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: 0 0 0 3px rgba(255,20,147,0.3);
+  z-index: 10;
 }
 
 .junction-node:hover .react-flow__handle,
 .icon-node:hover .react-flow__handle {
-  opacity: 1;
+  opacity: 1 !important;
+  pointer-events: auto !important;  /* se vuelven conectables al hacer hover */
 }
 
-.junction-node .handle-top, .icon-node .handle-top { top: -4px; }
-.junction-node .handle-bottom, .icon-node .handle-bottom { bottom: -4px; }
-.junction-node .handle-left, .icon-node .handle-left { left: -4px; }
-.junction-node .handle-right, .icon-node .handle-right { right: -4px; }
+.icon-node:hover .react-flow__handle:hover {
+  transform: scale(1.4);
+  box-shadow: 0 0 0 5px rgba(255,20,147,0.4);
+}
+
+/* Handles posicionados fuera del borde del nodo para no interferir con el área de drag */
+.junction-node .handle-top,  .icon-node .handle-top    { top: -7px !important; }
+.junction-node .handle-bottom,.icon-node .handle-bottom { bottom: -7px !important; }
+.junction-node .handle-left,  .icon-node .handle-left   { left: -7px !important; }
+.junction-node .handle-right, .icon-node .handle-right  { right: -7px !important; }
 
 /* Custom Icon Nodes */
 .icon-node {
@@ -257,4 +268,137 @@ input[type=number] {
 .bend-handle:active {
   cursor: grabbing;
 }
+
+/* Mode Selector Tabs */
+.mode-selector-tabs {
+  display: flex;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.tab-mode-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: calc(var(--radius-md) - 2px);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.tab-mode-btn:hover {
+  color: var(--text-main);
+  background-color: var(--surface-hover);
+}
+
+.tab-mode-btn.active {
+  background-color: var(--primary-color);
+  color: var(--bg-color) !important;
+}
+
+/* Project/Quote Selector Card */
+.project-selector-card {
+  background-color: var(--surface-hover);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.project-selector-card h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-color);
+}
+
+/* Separator */
+.separator {
+  width: 1px;
+  background-color: var(--border-color);
+  align-self: stretch;
+  margin: 0 4px;
+}
+
+/* Structure Icon Nodes (Door & Window) */
+.structure-icon-node {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.structure-icon-node:active {
+  cursor: grabbing;
+}
+
+.structure-icon-node.selected {
+  outline: none;
+}
+
+/* Cono de Cobertura FOV y DORI */
+.fov-cone-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.hide-fovs .fov-cone-container {
+  display: none !important;
+}
+
+.fov-cone-arc {
+  transition: all 0.2s ease;
+}
+
+/* Ajustes de Sliders y Controles Ópticos */
+.optical-group {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  background-color: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.slider-input {
+  width: 100%;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+
 
