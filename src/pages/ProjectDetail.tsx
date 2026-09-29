@@ -43,7 +43,7 @@ const ProjectDetail: React.FC = () => {
   const [unitCost, setUnitCost] = useState<number | ''>('');
   const [itemCurrency, setItemCurrency] = useState<'USD' | 'NIO'>('USD');
   const [profitMargin, setProfitMargin] = useState<number | 'manual'>(0);
-  const [manualPrice, setManualPrice] = useState<number>(0);
+  const [manualPrice, setManualPrice] = useState<number | ''>('');
   const [serialNumber, setSerialNumber] = useState<string>('');
   const [isScanningSerial, setIsScanningSerial] = useState(false);
   const [clientProvides, setClientProvides] = useState<boolean>(false);
@@ -80,7 +80,7 @@ const ProjectDetail: React.FC = () => {
     setUnitCost('');
     setItemCurrency('USD');
     setProfitMargin(0);
-    setManualPrice(0);
+    setManualPrice('');
     setSerialNumber('');
     setClientProvides(false);
     setPaymentAmount('');
@@ -196,7 +196,7 @@ const ProjectDetail: React.FC = () => {
       updatedProject.materials = [...updatedProject.materials, { 
         ...newItem, 
         profitMargin, 
-        manualPrice: profitMargin === 'manual' ? Number(manualPrice) : undefined,
+        manualPrice: profitMargin === 'manual' && manualPrice !== '' ? Number(manualPrice) : undefined,
         isAdditional: activeTab === 'additionals',
         clientProvides
       } as MaterialItem];
@@ -204,7 +204,7 @@ const ProjectDetail: React.FC = () => {
       updatedProject.equipments = [...updatedProject.equipments, { 
         ...newItem, 
         profitMargin, 
-        manualPrice: profitMargin === 'manual' ? Number(manualPrice) : undefined,
+        manualPrice: profitMargin === 'manual' && manualPrice !== '' ? Number(manualPrice) : undefined,
         isAdditional: activeTab === 'additionals',
         clientProvides
       } as EquipmentItem];
@@ -224,7 +224,7 @@ const ProjectDetail: React.FC = () => {
     setQuantity(1);
     setUnitCost('');
     setProfitMargin(0);
-    setManualPrice(0);
+    setManualPrice('');
     setSerialNumber('');
     setClientProvides(false);
     setAdditionalType('materials');
@@ -646,22 +646,58 @@ const ProjectDetail: React.FC = () => {
                     </td>
                     {(type === 'equipments' || type === 'materials') && (
                       <td style={{ padding: '0.75rem' }}>
-                        <select value={editingItem.data.profitMargin} onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, profitMargin: e.target.value === 'manual' ? 'manual' : Number(e.target.value)}})} style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }}>
-                          <option value="manual">Manual</option>
-                          <option value="0">0%</option>
-                          <option value="10">10%</option>
-                          <option value="15">15%</option>
-                          <option value="20">20%</option>
-                          <option value="25">25%</option>
-                          <option value="30">30%</option>
-                          <option value="35">35%</option>
-                          <option value="40">40%</option>
-                          <option value="45">45%</option>
-                          <option value="50">50%</option>
-                          <option value="60">60%</option>
-                          <option value="70">70%</option>
-                          <option value="100">100%</option>
-                        </select>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <select 
+                            value={editingItem.data.profitMargin} 
+                            onChange={e => {
+                              const val = e.target.value === 'manual' ? 'manual' : Number(e.target.value);
+                              const defaultPrice = editingItem.data.manualPrice !== undefined ? editingItem.data.manualPrice : (editingItem.data.unitCost || 0);
+                              setEditingItem({
+                                ...editingItem, 
+                                data: {
+                                  ...editingItem.data, 
+                                  profitMargin: val,
+                                  manualPrice: val === 'manual' ? defaultPrice : undefined
+                                }
+                              });
+                            }} 
+                            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)', width: '100%' }}
+                          >
+                            <option value="manual">Manual (Precio Fijo)</option>
+                            <option value="0">0%</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                            <option value="20">20%</option>
+                            <option value="25">25%</option>
+                            <option value="30">30%</option>
+                            <option value="35">35%</option>
+                            <option value="40">40%</option>
+                            <option value="45">45%</option>
+                            <option value="50">50%</option>
+                            <option value="60">60%</option>
+                            <option value="70">70%</option>
+                            <option value="100">100%</option>
+                          </select>
+                          {editingItem.data.profitMargin === 'manual' && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Precio Venta U.</span>
+                              <input 
+                                type="number" 
+                                step="0.01" 
+                                placeholder="Precio Venta" 
+                                value={editingItem.data.manualPrice ?? ''} 
+                                onChange={e => setEditingItem({
+                                  ...editingItem, 
+                                  data: {
+                                    ...editingItem.data, 
+                                    manualPrice: e.target.value === '' ? '' : Number(e.target.value)
+                                  }
+                                })} 
+                                style={{ width: '105px', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--primary-color)', backgroundColor: 'var(--bg-color)' }} 
+                              />
+                            </div>
+                          )}
+                        </div>
                       </td>
                     )}
                     {type === 'equipments' && (
@@ -1090,21 +1126,21 @@ const ProjectDetail: React.FC = () => {
 
           {(activeTab === 'materials' || activeTab === 'equipments' || activeTab === 'labor' || activeTab === 'additionals') && (
             <div>
-              <form onSubmit={handleAddItem} className="responsive-form-grid" style={{ display: 'grid', gridTemplateColumns: activeTab !== 'labor' ? (profitMargin === 'manual' ? '2fr 1fr 1fr 1fr 1fr auto auto' : '2fr 1fr 1fr 1fr auto auto') : '2fr 1fr 1fr auto auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <form onSubmit={handleAddItem} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 {activeTab === 'additionals' && (
-                  <div style={{ gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
+                  <div style={{ flex: '1 1 100%', marginBottom: '0.5rem' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Tipo de Adicional</label>
                     <select 
                       value={additionalType} 
                       onChange={e => setAdditionalType(e.target.value as 'materials'|'equipments')}
-                      style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
+                      style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', width: '100%', maxWidth: '300px' }}
                     >
                       <option value="materials">Material Ferretero</option>
                       <option value="equipments">Equipo</option>
                     </select>
                   </div>
                 )}
-                <div style={{ position: 'relative' }}>
+                <div style={{ flex: '2 1 220px', minWidth: '180px', position: 'relative' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Descripción</label>
                   <input 
                     type="text" 
@@ -1144,15 +1180,28 @@ const ProjectDetail: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <div>
+                <div style={{ flex: '1 1 90px', minWidth: '80px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Cantidad</label>
                   <input type="number" required min="1" step="0.01" value={quantity} onChange={e => setQuantity(e.target.value === '' ? '' : Number(e.target.value))} style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }} />
                 </div>
-                <div>
+                <div style={{ flex: '1 1 170px', minWidth: '150px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Costo U.</label>
                   <div style={{ display: 'flex', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', overflow: 'hidden' }}>
-                    <input type="number" required min="0" step="0.01" value={unitCost} onChange={e => setUnitCost(e.target.value === '' ? '' : Number(e.target.value))} style={{ flex: 1, padding: '0.75rem', border: 'none', backgroundColor: 'transparent', outline: 'none', color: 'inherit', width: '100%' }} />
-                    <select value={itemCurrency} onChange={e => setItemCurrency(e.target.value as 'USD'|'NIO')} style={{ padding: '0 0.5rem', border: 'none', borderLeft: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', color: 'inherit', outline: 'none', cursor: 'pointer' }}>
+                    <input 
+                      type="number" 
+                      required 
+                      min="0" 
+                      step="0.01" 
+                      value={unitCost} 
+                      onChange={e => setUnitCost(e.target.value === '' ? '' : Number(e.target.value))} 
+                      placeholder="0.00"
+                      style={{ flex: '1 1 0%', minWidth: 0, padding: '0.75rem', border: 'none', backgroundColor: 'transparent', outline: 'none', color: 'inherit', width: '100%' }} 
+                    />
+                    <select 
+                      value={itemCurrency} 
+                      onChange={e => setItemCurrency(e.target.value as 'USD'|'NIO')} 
+                      style={{ flex: '0 0 auto', width: '65px', padding: '0 0.5rem', border: 'none', borderLeft: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', color: 'inherit', outline: 'none', cursor: 'pointer' }}
+                    >
                       <option value="USD">USD</option>
                       <option value="NIO">NIO</option>
                     </select>
@@ -1161,7 +1210,7 @@ const ProjectDetail: React.FC = () => {
                 
                 {activeTab !== 'labor' && (
                   <>
-                    <div>
+                    <div style={{ flex: '1 1 140px', minWidth: '120px' }}>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>% Ganancia</label>
                       <select 
                         value={profitMargin} 
@@ -1185,25 +1234,23 @@ const ProjectDetail: React.FC = () => {
                       </select>
                     </div>
                     {profitMargin === 'manual' && (
-                      <div>
+                      <div style={{ flex: '1 1 140px', minWidth: '120px' }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Precio de Venta</label>
-                        <div style={{ display: 'flex' }}>
-                          <input 
-                            type="number" 
-                            step="0.01"
-                            value={manualPrice} 
-                            onChange={e => setManualPrice(Number(e.target.value))}
-                            placeholder="Ej. 150.00"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
-                          />
-                        </div>
+                        <input 
+                          type="number" 
+                          step="0.01"
+                          value={manualPrice} 
+                          onChange={e => setManualPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                          placeholder="Ej. 150.00"
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}
+                        />
                       </div>
                     )}
                   </>
                 )}
 
                 {activeTab === 'equipments' && (
-                  <div>
+                  <div style={{ flex: '1 1 170px', minWidth: '150px' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Nº Serie (Opcional)</label>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <input 
@@ -1226,14 +1273,14 @@ const ProjectDetail: React.FC = () => {
                   </div>
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', height: '100%', paddingBottom: '0.75rem', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', height: '44px', paddingBottom: '0.25rem' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text-color)' }}>
                     <input type="checkbox" checked={clientProvides} onChange={e => setClientProvides(e.target.checked)} style={{ width: '1rem', height: '1rem', accentColor: 'var(--primary-color)' }} />
                     El cliente comprará
                   </label>
                 </div>
 
-                <button type="submit" className="btn-primary" style={{ padding: '0.75rem 1rem' }}>
+                <button type="submit" className="btn-primary" style={{ flex: '0 0 auto', padding: '0.75rem 1.25rem', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Plus size={20} />
                 </button>
               </form>
@@ -1486,8 +1533,8 @@ const ProjectDetail: React.FC = () => {
                 <h3>Registro de Gastos Operativos</h3>
               </div>
               
-              <form onSubmit={handleAddExpense} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 2fr auto', gap: '1rem', alignItems: 'end', marginBottom: '2rem' }}>
-                <div>
+              <form onSubmit={handleAddExpense} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ flex: '1 1 160px', minWidth: '140px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Categoría</label>
                   <select value={expenseCategory} onChange={e => setExpenseCategory(e.target.value as any)} style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}>
                     <option value="Combustible">Combustible</option>
@@ -1498,25 +1545,34 @@ const ProjectDetail: React.FC = () => {
                     <option value="Otros">Otros</option>
                   </select>
                 </div>
-                <div>
+                <div style={{ flex: '1 1 150px', minWidth: '130px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Fecha</label>
                   <input type="date" required value={expenseDate} onChange={e => setExpenseDate(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }} />
                 </div>
-                <div>
+                <div style={{ flex: '1 1 170px', minWidth: '150px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Monto</label>
                   <div style={{ display: 'flex', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', overflow: 'hidden' }}>
-                    <input type="number" required min="0" step="0.01" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value === '' ? '' : Number(e.target.value))} style={{ flex: 1, padding: '0.75rem', border: 'none', backgroundColor: 'transparent', outline: 'none', color: 'inherit', width: '100%' }} />
-                    <select value={expenseCurrency} onChange={e => setExpenseCurrency(e.target.value as 'USD'|'NIO')} style={{ padding: '0 0.5rem', border: 'none', borderLeft: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', color: 'inherit', outline: 'none', cursor: 'pointer' }}>
+                    <input 
+                      type="number" 
+                      required 
+                      min="0" 
+                      step="0.01" 
+                      value={expenseAmount} 
+                      onChange={e => setExpenseAmount(e.target.value === '' ? '' : Number(e.target.value))} 
+                      placeholder="0.00"
+                      style={{ flex: '1 1 0%', minWidth: 0, padding: '0.75rem', border: 'none', backgroundColor: 'transparent', outline: 'none', color: 'inherit', width: '100%' }} 
+                    />
+                    <select value={expenseCurrency} onChange={e => setExpenseCurrency(e.target.value as 'USD'|'NIO')} style={{ flex: '0 0 auto', width: '65px', padding: '0 0.5rem', border: 'none', borderLeft: '1px solid var(--border-color)', backgroundColor: 'var(--surface-hover)', color: 'inherit', outline: 'none', cursor: 'pointer' }}>
                       <option value="USD">USD</option>
                       <option value="NIO">NIO</option>
                     </select>
                   </div>
                 </div>
-                <div>
+                <div style={{ flex: '2 1 220px', minWidth: '180px' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Descripción</label>
                   <input type="text" required value={expenseDesc} onChange={e => setExpenseDesc(e.target.value)} placeholder="Ej. Combustible placa M12345" style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }} />
                 </div>
-                <button type="submit" className="btn-primary" style={{ padding: '0.75rem 1rem' }}>
+                <button type="submit" className="btn-primary" style={{ flex: '0 0 auto', padding: '0.75rem 1.25rem', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Plus size={20} /> Agregar
                 </button>
               </form>
@@ -1553,17 +1609,69 @@ const ProjectDetail: React.FC = () => {
               )}
 
               {/* Expense Summary */}
-              <div style={{ marginTop: '3rem', padding: '1.5rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Resumen de Gastos</h4>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>Total Gastos Operativos:</span>
-                  <strong style={{ fontSize: '1.5rem', color: 'var(--danger-color)' }}>
-                    {(() => {
-                      return formatCurrency(calculateExpensesDual(project.expenses, project.exchangeRate).totalUSD, 'USD');
-                    })()}
-                  </strong>
-                </div>
+              <div style={{ marginTop: '2.5rem', padding: '1.5rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <h4 style={{ marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span>Resumen de Gastos Operativos</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 400, color: 'var(--text-muted)' }}>Tasa de Cambio: {project.exchangeRate || 36.62} NIO/USD</span>
+                </h4>
+
+                {(() => {
+                  const expenses = project.expenses || [];
+                  const exchangeRate = project.exchangeRate || 36.62;
+                  const expTotals = calculateExpensesDual(expenses, exchangeRate);
+
+                  // Calculate breakdown by category
+                  const categoryBreakdown: Record<string, { totalUSD: number; count: number }> = {};
+                  expenses.forEach((exp: any) => {
+                    const cat = exp.category || 'Otros';
+                    const amountUSD = exp.currency === 'NIO' ? Number(exp.amount) / exchangeRate : Number(exp.amount);
+                    if (!categoryBreakdown[cat]) {
+                      categoryBreakdown[cat] = { totalUSD: 0, count: 0 };
+                    }
+                    categoryBreakdown[cat].totalUSD += amountUSD;
+                    categoryBreakdown[cat].count += 1;
+                  });
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {/* Total cards */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                        <div style={{ padding: '1rem 1.25rem', backgroundColor: 'var(--bg-color)', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Total Gastos en USD</div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--danger-color)' }}>
+                            {formatCurrency(expTotals.totalUSD, 'USD')}
+                          </div>
+                        </div>
+                        <div style={{ padding: '1rem 1.25rem', backgroundColor: 'var(--bg-color)', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Total Gastos en Córdobas (NIO)</div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--danger-color)' }}>
+                            {formatCurrency(expTotals.totalNIO, 'NIO')}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Breakdown by Category */}
+                      {Object.keys(categoryBreakdown).length > 0 && (
+                        <div>
+                          <h5 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Desglose Acumulado por Categoría</h5>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                            {Object.entries(categoryBreakdown).map(([cat, data]) => (
+                              <div key={cat} style={{ padding: '0.75rem 1rem', backgroundColor: 'var(--bg-color)', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{cat}</div>
+                                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{data.count} gasto{data.count !== 1 ? 's' : ''}</div>
+                                </div>
+                                <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--danger-color)' }}>
+                                  {formatCurrency(data.totalUSD, 'USD')}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
