@@ -37,17 +37,23 @@ function verifyAuth() {
     
     // Get authorization header safely across different server environments
     $authHeader = '';
-    if (isset($_SERVER['HTTP_X_AUTH_TOKEN'])) {
+    if (isset($_GET['token']) && !empty($_GET['token'])) {
+        $authHeader = 'Bearer ' . trim($_GET['token']);
+    } elseif (isset($_GET['auth_token']) && !empty($_GET['auth_token'])) {
+        $authHeader = 'Bearer ' . trim($_GET['auth_token']);
+    } elseif (isset($_SERVER['HTTP_X_AUTH_TOKEN']) && !empty($_SERVER['HTTP_X_AUTH_TOKEN'])) {
         $authHeader = 'Bearer ' . trim($_SERVER['HTTP_X_AUTH_TOKEN']);
-    } elseif (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    } elseif (isset($_SERVER['HTTP_AUTHORIZATION']) && !empty($_SERVER['HTTP_AUTHORIZATION'])) {
         $authHeader = trim($_SERVER['HTTP_AUTHORIZATION']);
-    } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+    } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && !empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
         $authHeader = trim($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
     } elseif (function_exists('apache_request_headers')) {
         $requestHeaders = apache_request_headers();
         $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-        if (isset($requestHeaders['Authorization'])) {
+        if (isset($requestHeaders['Authorization']) && !empty($requestHeaders['Authorization'])) {
             $authHeader = trim($requestHeaders['Authorization']);
+        } elseif (isset($requestHeaders['X-Auth-Token']) && !empty($requestHeaders['X-Auth-Token'])) {
+            $authHeader = 'Bearer ' . trim($requestHeaders['X-Auth-Token']);
         }
     }
     

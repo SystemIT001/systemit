@@ -88,8 +88,41 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleBackup = () => {
-    window.location.href = '/api/backup.php';
+  const handleBackup = async () => {
+    try {
+      const response = await apiFetch('/api/backup.php');
+      if (!response.ok) {
+        const text = await response.text();
+        let errData;
+        try {
+          errData = JSON.parse(text);
+        } catch (e) {
+          errData = { error: text || 'Error al descargar el respaldo' };
+        }
+        throw new Error(errData.error || 'Error al descargar el respaldo');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = `SystemIT_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^";]+)"?/);
+        if (match && match[1]) fileName = match[1];
+      }
+
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error(err);
+      alert(`Error al descargar el respaldo:\n\n${err.message || err}`);
+    }
   };
 
   const handleRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,10 +142,9 @@ const Settings: React.FC = () => {
       formData.append('type', 'respaldos');
       formData.append('file', file);
 
-      const response = await fetch('/api/restore.php', {
+      const response = await apiFetch('/api/restore.php', {
         method: 'POST',
-        body: formData,
-        credentials: 'same-origin'
+        body: formData
       });
 
       if (!response.ok) {
