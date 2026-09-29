@@ -124,6 +124,8 @@ export interface Project {
   invoices?: InvoiceFile[];
   payments?: PaymentItem[];
   expenses?: ExpenseItem[];
+  expenseBudget?: number;
+  expenseBudgetCurrency?: 'NIO' | 'USD';
   tasks?: ProjectTask[];
   images?: ProjectImage[];
   advances?: AdvanceItem[];

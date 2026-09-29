@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye, QrCode, Pencil, Ruler } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, FileText, FileDown, Upload, Eye, QrCode, Pencil, Ruler, Calculator } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import { useQuotes } from '../hooks/useQuotes';
 import { useInventory } from '../hooks/useInventory';
@@ -415,6 +415,17 @@ const ProjectDetail: React.FC = () => {
   const handleDeleteExpense = (id: string) => {
     const updatedProject = { ...project! };
     updatedProject.expenses = updatedProject.expenses?.filter(e => e.id !== id);
+    setProject(updatedProject);
+    targetUpdateProject(updatedProject);
+  };
+
+  const handleUpdateExpenseBudget = (budget: number | '', currency: 'USD' | 'NIO') => {
+    if (!project) return;
+    const updatedProject = {
+      ...project,
+      expenseBudget: budget === '' ? undefined : Number(budget),
+      expenseBudgetCurrency: currency
+    };
     setProject(updatedProject);
     targetUpdateProject(updatedProject);
   };
@@ -1530,7 +1541,130 @@ const ProjectDetail: React.FC = () => {
           {activeTab === 'expenses' && (
             <div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3>Registro de Gastos Operativos</h3>
+                <h3 style={{ margin: 0 }}>Registro de Gastos Operativos</h3>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>🔒 Uso Interno de la Empresa (No visible al cliente en facturas)</span>
+              </div>
+              
+              {/* Panel de Presupuesto Asignado y Resta Automática */}
+              <div style={{ marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--surface-color)', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Calculator size={20} color="var(--primary-color)" />
+                      Control de Presupuesto Asignado (Resta de Gastos)
+                    </h4>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      Ingresa el presupuesto total asignado (ej. $40 USD). Los gastos registrados se irán restando automáticamente.
+                    </p>
+                  </div>
+
+                  {/* Input de Presupuesto Asignado */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--bg-color)', padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>Presupuesto:</label>
+                    <input 
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Ej. 40.00"
+                      value={project.expenseBudget !== undefined ? project.expenseBudget : ''}
+                      onChange={e => handleUpdateExpenseBudget(e.target.value === '' ? '' : Number(e.target.value), project.expenseBudgetCurrency || 'USD')}
+                      style={{ width: '110px', padding: '0.4rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', fontWeight: 600 }}
+                    />
+                    <select 
+                      value={project.expenseBudgetCurrency || 'USD'}
+                      onChange={e => handleUpdateExpenseBudget(project.expenseBudget !== undefined ? project.expenseBudget : '', e.target.value as 'USD'|'NIO')}
+                      style={{ padding: '0.4rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      <option value="USD">USD</option>
+                      <option value="NIO">NIO</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Métricas y Cálculos de Resta */}
+                {(() => {
+                  const exchangeRate = project.exchangeRate || 36.62;
+                  const expenses = project.expenses || [];
+                  const expTotals = calculateExpensesDual(expenses, exchangeRate);
+                  
+                  const budgetRaw = project.expenseBudget || 0;
+                  const budgetCurrency = project.expenseBudgetCurrency || 'USD';
+                  const budgetUSD = budgetCurrency === 'NIO' ? budgetRaw / exchangeRate : budgetRaw;
+                  const spentUSD = expTotals.totalUSD;
+                  const remainingUSD = budgetUSD - spentUSD;
+
+                  const percentSpent = budgetUSD > 0 ? Math.min(Math.round((spentUSD / budgetUSD) * 100), 999) : 0;
+                  const isOverBudget = remainingUSD < 0;
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                        
+                        {/* Tarjeta 1: Presupuesto Asignado */}
+                        <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>1. Presupuesto Asignado</div>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                            {budgetRaw > 0 ? formatCurrency(budgetRaw, budgetCurrency) : 'Sin definir'}
+                          </div>
+                          {budgetCurrency === 'USD' && budgetRaw > 0 && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                              ≈ {formatCurrency(budgetRaw * exchangeRate, 'NIO')}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tarjeta 2: Total Gastado */}
+                        <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>2. Total Gastado Real</div>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--danger-color)' }}>
+                            {formatCurrency(spentUSD, 'USD')}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                            ≈ {formatCurrency(expTotals.totalNIO, 'NIO')}
+                          </div>
+                        </div>
+
+                        {/* Tarjeta 3: Saldo Disponible / Exceso (Resta) */}
+                        <div style={{ 
+                          padding: '1rem', 
+                          backgroundColor: isOverBudget ? 'rgba(239, 68, 68, 0.1)' : (budgetUSD > 0 ? 'rgba(34, 197, 94, 0.1)' : 'var(--bg-color)'), 
+                          borderRadius: '8px', 
+                          border: '1px solid ' + (isOverBudget ? 'var(--danger-color)' : (budgetUSD > 0 ? 'var(--success-color)' : 'var(--border-color)'))
+                        }}>
+                          <div style={{ fontSize: '0.8rem', color: isOverBudget ? 'var(--danger-color)' : (budgetUSD > 0 ? 'var(--success-color)' : 'var(--text-muted)'), marginBottom: '0.25rem', fontWeight: 600 }}>
+                            {budgetUSD === 0 ? '3. Saldo Restante (Define Presupuesto)' : (isOverBudget ? '⚠️ Excedido del Presupuesto' : '✅ Saldo Restante Disponible (Ahorro)')}
+                          </div>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 700, color: isOverBudget ? 'var(--danger-color)' : (budgetUSD > 0 ? 'var(--success-color)' : 'var(--text-main)') }}>
+                            {budgetUSD > 0 ? (isOverBudget ? `-${formatCurrency(Math.abs(remainingUSD), 'USD')}` : `+${formatCurrency(remainingUSD, 'USD')}`) : '$0.00'}
+                          </div>
+                          {budgetUSD > 0 && (
+                            <div style={{ fontSize: '0.75rem', color: isOverBudget ? 'var(--danger-color)' : 'var(--success-color)', marginTop: '0.2rem', fontWeight: 500 }}>
+                              {isOverBudget ? `Gastaste $${Math.abs(remainingUSD).toFixed(2)} USD por encima del presupuesto` : `Te quedan $${remainingUSD.toFixed(2)} USD sin gastar`}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Barra de Progreso */}
+                      {budgetUSD > 0 && (
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem', color: 'var(--text-muted)' }}>
+                            <span>Consumo del Presupuesto: <strong>{percentSpent}%</strong></span>
+                            <span>{formatCurrency(spentUSD, 'USD')} de {formatCurrency(budgetUSD, 'USD')}</span>
+                          </div>
+                          <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ 
+                              width: `${Math.min(percentSpent, 100)}%`, 
+                              height: '100%', 
+                              backgroundColor: isOverBudget ? 'var(--danger-color)' : (percentSpent > 80 ? 'var(--warning-color)' : 'var(--success-color)'),
+                              transition: 'width 0.3s ease'
+                            }} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               
               <form onSubmit={handleAddExpense} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
